@@ -18,7 +18,7 @@ authors:
     affiliation: 1
   - name: Willem-Jan van Hoeve
     affiliation: 2
-	
+
 affiliations:
 	- name: AI Center of Excellence, Fidelity Investments, USA
 	  index: 1
