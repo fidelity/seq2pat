@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Seq2Pat Public API &mdash; Seq2Pat  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Usage Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Seq2Pat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Usage Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Seq2Pat Public API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Seq2Pat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Seq2Pat Public API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-sequential.seq2pat">
+<span id="seq2pat-public-api"></span><span id="seq2pat-api"></span><h1>Seq2Pat Public API<a class="headerlink" href="#module-sequential.seq2pat" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="sequential.seq2pat.Attribute">
+<em class="property">class </em><code class="descclassname">sequential.seq2pat.</code><code class="descname">Attribute</code><span class="sig-paren">(</span><em>values: List[list]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="sequential.seq2pat.Attribute.average">
+<code class="descname">average</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.average" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average Constraint
+Restricts the average value of a pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sequential.seq2pat.Attribute.gap">
+<code class="descname">gap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.gap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gap Constraint
+Restricts the difference between every two consecutive event values in a pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sequential.seq2pat.Attribute.median">
+<code class="descname">median</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.median"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.median" title="Permalink to this definition">¶</a></dt>
+<dd><p>Median Constraints
+Restricts the median value of a pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sequential.seq2pat.Attribute.span">
+<code class="descname">span</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Span Constraints
+Restricts the difference between the maximum and the minimum value in a pattern.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sequential.seq2pat.Attribute.values">
+<code class="descname">values</code><a class="headerlink" href="#sequential.seq2pat.Attribute.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Values
+The values of the attribute</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sequential.seq2pat.Seq2Pat">
+<em class="property">class </em><code class="descclassname">sequential.seq2pat.</code><code class="descname">Seq2Pat</code><span class="sig-paren">(</span><em>sequences: List[list]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="sequential.seq2pat.Seq2Pat.add_constraint">
+<code class="descname">add_constraint</code><span class="sig-paren">(</span><em>constraint: sequential.seq2pat._BaseConstraint</em><span class="sig-paren">)</span> &#x2192; sequential.seq2pat._BaseConstraint<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.add_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.add_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the given constraint to the constraint store.</p>
+<dl class="docutils">
+<dt>constraint: _BaseConstraint</dt>
+<dd>A constraint on an attribute object</dd>
+</dl>
+<p>The constraint handle.</p>
+<p>TypeError: If the constraint is already defined on this attribute.
+ValueError: If there is a mismatch in length of sequences and their attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sequential.seq2pat.Seq2Pat.get_patterns">
+<code class="descname">get_patterns</code><span class="sig-paren">(</span><em>min_frequency: Union[int, float]</em><span class="sig-paren">)</span> &#x2192; List[list]<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.get_patterns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.get_patterns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the mining operation enforcing the constraints and
+Returns the most frequent patterns.</p>
+<dl class="docutils">
+<dt>min_frequency: Num</dt>
+<dd>If int, represents the minimum number of sequences (rows) a pattern should occur.
+If float, should be (0.0, 1.0] and represents
+the minimum percentage of sequences (rows) a pattern should occur.</dd>
+</dl>
+<p>List[list] where each inner list represents a frequent pattern in the form
+[event_1, event_2, event_3, … event_n, frequency].
+The last element is the frequency of the pattern.
+Sequences are sored by decreasing frequency, i.e., most frequent pattern first.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sequential.seq2pat.Seq2Pat.remove_constraint">
+<code class="descname">remove_constraint</code><span class="sig-paren">(</span><em>constraint: sequential.seq2pat._BaseConstraint</em><span class="sig-paren">)</span> &#x2192; NoReturn<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.remove_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.remove_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the given constraint from the constraint store.</p>
+<dl class="docutils">
+<dt>constraint: _BaseConstraint</dt>
+<dd>A constraint on an attribute object</dd>
+</dl>
+<p>KeyError: If the given constraint does not exist in the constraint store.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sequential.seq2pat.Seq2Pat.sequences">
+<code class="descname">sequences</code><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sequence
+The sequences of Seq2Pat.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="examples.html" class="btn btn-neutral float-left" title="Usage Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright GPL 2.0
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

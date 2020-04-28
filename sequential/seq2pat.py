@@ -7,6 +7,8 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     string_to_int, int_to_string, check_sequence_feature_same_length
 from sequential.backend import seq_to_pat as stp
 
+__version__ = "1.0.0"
+
 
 # IMPORTANT: Constant values should not be changed
 # These represent parameters in C++ backend that need to be set by matching exact names
@@ -126,8 +128,12 @@ class Attribute:
 
     def __init__(self, values: List[list]):
         """
-        Attribute with given values
-        :param values: a list of lists of event value
+        Attribute with given values.
+
+        Attributes
+        ----------
+        values: List[list]
+            A list of lists corresponding to the values of each event.
         """
         check_true(values is not None, ValueError("Values cannot be null"))
         check_true(isinstance(values, list), ValueError("Values need to be a list of lists"))
@@ -140,23 +146,33 @@ class Attribute:
 
     @property
     def values(self):
-        """The values of the attribute"""
+        """Values
+        The values of the attribute
+        """
         return self._values
 
     def average(self):
-        """Constraints the average value of a pattern."""
+        """Average Constraint
+        Restricts the average value of a pattern.
+        """
         return _Constraint.Average(self)
 
     def gap(self):
-        """Constraints the difference between every two consecutive event values in a pattern."""
+        """Gap Constraint
+        Restricts the difference between every two consecutive event values in a pattern.
+        """
         return _Constraint.Gap(self)
 
     def median(self):
-        """Constraints the median value of a pattern."""
+        """Median Constraints
+         Restricts the median value of a pattern.
+         """
         return _Constraint.Median(self)
 
     def span(self):
-        """Constraints the difference between the maximum and the minimum value in a pattern."""
+        """Span Constraints
+        Restricts the difference between the maximum and the minimum value in a pattern.
+        """
         return _Constraint.Span(self)
 
 
@@ -220,9 +236,13 @@ class Seq2Pat:
 
     def __init__(self, sequences: List[list]):
         """
-        Seq2Pat over a sequence database
-        :param sequences: a list of sequences each with a list of events.
-                          the event values can be all strings, or all integers.
+        Sequence-to-Pattern generation over the given sequence database
+
+        Attributes
+        ----------
+        sequences: List[list]
+            A list of sequences each with a list of events.
+            The event values can be all strings or all integers.
         """
 
         check_true(sequences is not None, ValueError("Sequences cannot be null"))
@@ -254,14 +274,29 @@ class Seq2Pat:
 
     @property
     def sequences(self) -> List[list]:
-        """The sequences of Seq2Pat"""
+        """Sequence
+        The sequences of Seq2Pat.
+        """
         return self._sequences
 
     def add_constraint(self, constraint: _BaseConstraint) -> _BaseConstraint:
         """
         Adds the given constraint to the constraint store.
-        :param constraint: a constraint on an attribute object
-        :return: the constraint handle
+
+        Attributes
+        ----------
+        constraint: _BaseConstraint
+            A constraint on an attribute object
+
+        Returns
+        -------
+        The constraint handle.
+
+        Raises
+        ------
+        TypeError: If the constraint is already defined on this attribute.
+        ValueError: If there is a mismatch in length of sequences and their attributes.
+
         """
 
         # Attribute and constraint id
@@ -288,10 +323,18 @@ class Seq2Pat:
 
     def remove_constraint(self, constraint: _BaseConstraint) -> NoReturn:
         """
-        Removes the given constraint from the constraint store.
-        :param constraint: a constraint on an attribute object
-        :raise KeyError if the given constraint does not exist in the constraint store
-        """
+       Removes the given constraint from the constraint store.
+
+       Attributes
+       ----------
+       constraint: _BaseConstraint
+           A constraint on an attribute object
+
+       Raises
+       ------
+       KeyError: If the given constraint does not exist in the constraint store.
+
+       """
 
         # Attribute and constraint id
         attribute_id = constraint.attribute
@@ -313,12 +356,19 @@ class Seq2Pat:
         Performs the mining operation enforcing the constraints and
         Returns the most frequent patterns.
 
-        :param min_frequency:   If int, represents the minimum number of sequences (rows) a pattern should occur.
-                                If float, should be (0.0, 1.0] and represents
-                                the minimum percentage of sequences (rows) a pattern should occur.
-        :return: list[Patterns] where each pattern represents a frequent pattern in the form
-                [event_1, event_2, event_3, ... event_n, frequency].
-                It stores sequences in decreasing frequency, i.e., most frequent pattern first.
+        Attributes
+        ----------
+        min_frequency: Num
+           If int, represents the minimum number of sequences (rows) a pattern should occur.
+           If float, should be (0.0, 1.0] and represents
+           the minimum percentage of sequences (rows) a pattern should occur.
+
+        Returns
+        -------
+        List[list] where each inner list represents a frequent pattern in the form
+        [event_1, event_2, event_3, ... event_n, frequency].
+        The last element is the frequency of the pattern.
+        Sequences are sored by decreasing frequency, i.e., most frequent pattern first.
         """
 
         # Check min_frequence conditions

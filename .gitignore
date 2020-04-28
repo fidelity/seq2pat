@@ -62,3 +62,4 @@ sequential/backend/build/*
 sequential/backend/seq_to_pat.html
 sequential/backend/seq_to_pat.cpp
 sequential/backend/seq_to_pat.cp*.pyd
+docsrc/_build/

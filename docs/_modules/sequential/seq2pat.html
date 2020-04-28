@@ -1,0 +1,742 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sequential.seq2pat &mdash; Seq2Pat  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Seq2Pat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Seq2Pat Public API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Seq2Pat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sequential.seq2pat</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sequential.seq2pat</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># SPDX-License-Identifer: GPL-2.0</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">NoReturn</span>
+<span class="kn">from</span> <span class="nn">sequential.utils</span> <span class="k">import</span> <span class="n">Num</span><span class="p">,</span> <span class="n">check_true</span><span class="p">,</span> <span class="n">get_max_column_size</span><span class="p">,</span> \
+    <span class="n">get_min_value</span><span class="p">,</span> <span class="n">get_max_value</span><span class="p">,</span> <span class="n">sort_pattern</span><span class="p">,</span> <span class="n">item_map</span><span class="p">,</span>\
+    <span class="n">string_to_int</span><span class="p">,</span> <span class="n">int_to_string</span><span class="p">,</span> <span class="n">check_sequence_feature_same_length</span>
+<span class="kn">from</span> <span class="nn">sequential.backend</span> <span class="k">import</span> <span class="n">seq_to_pat</span> <span class="k">as</span> <span class="n">stp</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;1.0.0&quot;</span>
+
+
+<span class="c1"># IMPORTANT: Constant values should not be changed</span>
+<span class="c1"># These represent parameters in C++ backend that need to be set by matching exact names</span>
+<span class="k">class</span> <span class="nc">_Constants</span><span class="p">:</span>
+
+    <span class="c1"># List where values correspond to the value of upper gap constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in ugapi at the same index</span>
+    <span class="n">ugap</span> <span class="o">=</span> <span class="s1">&#39;ugap&#39;</span>
+
+    <span class="c1"># List where values are attribute ids of attributes that have upper gap constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in ugap at the same index</span>
+    <span class="n">ugapi</span> <span class="o">=</span> <span class="s1">&#39;ugapi&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of lower gap constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in lgapi at the same index</span>
+    <span class="n">lgap</span> <span class="o">=</span> <span class="s1">&#39;lgap&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have lower gap constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in lgap at the same index</span>
+    <span class="n">lgapi</span> <span class="o">=</span> <span class="s1">&#39;lgapi&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of lower average constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in lavri at the same index</span>
+    <span class="n">lavr</span> <span class="o">=</span> <span class="s1">&#39;lavr&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have lower average constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in lavr at the same index</span>
+    <span class="n">lavri</span> <span class="o">=</span> <span class="s1">&#39;lavri&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of upper average constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in uavri at the same index</span>
+    <span class="n">uavr</span> <span class="o">=</span> <span class="s1">&#39;uavr&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have  upper average constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in uavr at the same index</span>
+    <span class="n">uavri</span> <span class="o">=</span> <span class="s1">&#39;uavri&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of lower span constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in lspni at the same index</span>
+    <span class="n">lspn</span> <span class="o">=</span> <span class="s1">&#39;lspn&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have  lower span constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in lspn at the same index</span>
+    <span class="n">lspni</span> <span class="o">=</span> <span class="s1">&#39;lspni&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of lower span constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in uspni at the same index</span>
+    <span class="n">uspn</span> <span class="o">=</span> <span class="s1">&#39;uspn&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have upper span constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in uspn at the same index</span>
+    <span class="n">uspni</span> <span class="o">=</span> <span class="s1">&#39;uspni&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of lower median constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in lmedi at the same index</span>
+    <span class="n">lmed</span> <span class="o">=</span> <span class="s1">&#39;lmed&#39;</span>
+
+    <span class="c1"># List where values correspond to the value of upper median constraints on an attribute, and</span>
+    <span class="c1"># whose id can be found in umedi at the same index</span>
+    <span class="n">umed</span> <span class="o">=</span> <span class="s1">&#39;umed&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have  upper median constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in umed at the same index</span>
+    <span class="n">umedi</span> <span class="o">=</span> <span class="s1">&#39;umedi&#39;</span>
+
+    <span class="c1"># List where values values are attribute ids of attributes that have  upper median constraints, and</span>
+    <span class="c1"># where the value of the constraint can be found in lmed at the same index</span>
+    <span class="n">lmedi</span> <span class="o">=</span> <span class="s1">&#39;lmedi&#39;</span>
+
+    <span class="c1"># List where the indexes correspond to the attribute ids and values correspond to the number of</span>
+    <span class="c1"># upper span constraints on that attribute</span>
+    <span class="n">num_minmax</span> <span class="o">=</span> <span class="s1">&#39;num_minmax&#39;</span>
+
+    <span class="c1"># List where the indexes correspond to the attribute ids and the values correspond to the number of</span>
+    <span class="c1"># average constraints on that attribute</span>
+    <span class="n">num_avr</span> <span class="o">=</span> <span class="s1">&#39;num_avr&#39;</span>
+
+    <span class="c1"># List where the indexes correspond to the attribute ids and values correspond to the number of</span>
+    <span class="c1"># median constraints on that attribute</span>
+    <span class="n">num_med</span> <span class="o">=</span> <span class="s1">&#39;num_med&#39;</span>
+
+    <span class="c1"># List where values are attribute ids of attribute that have gap constraints</span>
+    <span class="n">tot_gap</span> <span class="o">=</span> <span class="s1">&#39;tot_gap&#39;</span>
+
+    <span class="c1"># List where values are attribute ids of attribute that have span constraints</span>
+    <span class="n">tot_spn</span> <span class="o">=</span> <span class="s1">&#39;tot_spn&#39;</span>
+
+    <span class="c1"># List where values are attribute ids of attribute that have average constraints</span>
+    <span class="n">tot_avr</span> <span class="o">=</span> <span class="s1">&#39;tot_avr&#39;</span>
+
+    <span class="c1"># Number of attributes that constraint are enforced on</span>
+    <span class="n">num_att</span> <span class="o">=</span> <span class="s1">&#39;num_att&#39;</span>
+
+    <span class="c1"># List of sequences that will be mined for sequences</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="s1">&#39;items&#39;</span>
+
+    <span class="c1"># List of attributes that constraints will be imposed on during mining</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="s1">&#39;attrs&#39;</span>
+
+    <span class="c1"># Length of the largest sequence in items</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span>
+
+    <span class="c1"># Number of sequences in items</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="s1">&#39;N&#39;</span>
+
+    <span class="c1"># If integer sequences, the largest value, if string sequences the number of events</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="s1">&#39;L&#39;</span>
+
+    <span class="c1"># List where index correspond to attribute ids and values to the maximum value for that attribute</span>
+    <span class="n">max_attrs</span> <span class="o">=</span> <span class="s1">&#39;max_attrs&#39;</span>
+
+    <span class="c1"># List where index correspond to the attribute ids and values to the minimum value for that attribute</span>
+    <span class="n">min_attrs</span> <span class="o">=</span> <span class="s1">&#39;min_attrs&#39;</span>
+
+
+<div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute">[docs]</a><span class="k">class</span> <span class="nc">Attribute</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attribute with given values.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        values: List[list]</span>
+<span class="sd">            A list of lists corresponding to the values of each event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_true</span><span class="p">(</span><span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values cannot be null&quot;</span><span class="p">))</span>
+        <span class="n">check_true</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values need to be a list of lists&quot;</span><span class="p">))</span>
+        <span class="n">not_list</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;index: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">)]</span>
+        <span class="n">check_true</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">not_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values need to be a list of lists. &quot;</span><span class="p">,</span> <span class="n">not_list</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max</span> <span class="o">=</span> <span class="n">get_max_value</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min</span> <span class="o">=</span> <span class="n">get_min_value</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Values</span>
+<span class="sd">        The values of the attribute</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
+
+<div class="viewcode-block" id="Attribute.average"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.average">[docs]</a>    <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Average Constraint</span>
+<span class="sd">        Restricts the average value of a pattern.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Average</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Attribute.gap"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.gap">[docs]</a>    <span class="k">def</span> <span class="nf">gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gap Constraint</span>
+<span class="sd">        Restricts the difference between every two consecutive event values in a pattern.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Gap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Attribute.median"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.median">[docs]</a>    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Median Constraints</span>
+<span class="sd">         Restricts the median value of a pattern.</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Median</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Attribute.span"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.span">[docs]</a>    <span class="k">def</span> <span class="nf">span</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Span Constraints</span>
+<span class="sd">        Restricts the difference between the maximum and the minimum value in a pattern.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_BaseConstraint</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attribute</span> <span class="o">=</span> <span class="n">attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lower_bound</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upper_bound</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attribute</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lower_bound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lower_bound</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">upper_bound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upper_bound</span>
+
+    <span class="k">def</span> <span class="nf">has_lower_bound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">has_upper_bound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upper_bound</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lower_bound</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+<span class="k">class</span> <span class="nc">_Constraint</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+
+    <span class="k">class</span> <span class="nc">Average</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Gap</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Median</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Span</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Seq2Pat"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat">[docs]</a><span class="k">class</span> <span class="nc">Seq2Pat</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sequence-to-Pattern generation over the given sequence database</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sequences: List[list]</span>
+<span class="sd">            A list of sequences each with a list of events.</span>
+<span class="sd">            The event values can be all strings or all integers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">check_true</span><span class="p">(</span><span class="n">sequences</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences cannot be null&quot;</span><span class="p">))</span>
+        <span class="n">check_true</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences need to be a list of lists&quot;</span><span class="p">))</span>
+        <span class="n">not_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">))]</span>
+        <span class="n">check_true</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">not_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences need to be a list of lists. &quot;</span><span class="p">,</span> <span class="n">not_list</span><span class="p">))</span>
+
+        <span class="c1"># Input sequences</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequences</span>
+
+        <span class="c1"># Sequences as strings or integers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_string</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
+
+        <span class="c1"># If string, internal mapping to between strings and integers</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_str_to_int</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_int_to_str</span> <span class="o">=</span> <span class="n">item_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sequences</span> <span class="o">=</span> <span class="n">string_to_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_str_to_int</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+
+        <span class="c1"># Set size variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_num_columns</span> <span class="o">=</span> <span class="n">get_max_column_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_value</span> <span class="o">=</span> <span class="n">get_max_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+
+        <span class="c1"># Constraint store: attribute_id -&gt; constraint_name -&gt; Constraint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Constraint</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># Cython implementor object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sequences</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Sequence</span>
+<span class="sd">        The sequences of Seq2Pat.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequences</span>
+
+<div class="viewcode-block" id="Seq2Pat.add_constraint"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.add_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">add_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_BaseConstraint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_BaseConstraint</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the given constraint to the constraint store.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        constraint: _BaseConstraint</span>
+<span class="sd">            A constraint on an attribute object</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The constraint handle.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError: If the constraint is already defined on this attribute.</span>
+<span class="sd">        ValueError: If there is a mismatch in length of sequences and their attributes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Attribute and constraint id</span>
+        <span class="n">attr_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">attribute</span>
+        <span class="n">ct_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="c1"># Create the attribute field, if not created already</span>
+        <span class="k">if</span> <span class="n">attr_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attr_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># If the same constraint type exists on this attribute already, raise error</span>
+        <span class="k">if</span> <span class="n">ct_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attr_id</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">ct_id</span> <span class="o">+</span> <span class="s2">&quot; constraint is already defined on this attribute.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Verify that attribute</span>
+        <span class="n">check_true</span><span class="p">(</span><span class="n">check_sequence_feature_same_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                   <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Each sequence should match given attributes in event length.&quot;</span><span class="p">))</span>
+
+        <span class="c1"># Add the constraint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attr_id</span><span class="p">][</span><span class="n">ct_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">constraint</span>
+
+        <span class="c1"># Return constraint handle (so that one can remove it)</span>
+        <span class="k">return</span> <span class="n">constraint</span></div>
+
+<div class="viewcode-block" id="Seq2Pat.remove_constraint"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.remove_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">remove_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_BaseConstraint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       Removes the given constraint from the constraint store.</span>
+
+<span class="sd">       Attributes</span>
+<span class="sd">       ----------</span>
+<span class="sd">       constraint: _BaseConstraint</span>
+<span class="sd">           A constraint on an attribute object</span>
+
+<span class="sd">       Raises</span>
+<span class="sd">       ------</span>
+<span class="sd">       KeyError: If the given constraint does not exist in the constraint store.</span>
+
+<span class="sd">       &quot;&quot;&quot;</span>
+
+        <span class="c1"># Attribute and constraint id</span>
+        <span class="n">attribute_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">attribute</span>
+        <span class="n">constraint_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Remove the constraint from the attribute</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">][</span><span class="n">constraint_id</span><span class="p">]</span>
+
+            <span class="c1"># If no constraint left on the attribute, remove the attribute</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">]</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No &quot;</span> <span class="o">+</span> <span class="n">constraint_id</span> <span class="o">+</span> <span class="s2">&quot; constraint to remove on this attribute.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Seq2Pat.get_patterns"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.get_patterns">[docs]</a>    <span class="k">def</span> <span class="nf">get_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">:</span> <span class="n">Num</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs the mining operation enforcing the constraints and</span>
+<span class="sd">        Returns the most frequent patterns.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        min_frequency: Num</span>
+<span class="sd">           If int, represents the minimum number of sequences (rows) a pattern should occur.</span>
+<span class="sd">           If float, should be (0.0, 1.0] and represents</span>
+<span class="sd">           the minimum percentage of sequences (rows) a pattern should occur.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[list] where each inner list represents a frequent pattern in the form</span>
+<span class="sd">        [event_1, event_2, event_3, ... event_n, frequency].</span>
+<span class="sd">        The last element is the frequency of the pattern.</span>
+<span class="sd">        Sequences are sored by decreasing frequency, i.e., most frequent pattern first.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check min_frequence conditions</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">check_true</span><span class="p">(</span><span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">min_frequency</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency percentage shoud be greater than 0.0&quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
+            <span class="n">check_true</span><span class="p">(</span><span class="n">min_frequency</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency percentage should be less than 1.0&quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">check_true</span><span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">min_frequency</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency shoud be greater than 0.0&quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
+            <span class="n">check_true</span><span class="p">(</span><span class="n">min_frequency</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency cannot be more than number of sequences &quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Frequency should be integer (as a row count) or float (as a row percentage)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Cython implementor object with input parameters set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cython_imp</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">)</span>
+
+        <span class="c1"># Frequent mining</span>
+        <span class="n">patterns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span><span class="o">.</span><span class="n">mine</span><span class="p">()</span>
+
+        <span class="c1"># Map back to strings, if original is strings</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_string</span><span class="p">:</span>
+            <span class="n">patterns</span> <span class="o">=</span> <span class="n">int_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_int_to_str</span><span class="p">,</span> <span class="n">patterns</span><span class="p">)</span>
+
+        <span class="c1"># Sort sequences, most frequent pattern first</span>
+        <span class="n">patterns_sorted</span> <span class="o">=</span> <span class="n">sort_pattern</span><span class="p">(</span><span class="n">patterns</span><span class="p">)</span>
+
+        <span class="c1"># Return frequent sequences</span>
+        <span class="k">return</span> <span class="n">patterns_sorted</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_cython_imp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">stp</span><span class="o">.</span><span class="n">PySeq2pat</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates and populates a Cython PySeq2Pat object based on the user inputs</span>
+<span class="sd">        by translating sequential attribute into their appropriate PySeq2Pat</span>
+<span class="sd">        representation and setting them.</span>
+<span class="sd">        :param min_frequency: the minimum number of sequences(rows) to observe the pattern</span>
+<span class="sd">        :return: PySeq2Pat object with all the necessary inputs set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cython_imp</span> <span class="o">=</span> <span class="n">stp</span><span class="o">.</span><span class="n">PySeq2pat</span><span class="p">()</span>
+
+        <span class="c1"># Dictionary to hold all parameters that need to be set in seq_to_pat more information about what each</span>
+        <span class="c1"># parameter represents can be found under Constants declaration</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lgap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">ugap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lavr</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">uavr</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lspn</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">uspn</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lmed</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">umed</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">ugapi</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lgapi</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">uspni</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lspni</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">uavri</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lavri</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">umedi</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lmedi</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">num_minmax</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">num_avr</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">num_med</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">tot_gap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">tot_spn</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">tot_avr</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">num_att</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">items</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">M</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_num_columns</span><span class="p">,</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">N</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span><span class="p">,</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">L</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_value</span><span class="p">,</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">max_attrs</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">min_attrs</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="c1"># Iterate through all attributes and constraint and build parameters required by seq_to_pat</span>
+        <span class="k">for</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">constraints</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_att</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_minmax</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_avr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_med</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">max_attrs</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">_max</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">min_attrs</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">_min</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">attrs</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">constraint_type</span><span class="p">,</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Average</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_average_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Gap</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_gap_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Median</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_median_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Span</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_span_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span>
+
+        <span class="c1"># Given all the parameters, setup the c++ object through the intermediary cython seq_to_pat.pyx</span>
+        <span class="k">for</span> <span class="n">constraint</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># print(constraint, &quot; &quot;, value)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">cython_imp</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># Set frequency as a row count or row percentage</span>
+        <span class="k">if</span> <span class="n">min_frequency</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">cython_imp</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">cython_imp</span><span class="o">.</span><span class="n">N</span> <span class="o">*</span> <span class="n">min_frequency</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cython_imp</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">min_frequency</span>
+
+        <span class="k">return</span> <span class="n">cython_imp</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_update_average_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Average</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates average constraint inputs for C++ backend</span>
+<span class="sd">        :param constraint: average constraint obj</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># attribute id for attribute that a constraint will be enforced on</span>
+        <span class="n">att_id</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_att</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">tot_avr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_lower_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lavr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lavri</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_avr</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_upper_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">uavr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">uavri</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_avr</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_update_gap_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Gap</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update gap constraint inputs for C++ backend</span>
+<span class="sd">        :param constraint: gap constraint obj</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># attribute id for attribute that a constraint will be enforced on</span>
+        <span class="n">att_id</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_att</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">tot_gap</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_lower_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lgap</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lgapi</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_upper_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">ugap</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">ugapi</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_update_median_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Median</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates median constraint inputs for C++ backend</span>
+<span class="sd">        :param constraint: median constraint obj</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># attribute id for attribute that a constraint will be enforced on</span>
+        <span class="n">att_id</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_att</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_lower_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lmed</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lmedi</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_med</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_upper_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">umed</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">umedi</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_med</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_update_span_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Span</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates span constraint inputs for C++ backend</span>
+<span class="sd">        :param constraint: span constraint obj</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;attribute id for attribute that a constraint will be enforced on, we want att_id to start from zero but are </span>
+<span class="sd">        using the number of attribute so we simply start from one.&quot;&quot;&quot;</span>
+        <span class="n">att_id</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_att</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">tot_spn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_lower_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lspn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lspni</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">num_minmax</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">has_upper_bound</span><span class="p">():</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">uspn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">uspni</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: human-readable string representation of the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Seq2Pat&quot;</span>
+        <span class="k">for</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">constraints</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Constraints of Attribute: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+            <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Constraints: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">constraint_type</span><span class="p">,</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Constraint: &quot;</span> <span class="o">+</span> <span class="n">constraint_type</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+                <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">LB: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+                <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">UB: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright GPL 2.0
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

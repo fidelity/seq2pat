@@ -8,12 +8,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="seq2pat",
-    description="Seq2Pat: Sequence-to-Pattern",
+    description="Seq2Pat: Sequence-to-Pattern Generation Library",
     long_description=long_description,
     version="1.0.0",
-    url="https://",
+    url="https://github.com/fmr-llc/seq2pat",
     packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     project_urls={
-        "Source": "https://"
+        "Documentation": "https://fmr-llc.github.io/seq2pat/",
+        "Source": "https://github.com/fmr-llc/seq2pat"
     }
 )
