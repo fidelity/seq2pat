@@ -14,7 +14,7 @@ Quick Start
 	                            ["C", "B", "A"],
 			            ["C", "A", "C", "D"]])
 
-	# Price attribute corresponding to each event
+	# Price attribute corresponding to each item
 	price = Attribute(values=[[5, 5, 3, 8, 2],
 			          [1, 3, 3],
 			          [4, 5, 2, 1]])

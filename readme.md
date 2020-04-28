@@ -1,7 +1,7 @@
 Seq2Pat: Sequence-to-Pattern Generation Library
 ===============================================
 
-Seq2Pat is a research library for sequence-to-pattern generation to find 
+Seq2Pat is a research library for sequence-to-pattern generation to discover 
 sequential patterns that occur frequently in large sequence databases. 
 The library supports constraint-based reasoning to specify  
 desired properties over patterns.  
@@ -29,7 +29,7 @@ seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                              ["C", "B", "A"],
                              ["C", "A", "C", "D"]])
 
-# Price attribute corresponding to each event
+# Price attribute corresponding to each item
 price = Attribute(values=[[5, 5, 3, 8, 2],
                           [1, 3, 3],
                           [4, 5, 2, 1]])
@@ -42,6 +42,8 @@ patterns = seq2pat.get_patterns(min_frequency=2)
 ```
 
 ## Available Constraints 
+
+The library offers various constraint types, including a number of non-monotone constraints.  
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.
