@@ -50,7 +50,8 @@ patterns = seq2pat.get_patterns(min_frequency=2)
 
 ## Usage Examples
 
-Examples can be found in the [IPython notebook](https://github.com/fmr-llc/seq2pat/blob/master/notebooks/usage_example.ipynb).
+Examples on how to use the available constraints can be found 
+in the [Jupyter Notebook](https://github.com/fmr-llc/seq2pat/blob/master/notebooks/usage_example.ipynb).
 
 ## Installation
 
