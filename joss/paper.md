@@ -20,13 +20,13 @@ authors:
     affiliation: 2
 
 affiliations:
-	- name: AI Center of Excellence, Fidelity Investments, USA
-	  index: 1
-	- name: Tepper School of Business, Carnegie Mellon University, USA
-	  index: 2
-	- name: College of Computer Information Science, Northeaster University, USA
-	  index: 3
-	  
+  - name: AI Center of Excellence, Fidelity Investments, USA
+    index: 1
+  - name: Tepper School of Business, Carnegie Mellon University, USA
+    index: 2
+  - name: College of Computer Information Science, Northeaster University, USA
+    index: 3
+    
 date: 28 April 2020
 bibliography: reference.bib
 
