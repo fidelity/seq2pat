@@ -60,6 +60,16 @@ in the [Jupyter Notebook](https://github.com/fmr-llc/seq2pat/blob/master/noteboo
 Seq2Pat can be installed from source by following the instructions in 
 our [documentation](https://fmr-llc.github.io/seq2pat/installation.html).
 
+The installation consists of two main steps:
+
+1. Build the backend
+2. Install the library
+
+### Requirements 
+
+The library requires ```Python 3.6+```, the ```Cython``` package, and a ```C++``` compiler. 
+See [requirements.txt](requirements.txt) for dependencies.
+
 ## Support
 
 Please submit bug reports and feature requests as [Issues](https://github.com/fmr-llc/seq2pat/issues).
