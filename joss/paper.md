@@ -86,12 +86,12 @@ amount of time on certain items that have specific price ranges.
 
 ## Sequential Pattern Mining (SPM)
 
-In the area of Pattern Mining, 
+In Pattern Mining literature, 
 a sequence database represents an _ordered_ list of items or events. 
 Such databases help capture relationships in various practical applications such as 
 sequence of customer purchases, medical treatments, call patterns, digital click-stream activity, among others. 
-Given such a sequence database, Sequential Pattern Mining (SPM) deals with the problem of finding _interesting_ patterns 
-that occur frequently.     
+Given such a sequence database, Sequential Pattern Mining (SPM) aims at finding patterns of interest 
+that occur frequently. 
   
 ## Constraint-based SPM
 
@@ -186,10 +186,10 @@ to hint argument types to the user.
 The library overview is available at 
 [GitHub IO pages](https://fmr-llc.github.io/seq2pat/quick.html) 
 which provides: 
-- Installation instructions on Windows, Linux and Mac OS.
-- [Jupyter notebook](https://github.com/fmr-llc/seq2pat/blob/master/notebooks/usage_example.ipynb) 
+* Installation instructions on Windows, Linux and Mac OS.
+* [Jupyter notebook](https://github.com/fmr-llc/seq2pat/blob/master/notebooks/usage_example.ipynb) 
 with usage examples for every constraint type.
-- API reference guide for all the public methods.  
+* API reference guide for all the public methods.
 
 # Seq2Pat: Available Constraints
 
@@ -211,8 +211,6 @@ including a number of non-monotone constraints.
 * **Span**: This constraint specifies the difference between the maximum and the minimum value of an attribute across all events in a pattern.
 [//]: # (TODO add formula)
 
-# Alternatives
-
-[//]: # (TODO list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, ease-of-use of our API, Attributes/Constraints etc. + add Scalability)
+[//]: # (TODO Add Alternatives to list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, ease-of-use of our API, Attributes/Constraints etc. + add Scalability)
  
 # References
