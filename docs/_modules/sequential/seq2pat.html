@@ -294,31 +294,41 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Values</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Values</span>
+
 <span class="sd">        The values of the attribute</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
 
 <div class="viewcode-block" id="Attribute.average"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.average">[docs]</a>    <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Average Constraint</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The Average Constraint</span>
+
 <span class="sd">        Restricts the average value of a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Average</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.gap"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.gap">[docs]</a>    <span class="k">def</span> <span class="nf">gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Gap Constraint</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The Gap Constraint</span>
+
 <span class="sd">        Restricts the difference between every two consecutive event values in a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Gap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.median"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.median">[docs]</a>    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Median Constraints</span>
-<span class="sd">         Restricts the median value of a pattern.</span>
-<span class="sd">         &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The Median Constraint</span>
+
+<span class="sd">        Restricts the median value of a pattern.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Median</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.span"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.span">[docs]</a>    <span class="k">def</span> <span class="nf">span</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Span Constraints</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The Span Constraint</span>
+
 <span class="sd">        Restricts the difference between the maximum and the minimum value in a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
@@ -381,18 +391,17 @@
 
 
 <div class="viewcode-block" id="Seq2Pat"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat">[docs]</a><span class="k">class</span> <span class="nc">Seq2Pat</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    **Seq2Pat: Sequence-to-Pattern Generation Library**</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sequences : List[list]</span>
+<span class="sd">        A list of sequences each with a list of events.</span>
+<span class="sd">        The event values can be all strings or all integers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sequence-to-Pattern generation over the given sequence database</span>
-
-<span class="sd">        Attributes</span>
-<span class="sd">        ----------</span>
-<span class="sd">        sequences: List[list]</span>
-<span class="sd">            A list of sequences each with a list of events.</span>
-<span class="sd">            The event values can be all strings or all integers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">check_true</span><span class="p">(</span><span class="n">sequences</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences cannot be null&quot;</span><span class="p">))</span>
         <span class="n">check_true</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences need to be a list of lists&quot;</span><span class="p">))</span>
         <span class="n">not_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">))]</span>

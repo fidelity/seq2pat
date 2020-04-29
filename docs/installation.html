@@ -169,9 +169,9 @@
 <div class="section" id="requirements">
 <span id="id2"></span><h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>The library requires <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.6+</span></code>, the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> package,  and a <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler. See <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> for dependencies.</li>
+<li>The library requires <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.6+</span></code>, the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> package,  and a <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler. See <a class="reference external" href="https://github.com/fmr-llc/seq2pat/blob/master/requirements.txt">requirements.txt</a>  for dependencies.</li>
 <li>Make sure to use the same Python version to run Seq2Pat and to run the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script.</li>
-<li>Make sure that the <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler used in your Python installation is the same or compatible with the <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler that you use to build the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> artifacts. You can see the underlying <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler of your Python installation using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span></code>.</li>
+<li>Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span></code>.</li>
 <li>On Windows, you can install <a class="reference external" href="https://visualstudio.microsoft.com/downloads/">MS Visual Studio Build Tools</a> for the <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler.</li>
 <li>On Mac, you can install <a class="reference external" href="https://developer.apple.com/">Command Line Tools</a> for the <code class="docutils literal notranslate"><span class="pre">Clang</span></code> compiler.</li>
 </ul>
@@ -179,11 +179,12 @@
 <div class="section" id="build-the-backend">
 <h2>1. Build the Backend<a class="headerlink" href="#build-the-backend" title="Permalink to this headline">¶</a></h2>
 <p>You can install the required backend artifacts from the source code using <code class="docutils literal notranslate"><span class="pre">Cython</span></code> via the <code class="docutils literal notranslate"><span class="pre">/sequential/backend/setup.py</span></code> script.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">seq2pat</span><span class="o">/</span><span class="n">sequential</span><span class="o">/</span><span class="n">backend</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cython</span> <span class="c1"># if cython is not installed</span>
+<span class="n">cd</span> <span class="n">seq2pat</span><span class="o">/</span><span class="n">sequential</span><span class="o">/</span><span class="n">backend</span>
 <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
 </pre></div>
 </div>
-<p>This command will create artifacts in the <code class="docutils literal notranslate"><span class="pre">/sequential/backend/build</span></code> folder.</p>
+<p>This command will create the required backend artifacts in the <code class="docutils literal notranslate"><span class="pre">/sequential/backend/build</span></code> folder.</p>
 </div>
 <div class="section" id="install-the-library">
 <h2>2. Install  the Library<a class="headerlink" href="#install-the-library" title="Permalink to this headline">¶</a></h2>

@@ -11,8 +11,8 @@ Quick Start
 
 	# Seq2Pat over 3 sequences
 	seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
-	                            ["C", "B", "A"],
-			            ["C", "A", "C", "D"]])
+	                             ["C", "B", "A"],
+			             ["C", "A", "C", "D"]])
 
 	# Price attribute corresponding to each item
 	price = Attribute(values=[[5, 5, 3, 8, 2],

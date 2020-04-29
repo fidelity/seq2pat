@@ -15,11 +15,11 @@ Installation
 Requirements
 ------------
 
-* The library requires ``Python 3.6+``, the ``Cython`` package,  and a ``C++`` compiler. See ``requirements.txt`` for dependencies.
+* The library requires ``Python 3.6+``, the ``Cython`` package,  and a ``C++`` compiler. See `requirements.txt`_  for dependencies.
 
 * Make sure to use the same Python version to run Seq2Pat and to run the ``setup.py`` script.
- 
-* Make sure that the ``C++`` compiler used in your Python installation is the same or compatible with the ``C++`` compiler that you use to build the ``Cython`` artifacts. You can see the underlying ``C++`` compiler of your Python installation using ``python -i``.
+
+* Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using ``python -i``.
  
 * On Windows, you can install `MS Visual Studio Build Tools`_ for the ``C++`` compiler.
 
@@ -33,10 +33,11 @@ You can install the required backend artifacts from the source code using ``Cyth
 
 .. code-block:: python
 
+	pip install cython # if cython is not installed
 	cd seq2pat/sequential/backend
 	python setup.py build_ext --inplace  
 
-This command will create artifacts in the ``/sequential/backend/build`` folder.
+This command will create the required backend artifacts in the ``/sequential/backend/build`` folder.
 
 2. Install  the Library
 -----------------------
@@ -82,3 +83,4 @@ and then run ``pip install --upgrade --no-cache-dir dist/seq2pat-X.X.X-py3-none-
 
 .. _MS Visual Studio Build Tools: https://visualstudio.microsoft.com/downloads/
 .. _Command Line Tools: https://developer.apple.com/
+.. _requirements.txt: https://github.com/fmr-llc/seq2pat/blob/master/requirements.txt

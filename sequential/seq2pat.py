@@ -146,31 +146,41 @@ class Attribute:
 
     @property
     def values(self):
-        """Values
+        """
+        Values
+
         The values of the attribute
         """
         return self._values
 
     def average(self):
-        """Average Constraint
+        """
+        The Average Constraint
+
         Restricts the average value of a pattern.
         """
         return _Constraint.Average(self)
 
     def gap(self):
-        """Gap Constraint
+        """
+        The Gap Constraint
+
         Restricts the difference between every two consecutive event values in a pattern.
         """
         return _Constraint.Gap(self)
 
     def median(self):
-        """Median Constraints
-         Restricts the median value of a pattern.
-         """
+        """
+        The Median Constraint
+
+        Restricts the median value of a pattern.
+        """
         return _Constraint.Median(self)
 
     def span(self):
-        """Span Constraints
+        """
+        The Span Constraint
+
         Restricts the difference between the maximum and the minimum value in a pattern.
         """
         return _Constraint.Span(self)
@@ -233,18 +243,17 @@ class _Constraint(NamedTuple):
 
 
 class Seq2Pat:
+    """
+    **Seq2Pat: Sequence-to-Pattern Generation Library**
+
+    Attributes
+    ----------
+    sequences : List[list]
+        A list of sequences each with a list of events.
+        The event values can be all strings or all integers.
+    """
 
     def __init__(self, sequences: List[list]):
-        """
-        Sequence-to-Pattern generation over the given sequence database
-
-        Attributes
-        ----------
-        sequences: List[list]
-            A list of sequences each with a list of events.
-            The event values can be all strings or all integers.
-        """
-
         check_true(sequences is not None, ValueError("Sequences cannot be null"))
         check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists"))
         not_list = [(sequences[i], i) for i in range(len(sequences)) if not(isinstance(sequences[i], list))]
