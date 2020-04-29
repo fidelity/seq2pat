@@ -125,7 +125,7 @@ in particular for the Python technology stack.
 to find sequential patterns that occur frequently in large sequence databases. 
 The library supports constraint-based reasoning to specify desired properties over patterns.   
 
-Novel techniques that leverages the multi-valued  decision diagram 
+Novel techniques that leverage the multi-valued decision diagram 
 (MDD) [@DBLP:series/aifta/BergmanCHH16] representation of the database are introduced
 in [@DBLP:conf/aaai/HosseininasabHC19]. In particular, this representation can 
 accommodate multiple item attributes and various constraint types. 
@@ -196,23 +196,23 @@ with usage examples for every constraint type.
 The library offers various constraint types, 
 including a number of non-monotone constraints.  
  
-* **Average**: This constraint specifies the average value of an attribute across all events in a pattern.  
+* **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
  
-TODO add formula 
+[//]: # (TODO add formula)
 
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.  
 
-TODO add formula 
+[//]: # (TODO add formula) 
 
 * **Median**: This constraint specifies the median value of an attribute across all events in a pattern.  
 
-TODO add formula 
+[//]: # (TODO add formula)
 
 * **Span**: This constraint specifies the difference between the maximum and the minimum value of an attribute across all events in a pattern.
+[//]: # (TODO add formula)
 
 # Alternatives
 
-TODO list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, 
-ease-of-use of our API, Attributes/Constraints etc. + add Scalability
+[//]: # (TODO list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, ease-of-use of our API, Attributes/Constraints etc. + add Scalability)
  
 # References
