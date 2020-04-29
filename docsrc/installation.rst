@@ -7,8 +7,8 @@ Installation
 
 	The installation consists of two main steps: 
 	
-	1. Install from the provided wheel package
-	2. Build from the source code
+	1. Build the backend
+	2. Install the library
 
 .. _requirements:
 
@@ -67,7 +67,7 @@ All tests should pass.
 	cd seq2pat
 	python -m unittest discover tests
 
-You can now also import Seq2Pat in a Python shell or notebook. Make sure that ``/seq2pat/`` folder is included in the system path.
+You can now also import Seq2Pat in a Python shell or notebook. Make sure that ``/seq2pat/`` folder where the backend build arfifacts are located is included in the system path.
 
 .. code-block:: python
 

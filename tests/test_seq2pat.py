@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifer: GPL-2.0
 
+import os
 import unittest
 
 from sequential.seq2pat import Seq2Pat, Attribute
@@ -10,7 +11,11 @@ from sequential.backend import seq_to_pat as stp
 
 class TestSeq2Pat(unittest.TestCase):
 
+    TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = TEST_DIR + os.sep + "data" + os.sep
+
     def test_example(self):
+
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "C", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -18,7 +23,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Patterns
         patterns = seq2pat.get_patterns(min_frequency=2)
-        print("Start: ", patterns, "\n")
+        # print("Initial Patterns: ", patterns, "\n")
 
         # Attribute - I: Price
         price = Attribute(values=[[5, 5, 3, 8, 2],
@@ -37,12 +42,12 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Patterns
         patterns = seq2pat.get_patterns(min_frequency=2)
-        print("Average Constraint:", patterns, "\n")
+        # print("Average Constraint:", patterns, "\n")
 
         # Remove Constraint
         seq2pat.remove_constraint(avg_constraint)
         patterns = seq2pat.get_patterns(min_frequency=2)
-        print("No Constraint:", patterns, "\n")
+        # print("No Constraint:", patterns, "\n")
 
     def test_usage_example_average(self):
 
@@ -166,7 +171,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
-        print(patterns)
+        # print(patterns)
 
     def test_quick_start(self):
 
@@ -286,12 +291,12 @@ class TestSeq2Pat(unittest.TestCase):
     def test_usage(self):
 
         # Pattern data
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         # print("Patterns: ", sequences[:5])
 
         # Attribute data
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attribute_1 = read_data(attribute_file)
         # print("Attribute_1: ", attribute_1[:5])
 
@@ -468,14 +473,14 @@ class TestSeq2Pat(unittest.TestCase):
 
     def test_input(self):
 
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         self.assertTrue(type(sequences) == list)
         self.assertTrue(len(sequences) == 52619)
         self.assertTrue(len(sequences[0]) == 5)
         # print(sequences[:5])
 
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attribute_1 = read_data(attribute_file)
         self.assertTrue(type(attribute_1) == list)
         self.assertTrue(len(attribute_1) == 52619)
@@ -484,7 +489,7 @@ class TestSeq2Pat(unittest.TestCase):
 
     def test_input_item_variables(self):
 
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         m = get_max_column_size(sequences)
         n = len(sequences)
@@ -618,7 +623,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Testing cython object setters and getters
         python_seq2pat = stp.PySeq2pat()
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
@@ -696,16 +701,16 @@ class TestSeq2Pat(unittest.TestCase):
         # input on Main.cpp and verifies output with data captured from original implementation
 
         # Seq2Pat
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
         # Load Attributes
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attr1_data = read_data(attribute_file)
         att1 = Attribute(attr1_data)
 
-        attribute_file = "./data/input_att2.txt"
+        attribute_file = self.DATA_DIR + "input_att2.txt"
         attr2_data = read_data(attribute_file)
         att2 = Attribute(attr2_data)
 
@@ -752,7 +757,7 @@ class TestSeq2Pat(unittest.TestCase):
         dup_patterns = seq2pat.get_patterns(.001)
         self.assertListEqual(test_patterns, dup_patterns)
 
-        results_file = "data/default_results.txt"
+        results_file = self.DATA_DIR + "default_results.txt"
 
         control_patterns = read_data(results_file)
         sorted_control = sort_pattern(control_patterns)
@@ -782,12 +787,12 @@ class TestSeq2Pat(unittest.TestCase):
         # input on Main.cpp and verifies output with data captured from original implementation
         # Similar to default but with constraints on a single attribute- input_att1.txt
         # Seq2Pat
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
         # Load Attributes
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attr1_data = read_data(attribute_file)
         att1 = Attribute(attr1_data)
 
@@ -795,11 +800,11 @@ class TestSeq2Pat(unittest.TestCase):
         cts2 = seq2pat.add_constraint(900 <= att1.span())
 
         test_patterns = seq2pat.get_patterns(.001)
-        results_file = "data/one_constraint_results.txt"
+        results_file = self.DATA_DIR + "one_constraint_results.txt"
         control_patterns = read_data(results_file)
         sorted_controls = sort_pattern(control_patterns)
         self.assertListEqual(sorted_controls, test_patterns)
-        self.assertFalse(test_patterns == read_data("data/default_results.txt"))
+        self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_input_no_constraint(self):
 
@@ -808,16 +813,16 @@ class TestSeq2Pat(unittest.TestCase):
         # input on Main.cpp and verifies output with data captured from original implementation
         # Unconstrained call. Significantly different and larger results.
         # Seq2Pat
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
         test_patterns = seq2pat.get_patterns(.01)
-        results_file = "data/no_constraints_results.txt"
+        results_file = self.DATA_DIR + "no_constraints_results.txt"
         control_patterns = read_data(results_file)
         sorted_results = sort_pattern(control_patterns)
         self.assertListEqual(sorted_results, test_patterns)
-        self.assertFalse(test_patterns == read_data("data/default_results.txt"))
+        self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_input_diff_constraint(self):
 
@@ -828,16 +833,16 @@ class TestSeq2Pat(unittest.TestCase):
         # Significantly different results to default.
 
         # Seq2Pat
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
         # Load Attributes
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attr1_data = read_data(attribute_file)
         att1 = Attribute(attr1_data)
 
-        attribute_file = "./data/input_att2.txt"
+        attribute_file = self.DATA_DIR + "input_att2.txt"
         attr2_data = read_data(attribute_file)
         att2 = Attribute(attr2_data)
 
@@ -847,7 +852,7 @@ class TestSeq2Pat(unittest.TestCase):
         cts4 = seq2pat.add_constraint(30 <= att2.median() <= 70)
 
         test_patterns = seq2pat.get_patterns(.001)
-        results_file = "data/diff_constraints_results.txt"
+        results_file = self.DATA_DIR + "diff_constraints_results.txt"
         control_patterns = read_data(results_file)
         sorted_control = sort_pattern(control_patterns)
         self.assertListEqual(sorted_control, test_patterns)
@@ -860,16 +865,16 @@ class TestSeq2Pat(unittest.TestCase):
         # Similar to default but no lower constraints imposed
 
         # Seq2Pat
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
         # Load Attributes
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attr1_data = read_data(attribute_file)
         att1 = Attribute(attr1_data)
 
-        attribute_file = "./data/input_att2.txt"
+        attribute_file = self.DATA_DIR + "input_att2.txt"
         attr2_data = read_data(attribute_file)
         att2 = Attribute(attr2_data)
 
@@ -879,7 +884,7 @@ class TestSeq2Pat(unittest.TestCase):
         cts4 = seq2pat.add_constraint(att2.median() <= 60)
 
         test_patterns = seq2pat.get_patterns(.001)
-        results_file = "data/no_lower_constraint_results.txt"
+        results_file = self.DATA_DIR + "no_lower_constraint_results.txt"
         control_patterns = read_data(results_file)
         sorted_control = sort_pattern(control_patterns)
         self.assertListEqual(sorted_control, test_patterns)
@@ -892,16 +897,16 @@ class TestSeq2Pat(unittest.TestCase):
         # Similar to default but no upper constraints imposed
 
         # Seq2Pat
-        patterns_file = "./data/input.txt"
+        patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences)
 
         # Load Attributes
-        attribute_file = "./data/input_att1.txt"
+        attribute_file = self.DATA_DIR + "input_att1.txt"
         attr1_data = read_data(attribute_file)
         att1 = Attribute(attr1_data)
 
-        attribute_file = "./data/input_att2.txt"
+        attribute_file = self.DATA_DIR + "input_att2.txt"
         attr2_data = read_data(attribute_file)
         att2 = Attribute(attr2_data)
 
@@ -911,7 +916,7 @@ class TestSeq2Pat(unittest.TestCase):
         cts4 = seq2pat.add_constraint(40 <= att2.median())
 
         test_patterns = seq2pat.get_patterns(.01)
-        results_file = "data/no_upper_constraint_results.txt"
+        results_file = self.DATA_DIR + "no_upper_constraint_results.txt"
         control_patterns = read_data(results_file)
         sorted_control = sort_pattern(control_patterns)
         self.assertListEqual(sorted_control, test_patterns)
