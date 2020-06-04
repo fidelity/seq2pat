@@ -197,28 +197,33 @@ with usage examples for every constraint type.
 
 # Seq2Pat: Available Constraints
 
-The library offers various constraint types, including a number of anti-monotone and non-monotone constraints. Let $P$ denote a sequential pattern, $\mathcal{A}$ denote the attributes of $P$ and $c$ denote a threshold. This library offers the following constraints:
+The library offers various constraint types, including a number of anti-monotone and non-monotone constraints.
+To mathematically formulate these contraints. We use the same notations as those in [@DBLP:conf/aaai/HosseininasabHC19].
+Let $P$ denote a sequential pattern, $\mathcal{A}$ denote the attributes of $P$ and $c$ denote a threshold.
+$C_type(\dot)$ is a function imposed on attributes with a certain type of operation.
+This library offers the following constraints:
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
+It is formulated into two situations.
 
 [//]:# ($$
 \max_{u-t}\{ \frac{\sum_{\alpha\in P}\alpha+\beta_1^v+\alpha^u}{|p|+\beta_2^v+1}-c\}
 $$)
 
-$$Average:\left\{
+$$
 \begin{array}{l}
 C_{avg}(\mathcal{A})\le c\\
 C_{avg}(\mathcal{A})\ge c
-\end{array}\right.
+\end{array}
 $$
 
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.  
 
-$$Gap: \left\{
+$$Gap:
 \begin{array}{l}
 C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c,\quad \alpha_j\in \mathcal{A}, 2 \le j \le |P| \\
 C_{gap}(\mathcal{A})\ge c
-\end{array}\right.
+\end{array}
 $$
 
 * **Median**: This constraint specifies the median value of an attribute across all events in a pattern.  
@@ -228,11 +233,11 @@ $$
 \max_{u-t}\{|\{\alpha \in u-t: \alpha\ge c\}|-|\alpha \in u-t: \alpha<c\}|\}
 $$)
 
-$$Median:\left\{
+$$
 \begin{array}{l}
 C_{med}(\mathcal{A})\le c\\
 C_{med}(\mathcal{A})\ge c
-\end{array}\right.
+\end{array}
 $$
 
 * **Span**: This constraint specifies the difference between the maximum and the minimum value of an attribute across all events in a pattern.
@@ -241,11 +246,11 @@ $$
 \max\{\max_{\alpha\in P}\{\alpha\}, \beta_2^u\}-\min\{\min_{\alpha\in P} \{\alpha\}, \beta_1^u\}\ge c
 $$)
 
-$$Span:\left\{
+$$
 \begin{array}{l}
 C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\\
 C_{spn}(\mathcal{A})\ge c
-\end{array}\right.
+\end{array}
 $$
 
 
