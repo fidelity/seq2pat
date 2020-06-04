@@ -82,7 +82,7 @@ the average price constraint, and the minimum frequency condition,
 
 
 It is possible to extend this scenario with multiple attributes
-and other constraints types such as the gap, median, and span constraint.
+and other constraints types such as the gap, median, and span constraints.
 Consider for example, introducing a timestamp attribute to
 capture frequent patterns where users spend at least a minimum duration
 amount of time on certain items that have specific price ranges.    
