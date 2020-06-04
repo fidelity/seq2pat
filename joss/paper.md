@@ -82,8 +82,7 @@ the average price constraint, and the minimum frequency condition,
 
 
 It is possible to extend this scenario with multiple attributes
-and other constraints types such as the gap, median, and span constraints.
-Consider for example, introducing a timestamp attribute to
+and other constraint types such as the gap, median, and span constraints, for example, introducing a timestamp attribute to
 capture frequent patterns where users spend at least a minimum duration
 amount of time on certain items that have specific price ranges.    
 
@@ -94,7 +93,7 @@ amount of time on certain items that have specific price ranges.
 In Pattern Mining literature,
 a sequence database represents an _ordered_ list of items or events.
 Such databases help capture relationships in various practical applications such as
-sequence of customer purchases, medical treatments, call patterns, digital click-stream activity, among others.
+a sequence of customer purchases, medical treatments, call patterns, digital click-stream activities, among others.
 Given such a sequence database, Sequential Pattern Mining (SPM) aims at finding patterns of interest
 that occur frequently.
 
@@ -104,8 +103,8 @@ When all possible combinations are considered,
 the number of sequential patterns in databases is huge.
 Therefore, it is important to design efficient and scalable
 pattern mining algorithms that can search for a set of patterns
-that satisfy a minimum support, referred to as _frequency_.
-Not only that, but in practice, finding the entire set of
+that satisfy minimum support, referred to as _frequency_.
+Not only that but in practice, finding the entire set of
 frequent patterns in a database is not of great interest.
 The resulting number of items is still typically too large
 and fails to provide significant insight to the user.
@@ -117,7 +116,7 @@ we may seek frequent browsing patterns from sessions
 where users spend at least a minimum amount of time on certain items
 that have specific price ranges.
 Such constraints limit the output and are much more effective
-in knowledge discovery compared to an arbitrary large set of
+in knowledge discovery compared to an arbitrarily large set of
 frequent click-streams.
 Despite their applicability, when it comes to off-the-shelf
 tools, the library support for sequential pattern mining remains limited,
@@ -176,9 +175,9 @@ style guide for Python coding standards.
 It is also compliant with [numpydoc](https://numpy.org/devdocs/docs/howto_document.html)
 documentation standard.
 All available functionality is tested via standalone unit tests to
-verify the correctness of the algorithms including the invalid cases.
+verify the correctness of the algorithms including invalid cases.
 The source code was peer-reviewed both from a design and implementation perspective.
-Operator overloading of arithmetic expressions allow introducing
+Operator overloading of arithmetic expressions allows introducing
 pattern constraints in a natural way using numerical lower and upper bounds.
 The library follows an easy-to-use API with special attention to
 immutable data containers for reproducibility of results and
@@ -198,23 +197,57 @@ with usage examples for every constraint type.
 
 # Seq2Pat: Available Constraints
 
-The library offers various constraint types,
-including a number of non-monotone constraints.  
+The library offers various constraint types, including a number of anti-monotone and non-monotone constraints. Let $P$ denote a sequential pattern, $\mathcal{A}$ denote the attributes of $P$ and $c$ denote a threshold. This library offers the following constraints:
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
 
-[//]: # (TODO add formula)
+[//]:# ($$
+\max_{u-t}\{ \frac{\sum_{\alpha\in P}\alpha+\beta_1^v+\alpha^u}{|p|+\beta_2^v+1}-c\}
+$$)
+
+$$Average:\left\{
+\begin{array}{l}
+C_{avg}(\mathcal{A})\le c\\
+C_{avg}(\mathcal{A})\ge c
+\end{array}\right.
+$$
 
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.  
 
-[//]: # (TODO add formula)
+$$Gap: \left\{
+\begin{array}{l}
+C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c,\quad \alpha_j\in \mathcal{A}, 2 \le j \le |P| \\
+C_{gap}(\mathcal{A})\ge c
+\end{array}\right.
+$$
 
 * **Median**: This constraint specifies the median value of an attribute across all events in a pattern.  
 
-[//]: # (TODO add formula)
+[//]:# (
+$$
+\max_{u-t}\{|\{\alpha \in u-t: \alpha\ge c\}|-|\alpha \in u-t: \alpha<c\}|\}
+$$)
+
+$$Median:\left\{
+\begin{array}{l}
+C_{med}(\mathcal{A})\le c\\
+C_{med}(\mathcal{A})\ge c
+\end{array}\right.
+$$
 
 * **Span**: This constraint specifies the difference between the maximum and the minimum value of an attribute across all events in a pattern.
-[//]: # (TODO add formula)
+
+[//]:# ($$
+\max\{\max_{\alpha\in P}\{\alpha\}, \beta_2^u\}-\min\{\min_{\alpha\in P} \{\alpha\}, \beta_1^u\}\ge c
+$$)
+
+$$Span:\left\{
+\begin{array}{l}
+C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\\
+C_{spn}(\mathcal{A})\ge c
+\end{array}\right.
+$$
+
 
 [//]: # (TODO Add Alternatives to list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, ease-of-use of our API, Attributes/Constraints etc. + add Scalability)
 
