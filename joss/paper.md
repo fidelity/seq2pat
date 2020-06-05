@@ -203,7 +203,7 @@ with usage examples for every constraint type.
 The library offers various constraint types, including a number of anti-monotone and non-monotone constraints [@DBLP:conf/aaai/HosseininasabHC19].
 To present the constraints precisely, we define a few used notations.
 Let $P$ denote a sequential pattern, $\mathcal{A}$ denote the attributes of $P$ and $c$ denote a threshold.
-$C_{type}(\dot)$ is a function imposed on attributes with a certain type of operation.
+$C_{type}(\cdot)$ is a function imposed on attributes with a certain type of operation.
 The library offers the following constraints such that each type of constraint is categorized into two situations.
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
