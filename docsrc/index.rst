@@ -1,10 +1,10 @@
 Seq2Pat: Sequence-to-Pattern Generation Library
 ===============================================
 
-Seq2Pat is a research library for sequence-to-pattern generation 
-to find sequential patterns that occur frequently in large sequence databases. 
-The library supports constraint-based reasoning to specify  
-desired properties over patterns.  
+Seq2Pat is a research library for sequence-to-pattern generation
+to find sequential patterns that occur frequently in large sequence databases.
+The library supports constraint-based reasoning to specify
+desired properties over patterns.
 
 From an algorithmic perspective, the library takes advantage of
 `multi-valued decision diagrams`_.
@@ -15,8 +15,8 @@ From an implementation perspective, the library is written in ``Cython``
 that brings together the efficiency of a low-level ``C++`` backend and
 the expressiveness of a high-level ``Python`` public interface.
 
-Seq2Pat is developed as a joint collaboration between Fidelity Investments 
-and the Tepper School of Business at CMU. 
+Seq2Pat is developed as a joint collaboration between Fidelity Investments
+and the Tepper School of Business at CMU.
 
 Available Constraints
 =====================
@@ -52,6 +52,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 
-.. _GitHub: https://github.com/fmr-llc/seq2pat
+.. _GitHub: https://github.com/fidelity/seq2pat
 .. _multi-valued decision diagrams: https://www.springer.com/us/book/9783319428475
 .. _Hosseininasab et. al. AAAI 2019: https://aaai.org/ojs/index.php/AAAI/article/view/3962

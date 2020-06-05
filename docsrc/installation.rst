@@ -5,8 +5,8 @@ Installation
 
 .. admonition:: Installation Steps
 
-	The installation consists of two main steps: 
-	
+	The installation consists of two main steps:
+
 	1. Build the backend
 	2. Install the library
 
@@ -20,7 +20,7 @@ Requirements
 * Make sure to use the same Python version to run Seq2Pat and to run the ``setup.py`` script.
 
 * Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using ``python -i``.
- 
+
 * On Windows, you can install `MS Visual Studio Build Tools`_ for the ``C++`` compiler.
 
 * On Mac, you can install `Command Line Tools`_ for the ``Clang`` compiler.
@@ -35,14 +35,14 @@ You can install the required backend artifacts from the source code using ``Cyth
 
 	pip install cython # if cython is not installed
 	cd seq2pat/sequential/backend
-	python setup.py build_ext --inplace  
+	python setup.py build_ext --inplace
 
 This command will create the required backend artifacts in the ``/sequential/backend/build`` folder.
 
 2. Install  the Library
 -----------------------
 
-Now you can install the library on your platform from a wheel package. 
+Now you can install the library on your platform from a wheel package.
 
 .. code-block:: python
 
@@ -57,7 +57,7 @@ Test Your Setup
 ---------------
 
 Successful compilation creates ``Cython`` artifacts as seen in the directory structure below.
- 
+
 To confirm that the installation was successful, run the tests included in the project.
 
 All tests should pass.
@@ -83,4 +83,4 @@ and then run ``pip install --upgrade --no-cache-dir dist/seq2pat-X.X.X-py3-none-
 
 .. _MS Visual Studio Build Tools: https://visualstudio.microsoft.com/downloads/
 .. _Command Line Tools: https://developer.apple.com/
-.. _requirements.txt: https://github.com/fmr-llc/seq2pat/blob/master/requirements.txt
+.. _requirements.txt: https://github.com/fidelity/seq2pat/blob/master/requirements.txt

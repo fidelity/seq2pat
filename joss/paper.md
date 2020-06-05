@@ -188,23 +188,25 @@ to hint argument types to the user.
 
 **[Documentation]**
 The library overview is available at
-[GitHub IO pages](https://fmr-llc.github.io/seq2pat/quick.html)
+[GitHub IO pages](https://fidelity.github.io/seq2pat/quick.html)
 which provides:
+
 * Installation instructions on Windows, Linux and Mac OS.
-* [Jupyter notebook](https://github.com/fmr-llc/seq2pat/blob/master/notebooks/usage_example.ipynb)
+
+* [Jupyter notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb)
 with usage examples for every constraint type.
+
 * API reference guide for all the public methods.
 
 # Seq2Pat: Available Constraints
 
-The library offers various constraint types, including a number of anti-monotone and non-monotone constraints.
-To mathematically formulate these contraints. We use the same notations as those in [@DBLP:conf/aaai/HosseininasabHC19].
+The library offers various constraint types, including a number of anti-monotone and non-monotone constraints [@DBLP:conf/aaai/HosseininasabHC19].
+To present the constraints precisely, we define a few used notations.
 Let $P$ denote a sequential pattern, $\mathcal{A}$ denote the attributes of $P$ and $c$ denote a threshold.
-$C_type(\dot)$ is a function imposed on attributes with a certain type of operation.
-This library offers the following constraints:
+$C_{type}(\dot)$ is a function imposed on attributes with a certain type of operation.
+The library offers the following constraints such that each type of constraint is categorized into two situations.
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
-It is formulated into two situations.
 
 [//]:# ($$
 \max_{u-t}\{ \frac{\sum_{\alpha\in P}\alpha+\beta_1^v+\alpha^u}{|p|+\beta_2^v+1}-c\}
@@ -212,17 +214,18 @@ $$)
 
 $$
 \begin{array}{l}
-C_{avg}(\mathcal{A})\le c\\
-C_{avg}(\mathcal{A})\ge c
+C_{avg}(\mathcal{A})\le c\quad :\quad Non-monotone\\
+C_{avg}(\mathcal{A})\ge c\quad :\quad Non-monotone
 \end{array}
 $$
 
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.  
 
-$$Gap:
+$$
 \begin{array}{l}
-C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c,\quad \alpha_j\in \mathcal{A}, 2 \le j \le |P| \\
-C_{gap}(\mathcal{A})\ge c
+C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c \quad :\quad Prefix~anti-monotone\\
+\hspace{1.5cm} \alpha_j\in \mathcal{A}, 2 \le j \le |P| \\
+C_{gap}(\mathcal{A})\ge c \hspace{2.65cm}\quad :\quad Anti-monotone
 \end{array}
 $$
 
@@ -235,8 +238,8 @@ $$)
 
 $$
 \begin{array}{l}
-C_{med}(\mathcal{A})\le c\\
-C_{med}(\mathcal{A})\ge c
+C_{med}(\mathcal{A})\le c\quad :\quad Non-monotone\\
+C_{med}(\mathcal{A})\ge c\quad :\quad Non-monotone
 \end{array}
 $$
 
@@ -248,8 +251,8 @@ $$)
 
 $$
 \begin{array}{l}
-C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\\
-C_{spn}(\mathcal{A})\ge c
+C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\quad :\quad Anti-monotone\\
+C_{spn}(\mathcal{A})\ge c\hspace{4.12cm}\quad :\quad Monotone
 \end{array}
 $$
 
