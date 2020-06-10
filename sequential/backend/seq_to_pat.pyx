@@ -2,7 +2,7 @@
 # SPDX-License-Identifer: GPL-2.0
 # distutils: language = c++
 
-from Seq2pat cimport Seq2pat
+from seq2pat cimport Seq2pat
 from libcpp.vector cimport vector
 
 

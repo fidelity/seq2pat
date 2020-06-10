@@ -775,7 +775,7 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([0], test_pf.num_med)
 
         one_constraint_result = seq2pat.get_patterns(.001)
-        results_file = "data/one_constraint_results.txt"
+        results_file = self.DATA_DIR + "one_constraint_results.txt"
         control_patterns = read_data(results_file)
         sorted_controls = sort_pattern(control_patterns)
         self.assertListEqual(sorted_controls, one_constraint_result)
