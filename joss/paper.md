@@ -214,8 +214,8 @@ $$)
 
 $$
 \begin{array}{l}
-C_{avg}(\mathcal{A})\le c\quad :\quad Non-monotone\\
-C_{avg}(\mathcal{A})\ge c\quad :\quad Non-monotone
+C_{avg}(\mathcal{A})\le c\\
+C_{avg}(\mathcal{A})\ge c
 \end{array}
 $$
 
@@ -223,9 +223,9 @@ $$
 
 $$
 \begin{array}{l}
-C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c \quad :\quad Prefix~anti-monotone\\
+C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c\\
 \hspace{1.5cm} \alpha_j\in \mathcal{A}, 2 \le j \le |P| \\
-C_{gap}(\mathcal{A})\ge c \hspace{2.65cm}\quad :\quad Anti-monotone
+C_{gap}(\mathcal{A})\ge c \hspace{2.65cm}
 \end{array}
 $$
 
@@ -238,8 +238,8 @@ $$)
 
 $$
 \begin{array}{l}
-C_{med}(\mathcal{A})\le c\quad :\quad Non-monotone\\
-C_{med}(\mathcal{A})\ge c\quad :\quad Non-monotone
+C_{med}(\mathcal{A})\le c\\
+C_{med}(\mathcal{A})\ge c
 \end{array}
 $$
 
@@ -251,8 +251,8 @@ $$)
 
 $$
 \begin{array}{l}
-C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\quad :\quad Anti-monotone\\
-C_{spn}(\mathcal{A})\ge c\hspace{4.12cm}\quad :\quad Monotone
+C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\\
+C_{spn}(\mathcal{A})\ge c\hspace{4.12cm}
 \end{array}
 $$
 
