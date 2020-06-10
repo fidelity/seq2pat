@@ -23,6 +23,7 @@ link_extra_args = []
 if platform.system() == "Windows":
     # compile_extra_args = ["/std:c++latest", "/EHsc"]
     compile_extra_args = []
+    link_extra_args = []
 elif platform.system() == "Linux" or platform.system() == "Darwin":
     compile_extra_args = ['-std=c++0x']
     link_extra_args = ["-stdlib=libc++"]
