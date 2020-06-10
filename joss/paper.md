@@ -24,7 +24,7 @@ affiliations:
     index: 1
   - name: Tepper School of Business, Carnegie Mellon University, USA
     index: 2
-  - name: College of Computer Information Science, Northeaster University, USA
+  - name: College of Computer Information Science, Northeastern University, USA
     index: 3
 
 date: 28 April 2020
@@ -72,10 +72,9 @@ Finally, the _min_frequency_ condition initiates a search for patterns that occu
 
 Patterns ["A", "D"], ["B", "A"], and ["C", "A"] occur in two sequences.
 However, only the ["A", "D"] pattern meets the average price condition.
-In the first sequence, we note that there are multiple items "A" corresponding
-to varying attributes, "5" and "8" respectively. With attributes ["5", "2"],
-["A", "D"] still meets the average condition, thus becomes a qualified pattern.
-Another qualified ["A", "D"] pattern is in the third sequence.
+In the first sequence, there are multiple items "A" holding different attributes, "5" and "8" respectively.
+Although the attributes ["8", "2"] violates the average condition, ["5", "2"] still makes ["A", "D"] become a qualified pattern.
+Another qualified ["A", "D"] pattern is from the third sequence.
 Accordingly, for this sequence database with the given price attribute,
 the average price constraint, and the minimum frequency condition,
 `Seq2Pat` returns the pattern ["A", "D"] as the only satisfying pattern.
