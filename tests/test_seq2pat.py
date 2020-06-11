@@ -4,9 +4,9 @@
 import os
 import unittest
 
-from seq2pat.sequential.seq2pat import Seq2Pat, Attribute
-from seq2pat.sequential.utils import read_data, get_max_column_size, get_max_value, compare_results, sort_pattern
-from seq2pat.sequential.backend import seq_to_pat as stp
+from seq2pat.sequential import Seq2Pat, Attribute
+from seq2pat.utils import read_data, get_max_column_size, get_max_value, compare_results, sort_pattern
+from seq2pat.backend import seq_to_pat as stp
 
 
 class TestSeq2Pat(unittest.TestCase):
