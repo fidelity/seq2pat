@@ -23,9 +23,8 @@ link_extra_args = []
 if platform.system() == "Windows":
     # compile_extra_args = ["/std:c++latest", "/EHsc"]
     compile_extra_args = []
-    link_extra_args = []
 elif platform.system() == "Linux" or platform.system() == "Darwin":
-    compile_extra_args = ['-std=c++0x']
+    compile_extra_args = ["-std=c++0x"]
     link_extra_args = ["-stdlib=libc++"]
 
 compile_files = [
@@ -40,5 +39,3 @@ ext_modules = [Extension("seq_to_pat", compile_files,
 ext_options = {"compiler_directives": {"profile": True}, "annotate": True}
 
 setup(ext_modules=cythonize(ext_modules, language_level="3", **ext_options))
-
-# Run python setup.py build_ext --inplace to build backend
