@@ -1,0 +1,3 @@
+The Sequence-to-Pattern library requires Cython (>=0.29.13) and
+it is built on top of the original "Constraint-based Sequential Pattern Mining with Decision Diagrams"
+implementation which is called MPP and can be found here: https://github.com/aminhn/MPP

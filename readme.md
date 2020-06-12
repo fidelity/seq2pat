@@ -1,26 +1,26 @@
 Seq2Pat: Sequence-to-Pattern Generation Library
 ===============================================
 
-Seq2Pat is a research library for sequence-to-pattern generation to discover 
-sequential patterns that occur frequently in large sequence databases. 
-The library supports constraint-based reasoning to specify  
-desired properties over patterns.  
+Seq2Pat is a research library for sequence-to-pattern generation to discover
+sequential patterns that occur frequently in large sequence databases.
+The library supports constraint-based reasoning to specify
+desired properties over patterns.
 
-From an algorithmic perspective, the library takes advantage of 
-[multi-valued decision diagrams](https://www.springer.com/us/book/9783319428475). 
+From an algorithmic perspective, the library takes advantage of
+[multi-valued decision diagrams](https://www.springer.com/us/book/9783319428475).
 It is based on the state-of-the-art approach for sequential pattern mining
 from [Hosseininasab _et. al._ AAAI 2019](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
 
-From an implementation perspective, the library is written in ```Cython``` 
-that brings together the efficiency of a low-level ```C++``` backend and 
+From an implementation perspective, the library is written in ```Cython```
+that brings together the efficiency of a low-level ```C++``` backend and
 the expressiveness of a high-level ```Python``` public interface.
 
-Seq2Pat is developed as a joint collaboration between Fidelity Investments 
-and the Tepper School of Business at CMU. 
+Seq2Pat is developed as a joint collaboration between Fidelity Investments
+and the Tepper School of Business at CMU.
 
 ## Quick Start
 ```python
-# Example to show how to find frequent sequential patterns 
+# Example to show how to find frequent sequential patterns
 # from a given sequence database subject to constraints
 from sequential.seq2pat import Seq2Pat, Attribute
 
@@ -34,16 +34,16 @@ price = Attribute(values=[[5, 5, 3, 8, 2],
                           [1, 3, 3],
                           [4, 5, 2, 1]])
 
-# Average price constraint 
+# Average price constraint
 seq2pat.add_constraint(3 <= price.average() <= 4)
 
 # Patterns that occur at least twice (A-D)
 patterns = seq2pat.get_patterns(min_frequency=2)
 ```
 
-## Available Constraints 
+## Available Constraints
 
-The library offers various constraint types, including a number of non-monotone constraints.  
+The library offers various constraint types, including a number of non-monotone constraints.
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.
@@ -65,9 +65,9 @@ The installation consists of two main steps:
 1. Build the backend
 2. Install the library
 
-### Requirements 
+### Requirements
 
-The library requires ```Python 3.6+```, the ```Cython``` package, and a ```C++``` compiler. 
+The library requires ```Python 3.6+```, the ```Cython``` package, and a ```C++``` compiler.
 See [requirements.txt](requirements.txt) for dependencies.
 
 ## Support
