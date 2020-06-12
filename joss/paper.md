@@ -248,4 +248,4 @@ $$
   
 [//]:# (TODO Add Alternatives to list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, ease-of-use of our API, Attributes/Constraints etc. + add Scalability)  
   
-# References
+# Referencesd
