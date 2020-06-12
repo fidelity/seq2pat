@@ -197,10 +197,8 @@ The library offers the following constraints such that each type of constraint i
   
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.  
   
-[//]:# ($$  
-\max_{u-t}\{ \frac{\sum_{\alpha\in P}\alpha+\beta_1^v+\alpha^u}{|p|+\beta_2^v+1}-c\}  
-$$)  
-  
+[//]:#
+
 $$  
 \begin{array}{l}  
 C_{avg}(\mathcal{A})\le c\\  
@@ -220,10 +218,7 @@ $$
   
 * **Median**: This constraint specifies the median value of an attribute across all events in a pattern.    
   
-[//]:# (  
-$$  
-\max_{u-t}\{|\{\alpha \in u-t: \alpha\ge c\}|-|\alpha \in u-t: \alpha<c\}|\}  
-$$)  
+[//]:#
   
 $$  
 \begin{array}{l}  
@@ -234,9 +229,7 @@ $$
   
 * **Span**: This constraint specifies the difference between the maximum and the minimum value of an attribute across all events in a pattern.  
   
-[//]:# ($$  
-\max\{\max_{\alpha\in P}\{\alpha\}, \beta_2^u\}-\min\{\min_{\alpha\in P} \{\alpha\}, \beta_1^u\}\ge c  
-$$)  
+[//]:#
   
 $$  
 \begin{array}{l}  
@@ -244,8 +237,15 @@ C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\\
 C_{spn}(\mathcal{A})\ge c\hspace{4.12cm}  
 \end{array}  
 $$  
-  
-  
-[//]:# (TODO Add Alternatives to list a number of existing SPM algorithms, libraries, list pros/cons of the availability tools/languages, ease-of-use of our API, Attributes/Constraints etc. + add Scalability)  
-  
-# Referencesd
+
+# Overview of the Approach
+
+## Multi-Valued Decision Diagrams (MDDs)
+
+High-level overview?
+
+## Constraint-based SPM using MDDs
+
+High-level overview?
+
+# References
