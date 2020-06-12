@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifer: GPL-2.0
 
-# from distutils.core import setup
-# from Cython.Build import cythonize
-
 # # python setup.py build_ext --inplace
 # ext_options = {"compiler_directives": {"profile": True}, "annotate": True}
 # setup(
@@ -13,7 +10,6 @@
 import platform
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
 compile_extra_args = []
