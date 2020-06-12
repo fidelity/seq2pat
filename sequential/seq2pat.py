@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# SPDX-License-Identifer: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0
 
 from typing import NamedTuple, List, Dict, NoReturn
 from sequential.utils import Num, check_true, get_max_column_size, \

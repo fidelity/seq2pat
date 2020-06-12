@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// SPDX-License-Identifer: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0
 
 //Freq_miner() function: mines all frequent patterns in the MDD database 
 
