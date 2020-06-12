@@ -3,8 +3,8 @@ Seq2Pat: Sequence-to-Pattern Generation Library
 
 Seq2Pat is a research library for sequence-to-pattern generation to discover
 sequential patterns that occur frequently in large sequence databases.
-The library supports constraint-based reasoning to specify  
-desired properties over patterns.  
+The library supports constraint-based reasoning to specify
+desired properties over patterns.
 
 From an algorithmic perspective, the library takes advantage of
 [multi-valued decision diagrams](https://www.springer.com/us/book/9783319428475).
@@ -43,7 +43,7 @@ patterns = seq2pat.get_patterns(min_frequency=2)
 
 ## Available Constraints
 
-The library offers various constraint types, including a number of non-monotone constraints.  
+The library offers various constraint types, including a number of non-monotone constraints.
 
 * **Average**: This constraint specifies the average value of an attribute across all events in a pattern.
 * **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.

@@ -2,10 +2,10 @@
 # SPDX-License-Identifer: GPL-2.0
 
 from typing import NamedTuple, List, Dict, NoReturn
-from seq2pat.utils import Num, check_true, get_max_column_size, \
+from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map,\
     string_to_int, int_to_string, check_sequence_feature_same_length
-from seq2pat.backend import seq_to_pat as stp
+from sequential.backend import seq_to_pat as stp
 
 __version__ = "1.0.0"
 
