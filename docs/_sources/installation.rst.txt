@@ -15,7 +15,7 @@ Installation
 Requirements
 ------------
 
-* The library requires ``Python 3.6+``, the ``Cython`` package,  and a ``C++`` compiler. See `requirements.txt`_  for dependencies.
+* The library requires ``Python 3.6+``, the ``Cython`` package,  and a ``C++`` compiler (gcc, clang or another). See `requirements.txt`_  for dependencies.
 
 * Make sure to use the same Python version to run Seq2Pat and to run the ``setup.py`` script.
 
