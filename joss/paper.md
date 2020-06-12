@@ -186,57 +186,6 @@ which provides:
 with usage examples for every constraint type.  
   
 * API reference guide for all the public methods.  
-  
-# Seq2Pat: Available Constraints  
-  
-The library offers various constraint types, including a number of anti-monotone and non-monotone constraints [@DBLP:conf/aaai/HosseininasabHC19].  
-To present the constraints precisely, let us define some notation. 
-Let $P$ denote a sequential pattern, $\mathcal{A}$ denote the attributes of $P$ and $c$ denote a threshold.  
-$C_{type}(\cdot)$ is a function imposed on attributes with a certain type of operation.  
-The library offers the following constraints such that each type of constraint is categorized into two situations.  
-  
-* **Average**: This constraint specifies the average value of an attribute across all events in a pattern.  
-  
-[//]:#
-
-$$  
-\begin{array}{l}  
-C_{avg}(\mathcal{A})\le c\\  
-C_{avg}(\mathcal{A})\ge c  
-\end{array}  
-$$  
-  
-* **Gap**: This constraint specifies the difference between the attribute values of every two consecutive events in a pattern.    
-  
-$$  
-\begin{array}{l}  
-C_{gap}(\mathcal{A}) \le c :=\alpha_j-\alpha_{j-1} \le c\\  
-\hspace{1.5cm} \alpha_j\in \mathcal{A}, 2 \le j \le |P| \\  
-C_{gap}(\mathcal{A})\ge c \hspace{2.65cm}  
-\end{array}  
-$$  
-  
-* **Median**: This constraint specifies the median value of an attribute across all events in a pattern.    
-  
-[//]:#
-  
-$$  
-\begin{array}{l}  
-C_{med}(\mathcal{A})\le c\\  
-C_{med}(\mathcal{A})\ge c  
-\end{array}  
-$$  
-  
-* **Span**: This constraint specifies the difference between the maximum and the minimum value of an attribute across all events in a pattern.  
-  
-[//]:#
-  
-$$  
-\begin{array}{l}  
-C_{spn}(\mathcal{A})\le c:=\max\{\mathcal{A}\}-\min\{\mathcal{A}\}\le c\\  
-C_{spn}(\mathcal{A})\ge c\hspace{4.12cm}  
-\end{array}  
-$$  
 
 # Overview of the Approach
 
