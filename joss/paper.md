@@ -117,7 +117,6 @@ Other than the $\textrm{Cython}$ package and a $\textrm{C++}$ compiler to build 
 <br>
  
 * **Unit Tests & Coding Standards**  
-
 The library adheres to [PEP-8](https://www.python.org/dev/peps/pep-0008/)  style guide for Python coding standards.  It is also compliant with [numpydoc](https://numpy.org/devdocs/docs/howto_document.html)  documentation standard.  All available functionality is tested via standalone unit tests to  verify the correctness of the algorithms including invalid cases.  The source code was peer-reviewed both from a design and implementation perspective.  Operator overloading of arithmetic expressions allows introducing  pattern constraints in a natural way using numerical lower and upper bounds.  The library follows an easy-to-use API with special attention to  immutable data containers for reproducibility of results and  strict error checking of input parameters to help users avoid simple mistakes.  Publicly available methods are complete with source code documentation inluding their arguments, default parameter settings, return values, and exception cases. The library supports [typing](https://docs.python.org/3/library/typing.html#module-typing)  to hint argument types to the user and provide type annotation.  
 
 <br> 
