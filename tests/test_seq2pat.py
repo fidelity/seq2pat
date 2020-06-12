@@ -167,7 +167,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Constraint to specify average price of sequences
         seq2pat.add_constraint(-6 <= price.gap())
-        # sequential.add_constraint(3 <= price.average() <= 6)
+        # seq2pat.add_constraint(3 <= price.average() <= 6)
 
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
@@ -187,7 +187,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Constraint to specify average price of sequences
         seq2pat.add_constraint(-6 <= price.gap() <= -1)
-        # sequential.add_constraint(3 <= price.average() <= 6)
+        # seq2pat.add_constraint(3 <= price.average() <= 6)
 
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
@@ -218,7 +218,7 @@ class TestSeq2Pat(unittest.TestCase):
         median_constraint = seq2pat.add_constraint(-1 <= att1.median() <= 1000)
         span_constraint = seq2pat.add_constraint(0 <= att1.span() <= 900)
         span_constraint2 = seq2pat.add_constraint(-10 <= att2.span() <= 5)
-        # sequential.__str__()
+        # seq2pat.__str__()
 
         self.assertEqual(gap_constraint.lower_bound, 0)
         self.assertEqual(avg_constraint.lower_bound, 20)
@@ -236,12 +236,12 @@ class TestSeq2Pat(unittest.TestCase):
         seq2pat.remove_constraint(avg_constraint)
         seq2pat.remove_constraint(median_constraint)
         seq2pat.remove_constraint(span_constraint)
-        # sequential.__str__()
+        # seq2pat.__str__()
 
         # Add again
         seq2pat.add_constraint(gap_constraint)
         seq2pat.add_constraint(span_constraint)
-        # sequential.__str__()
+        # seq2pat.__str__()
 
     def test_usage_lb(self):
 
@@ -268,7 +268,7 @@ class TestSeq2Pat(unittest.TestCase):
         median_constraint = seq2pat.add_constraint(-1 <= att1.median())
         span_constraint = seq2pat.add_constraint(0 <= att1.span())
         span_constraint2 = seq2pat.add_constraint(-10 <= att2.span())
-        # sequential.__str__()
+        # seq2pat.__str__()
 
         self.assertEqual(gap_constraint.lower_bound, 0)
         self.assertEqual(avg_constraint.lower_bound, 20)
@@ -281,12 +281,12 @@ class TestSeq2Pat(unittest.TestCase):
         seq2pat.remove_constraint(avg_constraint)
         seq2pat.remove_constraint(median_constraint)
         seq2pat.remove_constraint(span_constraint)
-        # sequential.__str__()
+        # seq2pat.__str__()
 
         # Add again
         seq2pat.add_constraint(gap_constraint)
         seq2pat.add_constraint(span_constraint)
-        # sequential.__str__()
+        # seq2pat.__str__()
 
     def test_usage(self):
 
@@ -312,7 +312,7 @@ class TestSeq2Pat(unittest.TestCase):
         span_constraint = seq2pat.add_constraint(att1.span() <= 20)
 
         # Print constraint store
-        # sequential.__str__()
+        # seq2pat.__str__()
 
         seq2pat.get_patterns(min_frequency=100)
 
@@ -334,8 +334,8 @@ class TestSeq2Pat(unittest.TestCase):
                                   [4, 5, 2, 1]])
 
         # Constraint to specify average price over the sequences
-        # sequential.add_constraint(3 <= price.average() <= 4)
-        # sequential.add_constraint(-1 <= price.span() <= -1)
+        # seq2pat.add_constraint(3 <= price.average() <= 4)
+        # seq2pat.add_constraint(-1 <= price.span() <= -1)
 
         # Find sequences
         patterns = seq2pat.get_patterns(min_frequency=3)
