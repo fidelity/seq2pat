@@ -67,7 +67,7 @@ All tests should pass.
 	cd seq2pat
 	python -m unittest discover tests
 
-You can now also import Seq2Pat in a Python shell or notebook. Make sure that ``/seq2pat/`` folder where the backend build arfifacts are located is included in the system path.
+You can now also import Seq2Pat in a Python shell or notebook.
 
 .. code-block:: python
 

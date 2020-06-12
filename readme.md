@@ -52,12 +52,12 @@ The library offers various constraint types, including a number of non-monotone 
 
 ## Usage Examples
 
-Examples on how to use the available constraints can be found
+Examples on how to use the available constraints can be found 
 in the [Jupyter Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
 
 ## Installation
 
-Seq2Pat can be installed from source by following the instructions in
+Seq2Pat can be installed from source by following the instructions in 
 our [documentation](https://fidelity.github.io/seq2pat/installation.html).
 
 The installation consists of two main steps:
