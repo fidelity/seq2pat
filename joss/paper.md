@@ -71,15 +71,17 @@ Patterns ["A", "D"], ["B", "A"], and ["C", "A"] occur in two sequences.  However
 
 It is possible to extend this scenario with multiple attributes and other constraint types such as the **gap**, **median**, and **span** constraints. Consider, for example, introducing a timestamp attribute to  capture frequent patterns where users spend at least a minimum duration amount of time on certain items that have specific price ranges.   
 
-# Background  
-  
-## Sequential Pattern Mining (SPM)  
+# Sequential Pattern Mining (SPM)  
 
 In Pattern Mining literature,  a sequence database represents an _ordered_ list of items or events.  Such databases help capture relationships in various practical applications such as  sequence of customer purchases, medical treatments, call patterns, and digital click-stream activity among others. Given such sequence databases, Sequential Pattern Mining (SPM) aims at finding patterns that occur frequently.      
 
-## Constraint-based SPM  
+# Constraint-based SPM  
   
 When all possible combinations are considered,  the number of sequential patterns in databases is huge.  Therefore, it is important to design efficient and scalable  pattern mining algorithms that can search for a set of patterns  that satisfy a certain threshold. This minimum support requirement is referred to as _frequency_.  In practice, finding the entire set of  frequent patterns in a database is not of great interest.  The resulting number of items is still typically too large  and fails to provide significant insight to the users. What becomes important is to be able to search for patterns that are not only frequent but also exhibit certain desired properties.   In that line of research, Constraint-based SPM incorporates problem-specific constraints that restrict the search to  smaller subsets of interesting patterns.  For example, in an online retail click-stream analysis,  we may seek frequent browsing patterns from sessions  where users spend at least a *minimum amount of time* on certain items  that have *specific price ranges*.  Such constraints help reduce the number possible set of patterns and are much more effective  in knowledge discovery compared to an arbitrarily large set of  frequent click-streams.  Despite their applicability, when it comes to off-the-shelf  tools, the library support for sequential pattern mining remains limited,  in particular for the Python technology stack.  `Seq2Pat` is designed and developed to fill this gap.    
+
+# Statement of Need    
+
+Despite the applicability of Sequential Pattern Mining and its potential to generate insights when combined with constraint-based reasoning, the off-the-shelf support for available libraries and tools remain limited. The situation is even worse for the Python ecosystem, which is among the most common technology stack for Machine Learning and Data Science applications. `Seq2Pat` is designed and developed to fill this gap.
 
 # Seq2Pat: Sequence-to-Pattern Generation Library  
   
