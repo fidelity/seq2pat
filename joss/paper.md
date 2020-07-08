@@ -178,7 +178,7 @@ C_{spn}(\mathcal{A})\ge c\hspace{4.12cm}
 \end{array}  
 $$  
 
-# Algorithm Overview
+# Seq2Pat: Algorithm Overview
 
 ## Multi-Valued Decision Diagrams (MDDs)
 
@@ -188,7 +188,7 @@ High-level overview?
 
 High-level overview?
 
-## Alternative Approaches 
+# Alternative Approaches 
 
 May be name a few other existing algorithms, plus any related/rival package, library we can mention, compare&contrast here?
 
