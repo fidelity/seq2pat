@@ -29,7 +29,6 @@ affiliations:
 
 date: 28 April 2020
 bibliography: reference.bib
-
 ---
 
 # Summary
@@ -40,23 +39,23 @@ The library supports constraint-based reasoning to specify desired properties ov
 
 # Usage Example
 
-To present the high-level functionality, let us consider a simple example that   
-shows how to find frequent sequential patterns from a given sequence database. 
+To present the high-level functionality, let us consider a simple example that shows how to find frequent sequential patterns from a given sequence database. 
 
 The example also highlights how constraints can introduced to specify desired properties to search for patterns of interest.  
 
 ```python  
 # Import Seq2Pat library  
-from sequential.seq2pat import Seq2Pat, Attribute   
+from sequential.seq2pat import Seq2Pat, Attribute
+
 # Seq2Pat over 3 sequences  
 seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],     
-                           ["C", "B", "A"],    
-                      ["C", "A", "C", "D"]])  
+                             ["C", "B", "A"],    
+                             ["C", "A", "C", "D"]])  
   
 # Price attribute corresponding to each item  
 price = Attribute(values=[[5, 5, 3, 8, 2],      
-                    [1, 3, 3],  
- [4, 5, 2, 1]])   
+                          [1, 3, 3],  
+                          [4, 5, 2, 1]])   
 
 # Average price constraint  
 seq2pat.add_constraint(3 <= price.average() <= 4)    
@@ -66,17 +65,17 @@ patterns = seq2pat.get_patterns(min_frequency=2)
 # >>> [“A”, “D”]
 ```  
   
-In this scenario,  there are three _sequences_, i.e., ordered list of items, in the given sequence database.  The sequence is associated with an _attribute_ that captures the price of every item.  There is a _constraint_ that restricts the average price of items in a pattern to be between three to four.  Finally, the _min_frequency_ condition declares the search for patterns that occur at least in two sequences.     
+In this scenario,  there are three _sequences_, i.e., ordered list of items, in the sequence database.  The sequence is associated with an _attribute_ that captures the price of every item.  There is a _constraint_ that restricts the average price of items in a pattern to be between three to four.  Finally, the _min_frequency_ condition declares the search for patterns that occur in at least two sequences.     
   
-Patterns ["A", "D"], ["B", "A"], and ["C", "A"] occur in two sequences.  However, only pattern that meets the average price condition is ["A", "D"].  In the first sequence, there are multiple occurences of item "A" reflecting different price points; "5" and "8" .  When reasoning about the ["A", "D"] pattern, even though  attributes ["8", "2"] violates the average condition, attributes ["5", "2"] still makes the patttern to satisfiy the average price condition.  Another candidate of a qualified pattern, ["A", "D"] is found in the third sequence.  Therefore, overall, for this sequence database with price attributes,  the average price constraint, and the minimum frequency condition,  `Seq2Pat` library finds and returns the pattern ["A", "D"] as the only satisfying pattern. 
+Patterns ["A", "D"], ["B", "A"], and ["C", "A"] occur in two sequences.  However, the only pattern that meets the average price condition is ["A", "D"].  In the first sequence, there are multiple occurences of item "A" reflecting different price points; "5" and "8" .  When reasoning about the ["A", "D"] pattern, even though  attributes ["8", "2"] violates the average condition, attributes ["5", "2"] still makes the patttern to satisfiy the average price condition.  Another candidate of a qualified pattern, ["A", "D"] is found in the third sequence.  Therefore, overall, for this sequence database with price attributes,  the average price constraint, and the minimum frequency condition,  the pattern ["A", "D"] is the only satisfying pattern, which is found and returned by the `Seq2Pat` library.  
 
-It is possible to extend this scenario with multiple attributes  and other constraint types such as the **gap**, **median**, and **span** constraints. Consider, for example, introducing a timestamp attribute to  capture frequent patterns where users spend at least a minimum duration amount of time on certain items that have specific price ranges.   
+It is possible to extend this scenario with multiple attributes and other constraint types such as the **gap**, **median**, and **span** constraints. Consider, for example, introducing a timestamp attribute to  capture frequent patterns where users spend at least a minimum duration amount of time on certain items that have specific price ranges.   
 
 # Background  
   
 ## Sequential Pattern Mining (SPM)  
 
-In Pattern Mining literature,  a sequence database represents an _ordered_ list of items or events.  Such databases help capture relationships in various practical applications such as  sequence of customer purchases, medical treatments, call patterns, and digital click-stream activity among others. Given suchs sequence databases, Sequential Pattern Mining (SPM) aims at finding patterns that occur frequently.      
+In Pattern Mining literature,  a sequence database represents an _ordered_ list of items or events.  Such databases help capture relationships in various practical applications such as  sequence of customer purchases, medical treatments, call patterns, and digital click-stream activity among others. Given such sequence databases, Sequential Pattern Mining (SPM) aims at finding patterns that occur frequently.      
 
 ## Constraint-based SPM  
   
@@ -126,8 +125,7 @@ The library overview is available at [GitHub IO pages](https://fidelity.github.i
   
     * Installation instructions on Windows, Linux and Mac OS.  
   
-    * [Jupyter notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb)  
-with usage examples for every constraint type.  
+    * [Jupyter notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb) with usage examples for every constraint type.  
   
     * API reference guide for all the public methods.  
   
