@@ -76,6 +76,6 @@ Please submit bug reports and feature requests as [Issues](https://github.com/fi
 
 ## License
 
-Seq2Pat is licensed under the [GNU GPL License 2.0](LICENSE.md).
+Seq2Pat is licensed under the [GNU GPL License 2.0](LICENSE).
 
 <br>

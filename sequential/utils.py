@@ -176,15 +176,18 @@ def write_items(file_name: str, items: List[list]) -> NoReturn:
                                     for i in range(len(item))]) for item in items])
     open_file.close()
 
+
 def calc_average(result: List[list]) -> list:
     patterns = [row[:-1] for row in result]
     temp = list(map(statistics.mean, patterns))
     return temp
 
+
 def calc_median(result: List[list]) -> list:
     patterns = [row[:-1] for row in result]
     temp = list(map(statistics.median, patterns))
     return temp
+
 
 def calc_span(result: List[list]) -> list:
     patterns = [row[:-1] for row in result]
