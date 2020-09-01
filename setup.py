@@ -2,9 +2,40 @@
 # SPDX-License-Identifier: GPL-2.0
 
 import setuptools
+import platform
+from setuptools.extension import Extension
+from Cython.Build import cythonize
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+compile_extra_args = []
+link_extra_args = []
+
+# Set compiler arguments for different platforms
+if platform.system() == "Windows":
+    # compile_extra_args = ["/std:c++latest", "/EHsc"]
+    compile_extra_args = []
+    link_extra_args = []
+elif platform.system() == "Linux" or platform.system() == "Darwin":
+    compile_extra_args = ["-std=c++0x"]
+    # link_extra_args = ["-stdlib=libc++"]
+    link_extra_args = []
+
+# Set compile files for cython
+compile_files = [
+    "sequential/backend/seq_to_pat.pyx",
+]
+
+# Set compiler options
+ext_options = {"compiler_directives": {"profile": True}, "annotate": True}
+
+# Build extension modules
+ext_modules = cythonize([Extension("sequential.backend.seq_to_pat", compile_files,
+                                   language="c++",
+                                   extra_compile_args=compile_extra_args,
+                                   extra_link_args=link_extra_args)
+                         ], language_level="3", **ext_options)
 
 setuptools.setup(
     name="seq2pat",
@@ -17,5 +48,6 @@ setuptools.setup(
         "Documentation": "https://fidelity.github.io/seq2pat/",
         "Source": "https://github.com/fidelity/seq2pat"
     },
-    include_package_data=True
+    include_package_data=True,
+    ext_modules=ext_modules
 )
