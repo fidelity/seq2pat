@@ -57,13 +57,8 @@ in the [Jupyter Notebook](https://github.com/fidelity/seq2pat/blob/master/notebo
 
 ## Installation
 
-Seq2Pat can be installed from source by following the instructions in 
+Seq2Pat can be installed from PyPI using ``pip install seq2pat`` or it can be installed from source by following the instructions in
 our [documentation](https://fidelity.github.io/seq2pat/installation.html).
-
-The installation consists of two main steps:
-
-1. Build the backend
-2. Install the library
 
 ### Requirements
 
