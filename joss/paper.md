@@ -27,7 +27,7 @@ affiliations:
   - name: College of Computer Information Science, Northeastern University, USA
     index: 3
 
-date: 26 August 2020
+date: 04 September 2020
 bibliography: reference.bib
 ---
 
@@ -48,14 +48,14 @@ In practice, finding the entire set of  frequent patterns in a database is not o
 
 # Statement of Need    
 
-Despite the applicability of Sequential Pattern Mining and its potential to generate insights when combined with constraint-based reasoning, the off-the-shelf support for available libraries and tools remain limited. The situation is even worse for the Python ecosystem, which is among the most common technology stack for Machine Learning and Data Science applications. `Seq2Pat` is designed and developed to fill this gap.
+Despite the applicability of Sequential Pattern Mining and its potential to generate insights when combined with constraint-based reasoning, the support for available libraries and tools remain limited. The situation is even worse for the Python ecosystem which is among the most common technology stack for Machine Learning and Data Science applications. `Seq2Pat` is designed and developed to fill this gap.
 
 
 # Usage Example
 
 To present the high-level functionality, let us consider a simple example that shows how to find frequent sequential patterns from a given sequence database. 
 
-This example also highlights how constraints can introduced to specify desired properties in the patterns of interest.  
+This example also highlights how constraints can be introduced to specify desired properties in the patterns of interest.  
 
 ```python  
 # Import Seq2Pat library  
@@ -79,7 +79,7 @@ patterns = seq2pat.get_patterns(min_frequency=2)
 # >>> [“A”, “D”]
 ```  
   
-In this example,  there are three sequences, in the sequence database.  Items are associated with an attribute that captures the price of every item.  There is a _constraint_ that restricts the average price of items in any potential pattern to be between three and four.  Finally, the _min_frequency_ condition declares the search for patterns that occur in at least two sequences.     
+In this example,  there are three sequences in the sequence database.  Items are associated with an attribute that captures the price of every item.  There is a _constraint_ that restricts the average price of items in any potential pattern to be between three and four.  Finally, the _min_frequency_ condition declares the search for patterns that occur in at least two sequences.     
   
 Patterns ["A", "D"] (subsequence of sequences 1 and 3), ["B", "A"] (subsequence of sequences 1 and 2), and ["C", "A"] (subsequence of sequences 2 and 3) occur in two sequences and have a frequency of 2.  However, the only pattern that meets the average price constraint is ["A", "D"].  Note that in the first sequence, there are multiple subsequences of ["A", "D"] with different price attributes; ["5", "2"] and ["8", "2"]. The subsequence with attributes ["8", "2"] violates the average price constraint, while the subsequence with attributes ["5", "2"] satisfies the average price constraint. The average price constraint is also satisfied for the subsequence ["A", "D"] in the third sequence.  Therefore, overall, for this sequence database with a price attribute,  an average price constraint, and a minimum frequency condition of 2,  pattern ["A", "D"] is the only feasible pattern, which is found and returned by the `Seq2Pat` library.  
 
@@ -132,7 +132,7 @@ The library overview is available at [GitHub IO pages](https://fidelity.github.i
   
     * [Jupyter notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb) with usage examples for every constraint type.  
   
-    * API reference guide for all the public methods.  
+    * API reference guide for all public methods.  
   
 # Seq2Pat: Available Constraints  
   
@@ -185,7 +185,7 @@ $$
 
 ## Multi-Valued Decision Diagrams
 
-A Multi-Valued Decision diagram (MDD) is layered directed acyclic graph. MDDs have been widely used to model the feasible solution set of discrete optimization problems and as efficient data structures for sequential data [see e.g., @wegener2000branching; @DBLP:series/aifta/BergmanCHH16; @hosseininasab2019exact; @DBLP:conf/aaai/HosseininasabHC19]. Here, we use MDDs to fully encode the sequences and associated attributes of sequence databases. We refer to this data structure as the _MDD_ _database_  
+A Multi-Valued Decision diagram (MDD) is layered directed acyclic graph. MDDs have been widely used to model the feasible solution set of discrete optimization problems and as efficient data structures for sequential data [see e.g., @wegener2000branching; @DBLP:series/aifta/BergmanCHH16; @hosseininasab2019exact; @DBLP:conf/aaai/HosseininasabHC19]. Here, we use MDDs to fully encode the sequences and associated attributes of sequence databases. We refer to this data structure as the _MDD_ _database_.  
 
 ## Constraint-based SPM using MDDs
 
@@ -193,7 +193,7 @@ We incorporate constraints into the SPM algorithm in two steps. First, we impose
 
 # Alternative Approaches 
 
-ALthough a few python libraries exist for SPM [see e.g., @PrefixSpan-py; @pymining], to the best of our knowledge, Seq2Pat is the first Python library for constraint-based SPM. Other implementations of constraint-based SPM are mostly limited to a few constraint types, most commonly, gap, maximum span, and regular expression [see e.g. @aoga2016efficient].
+Although a few python libraries exist for SPM [see e.g., @PrefixSpan-py; @pymining], to the best of our knowledge, Seq2Pat is the first Python library for constraint-based SPM. Other implementations of constraint-based SPM are mostly limited to a few constraint types, most commonly, gap, maximum span, and regular expression [see e.g. @aoga2016efficient].
 
 
 # References
