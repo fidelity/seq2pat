@@ -44,12 +44,11 @@ SPM is used in various practical applications such as mining sequence of custome
 
 # Constraint-based SPM  
   
-In practice, finding the entire set of  frequent patterns in a database is not of great interest.  The resulting number of items is typically large and may not provide significant insight to the users. What becomes important is to be able to search for patterns that are not only frequent but also exhibit certain desired properties.   In that line of research, Constraint-based SPM incorporates problem-specific constraints that restrict the search to  smaller subsets of interesting patterns.  For example, in an online retail click-stream analysis,  we may seek frequent browsing patterns from sessions  where users spend at least a *minimum amount of time* on certain items  that have *specific price ranges*.  Such constraints help reduce the number possible set of patterns and are much more effective  in knowledge discovery compared to an arbitrarily large set of  frequent click-streams.  Despite their applicability, when it comes to off-the-shelf  tools, the library support for sequential pattern mining remains limited,  in particular for the Python technology stack.  `Seq2Pat` is designed and developed to fill this gap.    
+In practice, finding the entire set of  frequent patterns in a database is not of great interest.  The resulting number of items is typically large and may not provide significant insight to the users. What becomes important is to be able to search for patterns that are not only frequent but also exhibit certain desired properties.   In that line of research, Constraint-based SPM incorporates problem-specific constraints that restrict the search to  smaller subsets of interesting patterns.  For example, in an online retail click-stream analysis,  we may seek frequent browsing patterns from sessions  where users spend at least a *minimum amount of time* on certain items  that have *specific price ranges*.  Such constraints help reduce the number possible set of patterns and are much more effective  in knowledge discovery compared to an arbitrarily large set of  frequent click-streams.      
 
 # Statement of Need    
 
-Despite the applicability of Sequential Pattern Mining and its potential to generate insights when combined with constraint-based reasoning, the support for available libraries and tools remain limited. The situation is even worse for the Python ecosystem which is among the most common technology stack for Machine Learning and Data Science applications. `Seq2Pat` is designed and developed to fill this gap.
-
+Despite the applicability of Sequential Pattern Mining and its potential to generate insights when combined with constraint-based reasoning, when it comes to off-the-shelf tools, the library support for sequential pattern mining remains limited. In particular, Python ecosystem, one of the most common technology stack for Machine Learning and Data Science applications, suffers from the lack of such tools. `Seq2Pat` is designed and developed to fill this gap.
 
 # Usage Example
 
@@ -88,9 +87,9 @@ It is possible to extend this example with multiple attributes and other constra
 
 # Seq2Pat: Sequence-to-Pattern Generation Library  
   
-`Seq2Pat` is a research library for sequence-to-pattern generation  to discover sequential patterns that occur frequently in large sequence databases.  The library supports constraint-based reasoning to specify desired properties over patterns.
+`Seq2Pat` is a research library for sequence-to-pattern generation to discover sequential patterns that occur frequently in large sequence databases.  The library supports constraint-based reasoning to specify desired properties over patterns.
 
-To address the challenges of Constraint-based SPM, novel techniques that leverage the multi-valued decision diagram (MDD) [@DBLP:series/aifta/BergmanCHH16] representation of the database are introduced  in [@DBLP:conf/aaai/HosseininasabHC19]. In particular, this representation can  accommodate multiple item attributes and various constraint types.  The MDD algorithm has already been shown to be competitive with or  superior to existing sequential pattern mining algorithms in terms of  scalability and efficiency [@DBLP:conf/aaai/HosseininasabHC19].  The `Seq2Pat` library makes these efficient algorithms  accessible to a broad audience with a user-friendly interface.    
+To address the challenges of Constraint-based SPM, novel techniques that leverage the multi-valued decision diagram (MDD) [@DBLP:series/aifta/BergmanCHH16] representation of the database are introduced  in [@DBLP:conf/aaai/HosseininasabHC19]. In particular, this representation can  accommodate multiple item attributes and various constraint types.  The MDD algorithm has already been shown to be competitive with or superior to existing sequential pattern mining algorithms in terms of  scalability and efficiency [@DBLP:conf/aaai/HosseininasabHC19].  The `Seq2Pat` library makes these efficient algorithms  accessible to a broad audience with a user-friendly interface.    
 
 # Seq2Pat: High-Level Features   
 
