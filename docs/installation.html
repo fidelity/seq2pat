@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -84,8 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="quick.html">Quick Start</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#build-the-backend">1. Build the Backend</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#install-the-library">2. Install  the Library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-from-the-source-code">Build from the source code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-your-setup">Test Your Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#upgrading-the-library">Upgrading the Library</a></li>
 </ul>
@@ -158,37 +157,26 @@
             
   <div class="section" id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="admonition-installation-steps admonition">
-<p class="first admonition-title">Installation Steps</p>
-<p>The installation consists of two main steps:</p>
-<ol class="last arabic simple">
-<li>Build the backend</li>
-<li>Install the library</li>
+<div class="admonition-installation-options admonition">
+<p class="admonition-title">Installation Options</p>
+<p>The package can be installed with two options:</p>
+<ol class="arabic simple">
+<li><p>Install from PyPI using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">seq2pat</span></code></p></li>
+<li><p>Build from the source code (more on this in the following sections)</p></li>
 </ol>
 </div>
 <div class="section" id="requirements">
 <span id="id2"></span><h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>The library requires <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.6+</span></code>, the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> package,  and a <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler (gcc, clang or another). See <a class="reference external" href="https://github.com/fidelity/seq2pat/blob/master/requirements.txt">requirements.txt</a>  for dependencies.</li>
-<li>Make sure to use the same Python version to run Seq2Pat and to run the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script.</li>
-<li>Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span></code>.</li>
-<li>On Windows, you can install <a class="reference external" href="https://visualstudio.microsoft.com/downloads/">MS Visual Studio Build Tools</a> for the <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler.</li>
-<li>On Mac, you can install <a class="reference external" href="https://developer.apple.com/">Command Line Tools</a> for the <code class="docutils literal notranslate"><span class="pre">Clang</span></code> compiler.</li>
+<li><p>The library requires <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.6+</span></code>, the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> package,  and a <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler (gcc, clang or another). See <a class="reference external" href="https://github.com/fidelity/seq2pat/blob/master/requirements.txt">requirements.txt</a>  for dependencies.</p></li>
+<li><p>Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span></code>.</p></li>
+<li><p>On Windows, you can install <a class="reference external" href="https://visualstudio.microsoft.com/downloads/">MS Visual Studio Build Tools</a> for the <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler.</p></li>
+<li><p>On Mac, you can install <a class="reference external" href="https://developer.apple.com/">Command Line Tools</a> for the <code class="docutils literal notranslate"><span class="pre">Clang</span></code> compiler.</p></li>
 </ul>
 </div>
-<div class="section" id="build-the-backend">
-<h2>1. Build the Backend<a class="headerlink" href="#build-the-backend" title="Permalink to this headline">¶</a></h2>
-<p>You can install the required backend artifacts from the source code using <code class="docutils literal notranslate"><span class="pre">Cython</span></code> via the <code class="docutils literal notranslate"><span class="pre">/sequential/backend/setup.py</span></code> script.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cython</span> <span class="c1"># if cython is not installed</span>
-<span class="n">cd</span> <span class="n">seq2pat</span><span class="o">/</span><span class="n">sequential</span><span class="o">/</span><span class="n">backend</span>
-<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
-</pre></div>
-</div>
-<p>This command will create the required backend artifacts in the <code class="docutils literal notranslate"><span class="pre">/sequential/backend/build</span></code> folder.</p>
-</div>
-<div class="section" id="install-the-library">
-<h2>2. Install  the Library<a class="headerlink" href="#install-the-library" title="Permalink to this headline">¶</a></h2>
-<p>Now you can install the library on your platform from a wheel package.</p>
+<div class="section" id="build-from-the-source-code">
+<h2>Build from the source code<a class="headerlink" href="#build-from-the-source-code" title="Permalink to this headline">¶</a></h2>
+<p>You can install the library on your platform from a wheel package created by the source code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">seq2pat</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="n">setuptools</span> <span class="n">wheel</span> <span class="c1"># if wheel is not installed</span>
 <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">bdist_wheel</span>
@@ -196,13 +184,13 @@
 </pre></div>
 </div>
 <div class="admonition important">
-<p class="first admonition-title">Important</p>
-<p class="last">Don’t forget to replace <code class="docutils literal notranslate"><span class="pre">X.X.X</span></code> with the current version number.</p>
+<p class="admonition-title">Important</p>
+<p>Don’t forget to replace <code class="docutils literal notranslate"><span class="pre">X.X.X</span></code> with the current version number.</p>
 </div>
 </div>
 <div class="section" id="test-your-setup">
 <h2>Test Your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this headline">¶</a></h2>
-<p>Successful compilation creates <code class="docutils literal notranslate"><span class="pre">Cython</span></code> artifacts as seen in the directory structure below.</p>
+<p>Successful compilation creates <code class="docutils literal notranslate"><span class="pre">Cython</span></code> artifacts in the directory <code class="docutils literal notranslate"><span class="pre">build</span></code>.</p>
 <p>To confirm that the installation was successful, run the tests included in the project.</p>
 <p>All tests should pass.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">seq2pat</span>
@@ -217,7 +205,7 @@
 </div>
 <div class="section" id="upgrading-the-library">
 <h2>Upgrading the Library<a class="headerlink" href="#upgrading-the-library" title="Permalink to this headline">¶</a></h2>
-<p>To upgrade to the latest version of the library, run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span> <span class="pre">origin</span> <span class="pre">master</span></code> in the repo folder,
+<p>To upgrade to the latest version of the library, run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">seq2pat</span></code> or <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span> <span class="pre">origin</span> <span class="pre">master</span></code> in the repo folder,
 and then run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">--no-cache-dir</span> <span class="pre">dist/seq2pat-X.X.X-py3-none-any.whl</span></code>.</p>
 </div>
 </div>

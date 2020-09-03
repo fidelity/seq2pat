@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -150,80 +150,80 @@
             
   <div class="section" id="module-sequential.seq2pat">
 <span id="seq2pat-public-api"></span><span id="seq2pat-api"></span><h1>Seq2Pat Public API<a class="headerlink" href="#module-sequential.seq2pat" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="sequential.seq2pat.Attribute">
-<em class="property">class </em><code class="descclassname">sequential.seq2pat.</code><code class="descname">Attribute</code><span class="sig-paren">(</span><em>values: List[list]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">sequential.seq2pat.</code><code class="sig-name descname">Attribute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Attribute.average">
-<code class="descname">average</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.average" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">average</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.average" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Average Constraint</p>
 <p>Restricts the average value of a pattern.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Attribute.gap">
-<code class="descname">gap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.gap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.gap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">gap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.gap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.gap" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Gap Constraint</p>
 <p>Restricts the difference between every two consecutive event values in a pattern.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Attribute.median">
-<code class="descname">median</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.median"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.median" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">median</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.median"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.median" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Median Constraint</p>
 <p>Restricts the median value of a pattern.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Attribute.span">
-<code class="descname">span</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.span" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">span</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Attribute.span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Attribute.span" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Span Constraint</p>
 <p>Restricts the difference between the maximum and the minimum value in a pattern.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="sequential.seq2pat.Attribute.values">
-<code class="descname">values</code><a class="headerlink" href="#sequential.seq2pat.Attribute.values" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">values</code><a class="headerlink" href="#sequential.seq2pat.Attribute.values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Values</p>
 <p>The values of the attribute</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="sequential.seq2pat.Seq2Pat">
-<em class="property">class </em><code class="descclassname">sequential.seq2pat.</code><code class="descname">Seq2Pat</code><span class="sig-paren">(</span><em>sequences: List[list]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">sequential.seq2pat.</code><code class="sig-name descname">Seq2Pat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sequences</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p><strong>Seq2Pat: Sequence-to-Pattern Generation Library</strong></p>
-<dl class="docutils">
-<dt>sequences <span class="classifier-delimiter">:</span> <span class="classifier">List[list]</span></dt>
-<dd>A list of sequences each with a list of events.
-The event values can be all strings or all integers.</dd>
+<dl class="simple">
+<dt>sequences<span class="classifier">List[list]</span></dt><dd><p>A list of sequences each with a list of events.
+The event values can be all strings or all integers.</p>
+</dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Seq2Pat.add_constraint">
-<code class="descname">add_constraint</code><span class="sig-paren">(</span><em>constraint: sequential.seq2pat._BaseConstraint</em><span class="sig-paren">)</span> &#x2192; sequential.seq2pat._BaseConstraint<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.add_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.add_constraint" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_constraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n">sequential.seq2pat._BaseConstraint</span></em><span class="sig-paren">)</span> &#x2192; sequential.seq2pat._BaseConstraint<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.add_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.add_constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the given constraint to the constraint store.</p>
-<dl class="docutils">
-<dt>constraint: _BaseConstraint</dt>
-<dd>A constraint on an attribute object</dd>
+<dl class="simple">
+<dt>constraint: _BaseConstraint</dt><dd><p>A constraint on an attribute object</p>
+</dd>
 </dl>
 <p>The constraint handle.</p>
 <p>TypeError: If the constraint is already defined on this attribute.
 ValueError: If there is a mismatch in length of sequences and their attributes.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Seq2Pat.get_patterns">
-<code class="descname">get_patterns</code><span class="sig-paren">(</span><em>min_frequency: Union[int, float]</em><span class="sig-paren">)</span> &#x2192; List[list]<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.get_patterns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.get_patterns" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_patterns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_frequency</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a><span class="p">]</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.get_patterns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.get_patterns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs the mining operation enforcing the constraints and
 Returns the most frequent patterns.</p>
-<dl class="docutils">
-<dt>min_frequency: Num</dt>
-<dd>If int, represents the minimum number of sequences (rows) a pattern should occur.
+<dl class="simple">
+<dt>min_frequency: Num</dt><dd><p>If int, represents the minimum number of sequences (rows) a pattern should occur.
 If float, should be (0.0, 1.0] and represents
-the minimum percentage of sequences (rows) a pattern should occur.</dd>
+the minimum percentage of sequences (rows) a pattern should occur.</p>
+</dd>
 </dl>
 <p>List[list] where each inner list represents a frequent pattern in the form
 [event_1, event_2, event_3, … event_n, frequency].
@@ -231,20 +231,20 @@ The last element is the frequency of the pattern.
 Sequences are sored by decreasing frequency, i.e., most frequent pattern first.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="sequential.seq2pat.Seq2Pat.remove_constraint">
-<code class="descname">remove_constraint</code><span class="sig-paren">(</span><em>constraint: sequential.seq2pat._BaseConstraint</em><span class="sig-paren">)</span> &#x2192; NoReturn<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.remove_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.remove_constraint" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">remove_constraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n">sequential.seq2pat._BaseConstraint</span></em><span class="sig-paren">)</span> &#x2192; NoReturn<a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat.remove_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.remove_constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the given constraint from the constraint store.</p>
-<dl class="docutils">
-<dt>constraint: _BaseConstraint</dt>
-<dd>A constraint on an attribute object</dd>
+<dl class="simple">
+<dt>constraint: _BaseConstraint</dt><dd><p>A constraint on an attribute object</p>
+</dd>
 </dl>
 <p>KeyError: If the given constraint does not exist in the constraint store.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="sequential.seq2pat.Seq2Pat.sequences">
-<code class="descname">sequences</code><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.sequences" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">sequences</code><a class="headerlink" href="#sequential.seq2pat.Seq2Pat.sequences" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sequence
 The sequences of Seq2Pat.</p>
 </dd></dl>
