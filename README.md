@@ -16,7 +16,7 @@ that brings together the efficiency of a low-level ```C++``` backend and
 the expressiveness of a high-level ```Python``` public interface.
 
 Seq2Pat is developed as a joint collaboration between Fidelity Investments
-and the Tepper School of Business at CMU.
+and the Tepper School of Business at CMU. Full documentation is available at [fidelity.github.io/seq2pat](https://fidelity.github.io/seq2pat).
 
 ## Quick Start
 ```python
@@ -57,7 +57,7 @@ in the [Jupyter Notebook](https://github.com/fidelity/seq2pat/blob/master/notebo
 
 ## Installation
 
-Seq2Pat can be installed from PyPI using ``pip install seq2pat`` or it can be installed from source by following the instructions in
+Seq2Pat can be installed from PyPI using ``pip install seq2pat``. It can also be installed from source by following the instructions in
 our [documentation](https://fidelity.github.io/seq2pat/installation.html).
 
 ### Requirements
