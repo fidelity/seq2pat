@@ -32,6 +32,7 @@ You can install the library on your platform from a wheel package created by the
 
 	cd seq2pat
 	pip install setuptools wheel # if wheel is not installed
+	python setup.py build_ext --inplace # make the cython extension also complied for use in the current directory
 	python setup.py bdist_wheel
 	pip install dist/seq2pat-X.X.X-py3-none-any.whl
 
