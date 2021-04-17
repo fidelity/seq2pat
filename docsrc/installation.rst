@@ -45,6 +45,8 @@ Successful compilation creates ``Cython`` artifacts in the directory ``build``.
 
 To confirm that the installation was successful, run the tests included in the project.
 
+If you install from PyPI, please also run ``python setup.py build_ext --inplace`` (or ``pip install -e .``) under seq2pat folder to make sure the cython extension also complied for use in the current directory.
+
 All tests should pass.
 
 .. code-block:: python
