@@ -16,7 +16,7 @@ that brings together the efficiency of a low-level ```C++``` backend and
 the expressiveness of a high-level ```Python``` public interface.
 
 Seq2Pat is developed as a joint collaboration between Fidelity Investments
-and the Tepper School of Business at CMU. Full documentation is available at [fidelity.github.io/seq2pat](https://fidelity.github.io/seq2pat).
+and the Tepper School of Business at CMU. Documentation is available at [fidelity.github.io/seq2pat](https://fidelity.github.io/seq2pat).
 
 ## Quick Start
 ```python
