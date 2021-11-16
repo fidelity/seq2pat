@@ -46,7 +46,7 @@ setuptools.setup(
     description="Seq2Pat: Sequence-to-Pattern Generation Library",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version="1.1.1",
+    version="1.2.1",
     url="https://github.com/fidelity/seq2pat",
     install_requires=required,
     setup_requires=required,

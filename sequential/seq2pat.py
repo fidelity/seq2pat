@@ -7,7 +7,7 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     string_to_int, int_to_string, check_sequence_feature_same_length
 from sequential.backend import seq_to_pat as stp
 
-__version__ = "1.0.0"
+__version__ = "1.2.1"
 
 
 # IMPORTANT: Constant values should not be changed
@@ -254,10 +254,12 @@ class Seq2Pat:
     """
 
     def __init__(self, sequences: List[list]):
-        check_true(sequences is not None, ValueError("Sequences cannot be null"))
-        check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists"))
+        check_true(sequences is not None, ValueError("Sequences cannot be null."))
+        check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists."))
         not_list = [(sequences[i], i) for i in range(len(sequences)) if not(isinstance(sequences[i], list))]
-        check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists. ", not_list))
+        check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
+        empty_list = [len(sequences[i]) == 0 for i in range(len(sequences))]
+        check_true(not any(empty_list), ValueError("Sequences cannot contain any empty list.", ))
 
         # Input sequences
         self._sequences: List[list] = sequences
@@ -382,11 +384,15 @@ class Seq2Pat:
 
         # Check min_frequence conditions
         if isinstance(min_frequency, float):
-            check_true(0.0 < min_frequency, ValueError("Frequency percentage shoud be greater than 0.0", min_frequency))
+            check_true(0.0 < min_frequency, ValueError("Frequency percentage should be greater than 0.0", min_frequency))
             check_true(min_frequency <= 1.0, ValueError("Frequency percentage should be less than 1.0", min_frequency))
+            check_true(min_frequency * self._num_rows >= 1.0, ValueError("Frequency percentage should set the minimum "
+                                                                         "row count to be no less than 1.0.",
+                                                                         min_frequency))
         elif isinstance(min_frequency, int):
-            check_true(0 < min_frequency, ValueError("Frequency shoud be greater than 0.0", min_frequency))
-            check_true(min_frequency <= self._num_rows, ValueError("Frequency cannot be more than number of sequences ", min_frequency))
+            check_true(0 < min_frequency, ValueError("Frequency should be greater than 0.0", min_frequency))
+            check_true(min_frequency <= self._num_rows, ValueError("Frequency cannot be more than number of sequences ",
+                                                                   min_frequency))
         else:
             raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
 
@@ -460,8 +466,8 @@ class Seq2Pat:
             # print(constraint, " ", value)
             setattr(cython_imp, constraint, value)
 
-        # Set frequency as a row count or row percentage
-        if min_frequency <= 1.0:
+        # Set frequency as a row count or row percentage. 1.0 will be used as percentage.
+        if isinstance(min_frequency, float) and min_frequency <= 1.0:
             cython_imp.theta = cython_imp.N * min_frequency
         else:
             cython_imp.theta = min_frequency

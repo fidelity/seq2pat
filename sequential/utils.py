@@ -131,7 +131,8 @@ def item_map(items: List[List[str]]) -> (dict, dict):
     :return: a maping from string to ints and the reverse mapping from int to string
     """
     # list[list[events]] -> set[events] Unpack all the events in items into a single list and remove duplicates
-    flat_set = set([item for sublist in items for item in sublist])
+    # Fix the order of items for creating a deterministic item-ID map
+    flat_set = sorted(list(set([item for sublist in items for item in sublist])))
     # map each event to a unique int ID
     str_to_int = dict([(y, x) for x, y in enumerate(flat_set, start=1)])
     # reverse dictionary where each int ID is mapped to its string representation
@@ -161,6 +162,10 @@ def sort_pattern(patterns: List[list]) -> List[list]:
     :param patterns: The result from calling sequential
     :return: Patterns in descending order by frequency
     """
+    # Fix the order of patterns without frequency
+    patterns = sorted(patterns, key=lambda x: x[:-1])
+
+    # Return the patterns in descending order by frequency
     return sorted(patterns, key=lambda x: x[-1], reverse=True)
 
 
