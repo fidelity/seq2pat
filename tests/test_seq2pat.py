@@ -43,11 +43,16 @@ class TestSeq2Pat(unittest.TestCase):
         # Patterns
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print("Average Constraint:", patterns, "\n")
+        self.assertListEqual([['A', 'C', 2], ['A', 'D', 2], ['C', 'A', 'D', 2]],
+                             patterns)
 
         # Remove Constraint
         seq2pat.remove_constraint(avg_constraint)
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print("No Constraint:", patterns, "\n")
+        self.assertListEqual([['C', 'A', 3], ['A', 'C', 2], ['A', 'C', 'D', 2], ['A', 'D', 2],
+                              ['B', 'A', 2], ['C', 'A', 'D', 2], ['C', 'B', 2], ['C', 'B', 'A', 2],
+                              ['C', 'D', 2]], patterns)
 
     def test_usage_example_average(self):
 
@@ -172,6 +177,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print(patterns)
+        self.assertListEqual([[1, 4, 2], [2, 1, 2], [3, 1, 2]], patterns)
 
     def test_quick_start(self):
 
@@ -192,6 +198,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print(patterns)
+        self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_usage_lb_ub(self):
 
@@ -340,6 +347,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences
         patterns = seq2pat.get_patterns(min_frequency=3)
         # print(patterns)
+        self.assertListEqual([], patterns)
 
     def test_bounds_with_minus_1(self):
 
@@ -439,8 +447,8 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertTrue(['A', 'B', 4] in patterns)
         self.assertTrue(['A', 'B', 'C', 4] in patterns)
 
-        # NB: the order might not hold at each run
-        # self.assertListEqual([['B', 'C', 4], ['A', 'C', 4], ['A', 'B', 4], ['A', 'B', 'C', 4]], patterns)
+        self.assertListEqual([['A', 'B', 4], ['A', 'B', 'C', 4],
+                              ['A', 'C', 4], ['B', 'C', 4]], patterns)
 
     def test_string_from_int(self):
 
