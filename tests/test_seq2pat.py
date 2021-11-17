@@ -1256,6 +1256,11 @@ class TestSeq2Pat(unittest.TestCase):
         with self.assertRaises(ValueError):
             seq2pat = Seq2Pat(sequences)
 
+        # List of attributes
+        values = [[11, 12, 13], []]
+        with self.assertRaises(ValueError):
+            price = Attribute(values)
+
     def test_min_frequence_float_one_row(self):
         # List of sequences
         sequences = [[11, 12, 13]]

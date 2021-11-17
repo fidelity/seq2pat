@@ -132,7 +132,7 @@ def item_map(items: List[List[str]]) -> (dict, dict):
     """
     # list[list[events]] -> set[events] Unpack all the events in items into a single list and remove duplicates
     # Fix the order of items for creating a deterministic item-ID map
-    flat_set = sorted(list(set([item for sublist in items for item in sublist])))
+    flat_set = sorted(set([item for sublist in items for item in sublist]))
     # map each event to a unique int ID
     str_to_int = dict([(y, x) for x, y in enumerate(flat_set, start=1)])
     # reverse dictionary where each int ID is mapped to its string representation

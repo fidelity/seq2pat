@@ -139,6 +139,8 @@ class Attribute:
         check_true(isinstance(values, list), ValueError("Values need to be a list of lists"))
         not_list = [("index: " + str(i), values[i]) for i in range(len(values)) if not isinstance(values[i], list)]
         check_true(len(not_list) == 0, ValueError("Values need to be a list of lists. ", not_list))
+        empty_list = [len(values[i]) == 0 for i in range(len(values))]
+        check_true(not any(empty_list), ValueError("Values cannot contain any empty list."))
 
         self._values = values
         self._max = get_max_value(values)
@@ -259,7 +261,7 @@ class Seq2Pat:
         not_list = [(sequences[i], i) for i in range(len(sequences)) if not(isinstance(sequences[i], list))]
         check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
         empty_list = [len(sequences[i]) == 0 for i in range(len(sequences))]
-        check_true(not any(empty_list), ValueError("Sequences cannot contain any empty list.", ))
+        check_true(not any(empty_list), ValueError("Sequences cannot contain any empty list."))
 
         # Input sequences
         self._sequences: List[list] = sequences
@@ -387,8 +389,9 @@ class Seq2Pat:
             check_true(0.0 < min_frequency, ValueError("Frequency percentage should be greater than 0.0", min_frequency))
             check_true(min_frequency <= 1.0, ValueError("Frequency percentage should be less than 1.0", min_frequency))
             check_true(min_frequency * self._num_rows >= 1.0, ValueError("Frequency percentage should set the minimum "
-                                                                         "row count to be no less than 1.0.",
-                                                                         min_frequency))
+                                                                         "row count to be no less than 1.0."
+                                                                         "Thus the percentage should be no less than "
+                                                                         "1/(number of sequences)."))
         elif isinstance(min_frequency, int):
             check_true(0 < min_frequency, ValueError("Frequency should be greater than 0.0", min_frequency))
             check_true(min_frequency <= self._num_rows, ValueError("Frequency cannot be more than number of sequences ",
