@@ -15,6 +15,14 @@ def check_true(expression: bool, exception: Exception) -> NoReturn:
         raise exception
 
 
+def check_false(expression: bool, exception: Exception) -> NoReturn:
+    """
+        Checks that given expression is false, otherwise raises the given exception.
+        """
+    if expression:
+        raise exception
+
+
 def read_data(source: str, is_scientific: bool = False) -> List[list]:
     """
     Utility function to read in numeric data from files

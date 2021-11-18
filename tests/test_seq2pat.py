@@ -1264,31 +1264,31 @@ class TestSeq2Pat(unittest.TestCase):
     def test_min_frequence_float_one_row(self):
         # List of sequences
         sequences = [[11, 12, 13]]
-        min_frequence = 0.9
+        min_frequency = 0.9
 
         # Sequential pattern finder
         seq2pat = Seq2Pat(sequences)
 
         with self.assertRaises(ValueError):
-            patterns = seq2pat.get_patterns(min_frequency=min_frequence)
+            patterns = seq2pat.get_patterns(min_frequency=min_frequency)
 
-        min_frequence = 1.0
+        min_frequency = 1.0
 
         self.assertListEqual([[11, 12, 1],
                               [11, 12, 13, 1],
                               [11, 13, 1],
-                              [12, 13, 1]], seq2pat.get_patterns(min_frequency=min_frequence))
+                              [12, 13, 1]], seq2pat.get_patterns(min_frequency=min_frequency))
 
 
     def test_min_frequence_float_theta_ge_one(self):
         # List of sequences
         sequences = [[11, 12, 13], [11, 12, 13, 14]]
-        min_frequence = 0.9
+        min_frequency = 0.9
 
         # Sequential pattern finder
         seq2pat = Seq2Pat(sequences)
 
-        unconstrained_result = seq2pat.get_patterns(min_frequency=min_frequence)
+        unconstrained_result = seq2pat.get_patterns(min_frequency=min_frequency)
 
         self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [11, 13, 2], [12, 13, 2], [11, 12, 13, 14, 1],
                               [11, 12, 14, 1], [11, 13, 14, 1], [11, 14, 1], [12, 13, 14, 1], [12, 14, 1],
@@ -1303,7 +1303,7 @@ class TestSeq2Pat(unittest.TestCase):
         # and equal to or less than 11
         gap_constraint = seq2pat.add_constraint(10 <= att1.gap() <= 11)
         self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [12, 13, 2], [11, 12, 13, 14, 1],
-                              [12, 13, 14, 1], [13, 14, 1]], seq2pat.get_patterns(min_frequency=min_frequence))
+                              [12, 13, 14, 1], [13, 14, 1]], seq2pat.get_patterns(min_frequency=min_frequency))
 
     def test_min_frequence_float_theta_le_one(self):
         # List of sequences
@@ -1315,6 +1315,21 @@ class TestSeq2Pat(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             patterns = seq2pat.get_patterns(min_frequency=min_frequence)
+
+    def test_num_rows_ge_one(self):
+        # List of sequences
+        sequences = []
+        min_frequency = 1
+
+        with self.assertRaises(ValueError):
+            seq2pat = Seq2Pat(sequences)
+
+        seq2pat = Seq2Pat(sequences=[[11, 12, 13]])
+
+        # In case num_rows becomes 0.
+        seq2pat._num_rows = 0
+        with self.assertRaises(ValueError):
+            patterns = seq2pat.get_patterns(min_frequency=min_frequency)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 from typing import NamedTuple, List, Dict, NoReturn
-from sequential.utils import Num, check_true, get_max_column_size, \
+from sequential.utils import Num, check_true, check_false, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map,\
     string_to_int, int_to_string, check_sequence_feature_same_length
 from sequential.backend import seq_to_pat as stp
@@ -137,10 +137,11 @@ class Attribute:
         """
         check_true(values is not None, ValueError("Values cannot be null"))
         check_true(isinstance(values, list), ValueError("Values need to be a list of lists"))
+        check_true(len(values) >= 1, ValueError("Values cannot be an empty list."))
         not_list = [("index: " + str(i), values[i]) for i in range(len(values)) if not isinstance(values[i], list)]
         check_true(len(not_list) == 0, ValueError("Values need to be a list of lists. ", not_list))
-        empty_list = [len(values[i]) == 0 for i in range(len(values))]
-        check_true(not any(empty_list), ValueError("Values cannot contain any empty list."))
+        is_empty_list = any([len(values[i]) == 0 for i in range(len(values))])
+        check_false(is_empty_list, ValueError("Values cannot contain any empty list."))
 
         self._values = values
         self._max = get_max_value(values)
@@ -258,10 +259,11 @@ class Seq2Pat:
     def __init__(self, sequences: List[list]):
         check_true(sequences is not None, ValueError("Sequences cannot be null."))
         check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists."))
+        check_true(len(sequences) >= 1, ValueError("Sequences cannot be an empty list."))
         not_list = [(sequences[i], i) for i in range(len(sequences)) if not(isinstance(sequences[i], list))]
         check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
-        empty_list = [len(sequences[i]) == 0 for i in range(len(sequences))]
-        check_true(not any(empty_list), ValueError("Sequences cannot contain any empty list."))
+        is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
+        check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
 
         # Input sequences
         self._sequences: List[list] = sequences
@@ -384,7 +386,10 @@ class Seq2Pat:
         Sequences are sored by decreasing frequency, i.e., most frequent pattern first.
         """
 
-        # Check min_frequence conditions
+        # Check num_rows
+        check_true(self._num_rows >= 1, ValueError("Sequences should not be empty."))
+
+        # Check min_frequency conditions
         if isinstance(min_frequency, float):
             check_true(0.0 < min_frequency, ValueError("Frequency percentage should be greater than 0.0", min_frequency))
             check_true(min_frequency <= 1.0, ValueError("Frequency percentage should be less than 1.0", min_frequency))
