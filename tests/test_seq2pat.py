@@ -43,11 +43,16 @@ class TestSeq2Pat(unittest.TestCase):
         # Patterns
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print("Average Constraint:", patterns, "\n")
+        self.assertListEqual([['A', 'C', 2], ['A', 'D', 2], ['C', 'A', 'D', 2]],
+                             patterns)
 
         # Remove Constraint
         seq2pat.remove_constraint(avg_constraint)
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print("No Constraint:", patterns, "\n")
+        self.assertListEqual([['C', 'A', 3], ['A', 'C', 2], ['A', 'C', 'D', 2], ['A', 'D', 2],
+                              ['B', 'A', 2], ['C', 'A', 'D', 2], ['C', 'B', 2], ['C', 'B', 'A', 2],
+                              ['C', 'D', 2]], patterns)
 
     def test_usage_example_average(self):
 
@@ -172,6 +177,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print(patterns)
+        self.assertListEqual([[1, 4, 2], [2, 1, 2], [3, 1, 2]], patterns)
 
     def test_quick_start(self):
 
@@ -192,6 +198,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences that occur at least twice
         patterns = seq2pat.get_patterns(min_frequency=2)
         # print(patterns)
+        self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_usage_lb_ub(self):
 
@@ -340,6 +347,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences
         patterns = seq2pat.get_patterns(min_frequency=3)
         # print(patterns)
+        self.assertListEqual([], patterns)
 
     def test_bounds_with_minus_1(self):
 
@@ -385,13 +393,18 @@ class TestSeq2Pat(unittest.TestCase):
                                       [3, 8, 9],
                                       [2, 5, 5, 7]])
 
-
         # Find sequences with min_frequency=1
         patterns = seq2pat.get_patterns(min_frequency=1)
-        # print(patterns)
 
         # Same solution as CMU commandline tool
-        self.assertListEqual([], patterns)
+        results = [['A', 'D', 2], ['B', 'A', 2], ['C', 'A', 2], ['A', 'A', 1], ['A', 'A', 'A', 1],
+                   ['A', 'A', 'A', 'D', 1], ['A', 'A', 'B', 1], ['A', 'A', 'B', 'A', 1], ['A', 'A', 'B', 'A', 'D', 1],
+                   ['A', 'A', 'B', 'D', 1], ['A', 'A', 'D', 1], ['A', 'B', 1], ['A', 'B', 'A', 1],
+                   ['A', 'B', 'A', 'D', 1], ['A', 'B', 'D', 1], ['A', 'C', 1], ['A', 'C', 'D', 1], ['B', 'A', 'D', 1],
+                   ['B', 'D', 1], ['C', 'A', 'C', 1], ['C', 'A', 'C', 'D', 1], ['C', 'A', 'D', 1], ['C', 'B', 1],
+                   ['C', 'B', 'A', 1], ['C', 'C', 1], ['C', 'C', 'D', 1], ['C', 'D', 1]]
+
+        self.assertListEqual(patterns, results)
 
     def test_min_frequency_as_1dot0_float(self):
 
@@ -434,8 +447,8 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertTrue(['A', 'B', 4] in patterns)
         self.assertTrue(['A', 'B', 'C', 4] in patterns)
 
-        # NB: the order might not hold at each run
-        # self.assertListEqual([['B', 'C', 4], ['A', 'C', 4], ['A', 'B', 4], ['A', 'B', 'C', 4]], patterns)
+        self.assertListEqual([['A', 'B', 4], ['A', 'B', 'C', 4],
+                              ['A', 'C', 4], ['B', 'C', 4]], patterns)
 
     def test_string_from_int(self):
 
@@ -449,7 +462,7 @@ class TestSeq2Pat(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=4)
 
         # Same solution as string version
-        self.assertListEqual([[2, 3, 4], [1, 3, 4], [1, 2, 4], [1, 2, 3, 4]], patterns)
+        self.assertListEqual([[1, 2, 4], [1, 2, 3, 4], [1, 3, 4], [2, 3, 4]], patterns)
 
     def test_operator(self):
 
@@ -970,10 +983,10 @@ class TestSeq2Pat(unittest.TestCase):
 
         unconstrained_result = seq2pat.get_patterns(1)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], unconstrained_result)
+                              [12, 13, 1]], unconstrained_result)
 
         # Attributes of sequences min gap is 10 between any two events,
         # max gap is between event 11 and 13 with a value of 20
@@ -991,9 +1004,9 @@ class TestSeq2Pat(unittest.TestCase):
         # and equal to or less than 19
         gap_constraint = seq2pat.add_constraint(10 <= att1.gap() <= 11)
 
-        self.assertListEqual([[12, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
+                              [12, 13, 1]], seq2pat.get_patterns(1))
 
         seq2pat.remove_constraint(10 <= att1.gap() <= 11)
 
@@ -1008,10 +1021,10 @@ class TestSeq2Pat(unittest.TestCase):
         # Equivalent to unconstrained call to get pattern since values of att1 fall between bounds
         seq2pat.add_constraint(10 <= att1.gap() <= 20)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+                              [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_span_inequality(self):
 
@@ -1023,10 +1036,10 @@ class TestSeq2Pat(unittest.TestCase):
 
         unconstrained_result = seq2pat.get_patterns(1)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], unconstrained_result)
+                              [12, 13, 1]], unconstrained_result)
 
         # Attributes of sequences min span is 10 between any two events,
         # max span is between event 11 and 13 with a value of 20
@@ -1044,9 +1057,8 @@ class TestSeq2Pat(unittest.TestCase):
         # and equal to or less than 19
         span_constraint = seq2pat.add_constraint(10 <= att1.span() <= 19)
 
-        self.assertListEqual([[12, 13, 1],
-                              [11, 12, 1]], seq2pat.get_patterns(1))
-
+        self.assertListEqual([[11, 12, 1],
+                              [12, 13, 1]], seq2pat.get_patterns(1))
 
         seq2pat.remove_constraint(10 <= att1.span() <= 11)
 
@@ -1054,18 +1066,18 @@ class TestSeq2Pat(unittest.TestCase):
         # and equal to or less than 20
         span_constraint = seq2pat.add_constraint(11 <= att1.span() <= 20)
 
-        self.assertListEqual([[11, 13, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+        self.assertListEqual([[11, 12, 13, 1],
+                              [11, 13, 1]], seq2pat.get_patterns(1))
 
         seq2pat.remove_constraint(11 <= att1.span() <= 20)
 
         # Equivalent to unconstrained span to get pattern since values of att1 fall between bounds
         span_constraint = seq2pat.add_constraint(10 <= att1.span() <= 20)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+                              [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_average_inequality(self):
 
@@ -1077,10 +1089,10 @@ class TestSeq2Pat(unittest.TestCase):
 
         unconstrained_result = seq2pat.get_patterns(1)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], unconstrained_result)
+                              [12, 13, 1]], unconstrained_result)
 
         # Attributes of sequences min average is 15 for sequence [11, 12],
         # max average is 25 for sequence [12, 13]
@@ -1105,18 +1117,18 @@ class TestSeq2Pat(unittest.TestCase):
         # and equal to or less than 20
         seq2pat.add_constraint(16 <= att1.average() <= 20)
 
-        self.assertListEqual([[11, 13, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+        self.assertListEqual([[11, 12, 13, 1],
+                              [11, 13, 1]], seq2pat.get_patterns(1))
 
         seq2pat.remove_constraint(16 <= att1.average() <= 20)
 
         # Equivalent to unconstrained span to get pattern since values of att1 fall between bounds
         seq2pat.add_constraint(15 <= att1.average() <= 25)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+                              [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_median_inequality(self):
 
@@ -1128,10 +1140,10 @@ class TestSeq2Pat(unittest.TestCase):
 
         unconstrained_result = seq2pat.get_patterns(1)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], unconstrained_result)
+                              [12, 13, 1]], unconstrained_result)
 
         # Attributes of sequences min median is 15 for sequence [11, 12],
         # max median is 25 for sequence [12, 13]
@@ -1157,21 +1169,20 @@ class TestSeq2Pat(unittest.TestCase):
         # and equal to or less than 20
         seq2pat.add_constraint(16 <= att1.median() <= 20)
 
-        self.assertListEqual([[11, 13, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+        self.assertListEqual([[11, 12, 13, 1],
+                              [11, 13, 1]], seq2pat.get_patterns(1))
 
         seq2pat.remove_constraint(16 <= att1.median() <= 20)
 
         # Equivalent to unconstrained span to get pattern since values of att1 fall between bounds
         seq2pat.add_constraint(15 <= att1.median() <= 25)
 
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], seq2pat.get_patterns(1))
+                              [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_simultaneaous_mining(self):
-
         # List of sequences
         sequences = [[11, 12, 13]]
 
@@ -1181,10 +1192,10 @@ class TestSeq2Pat(unittest.TestCase):
         unconstrained_result = seq2pat.get_patterns(1)
         unconstrained_result2 = seq2pat2.get_patterns(1)
         self.assertListEqual(unconstrained_result, unconstrained_result2)
-        self.assertListEqual([[12, 13, 1],
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
                               [11, 13, 1],
-                              [11, 12, 1],
-                              [11, 12, 13, 1]], unconstrained_result)
+                              [12, 13, 1]], unconstrained_result)
 
     def test_min_frequence_negative(self):
         # Seq2Pat over 3 sequences
@@ -1237,6 +1248,88 @@ class TestSeq2Pat(unittest.TestCase):
         # Find sequences that occur at least twice
         with self.assertRaises(ValueError):
             patterns = seq2pat.get_patterns(min_frequency=2.5)
+
+    def test_sequence_with_empty_list(self):
+        # List of sequences
+        sequences = [[11, 12, 13], []]
+
+        with self.assertRaises(ValueError):
+            seq2pat = Seq2Pat(sequences)
+
+        # List of attributes
+        values = [[11, 12, 13], []]
+        with self.assertRaises(ValueError):
+            price = Attribute(values)
+
+    def test_min_frequence_float_one_row(self):
+        # List of sequences
+        sequences = [[11, 12, 13]]
+        min_frequency = 0.9
+
+        # Sequential pattern finder
+        seq2pat = Seq2Pat(sequences)
+
+        with self.assertRaises(ValueError):
+            patterns = seq2pat.get_patterns(min_frequency=min_frequency)
+
+        min_frequency = 1.0
+
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
+                              [11, 13, 1],
+                              [12, 13, 1]], seq2pat.get_patterns(min_frequency=min_frequency))
+
+
+    def test_min_frequence_float_theta_ge_one(self):
+        # List of sequences
+        sequences = [[11, 12, 13], [11, 12, 13, 14]]
+        min_frequency = 0.9
+
+        # Sequential pattern finder
+        seq2pat = Seq2Pat(sequences)
+
+        unconstrained_result = seq2pat.get_patterns(min_frequency=min_frequency)
+
+        self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [11, 13, 2], [12, 13, 2], [11, 12, 13, 14, 1],
+                              [11, 12, 14, 1], [11, 13, 14, 1], [11, 14, 1], [12, 13, 14, 1], [12, 14, 1],
+                              [13, 14, 1]], unconstrained_result)
+
+        # Attributes of sequences min gap is 10 between any two events,
+        attributes = [[10, 20, 30], [10, 20, 30, 40]]
+
+        att1 = Attribute(attributes)
+
+        # Should include any sequence with gaps between any two events with a value equal to or greater than 10
+        # and equal to or less than 11
+        gap_constraint = seq2pat.add_constraint(10 <= att1.gap() <= 11)
+        self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [12, 13, 2], [11, 12, 13, 14, 1],
+                              [12, 13, 14, 1], [13, 14, 1]], seq2pat.get_patterns(min_frequency=min_frequency))
+
+    def test_min_frequence_float_theta_le_one(self):
+        # List of sequences
+        sequences = [[11, 12, 13], [11, 12, 13, 14]]
+        min_frequence = 0.4
+
+        # Sequential pattern finder
+        seq2pat = Seq2Pat(sequences)
+
+        with self.assertRaises(ValueError):
+            patterns = seq2pat.get_patterns(min_frequency=min_frequence)
+
+    def test_num_rows_ge_one(self):
+        # List of sequences
+        sequences = []
+        min_frequency = 1
+
+        with self.assertRaises(ValueError):
+            seq2pat = Seq2Pat(sequences)
+
+        seq2pat = Seq2Pat(sequences=[[11, 12, 13]])
+
+        # In case num_rows becomes 0.
+        seq2pat._num_rows = 0
+        with self.assertRaises(ValueError):
+            patterns = seq2pat.get_patterns(min_frequency=min_frequency)
 
 
 if __name__ == '__main__':

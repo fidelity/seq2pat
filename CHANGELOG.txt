@@ -3,6 +3,17 @@ CHANGELOG
 =========
 
 -------------------------------------------------------------------------------
+Nov, 16, 2021 1.2.1
+-------------------------------------------------------------------------------
+
+Minor:
+- Raise the value error when min_frequency is a percentage, while it is set to
+  be less than 1/(Number of sequences).
+- Have the item-integer_ID map to be fixed and the order of output patterns to
+  be fixed.
+- Update unit tests and docs.
+
+-------------------------------------------------------------------------------
 June, 11, 2020 1.1.0
 -------------------------------------------------------------------------------
 
