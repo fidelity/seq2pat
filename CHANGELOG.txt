@@ -8,7 +8,8 @@ Nov, 16, 2021 1.2.1
 
 Minor:
 - Raise the value error when min_frequency is a percentage, while it is set to
-  be less than 1/(Number of sequences).
+  be less than 1/(Number of sequences). See Issue #14 for details. 
+  Thanks to @qxzhou1010 for bringing this to our attention. 
 - Have the item-integer_ID map to be fixed and the order of output patterns to
   be fixed.
 - Update unit tests and docs.
