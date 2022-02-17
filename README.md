@@ -1,3 +1,6 @@
+[![Downloads](https://static.pepy.tech/personalized-badge/seq2pat?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/seq2pat)
+
+
 Seq2Pat: Sequence-to-Pattern Generation Library
 ===============================================
 
