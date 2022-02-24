@@ -3,6 +3,7 @@
 
 import setuptools
 import platform
+import os
 from setuptools.extension import Extension
 from Cython.Build import cythonize
 
@@ -12,6 +13,9 @@ with open("README.md", "r") as fh:
 
 with open("requirements.txt") as fh:
     required = fh.read().splitlines()
+
+with open(os.path.join('sequential', '_version.py')) as fp:
+    exec(fp.read())
 
 compile_extra_args = []
 link_extra_args = []
@@ -46,11 +50,17 @@ setuptools.setup(
     description="Seq2Pat: Sequence-to-Pattern Generation Library",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version="1.2.1",
+    version=__version__,
+    author="FMR LLC",
     url="https://github.com/fidelity/seq2pat",
     install_requires=required,
     setup_requires=required,
     packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    classifiers=[
+        "License :: OSI Approved :: GNU General Public License v2.0",
+        "Programming Language :: Python :: 3.6",
+        "Operating System :: OS Independent",
+    ],
     project_urls={
         "Documentation": "https://fidelity.github.io/seq2pat/",
         "Source": "https://github.com/fidelity/seq2pat"
