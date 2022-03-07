@@ -7,7 +7,7 @@ from sequential.utils import Num, check_true, check_false, get_max_column_size, 
     string_to_int, int_to_string, check_sequence_feature_same_length
 from sequential.backend import seq_to_pat as stp
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 
 # IMPORTANT: Constant values should not be changed
