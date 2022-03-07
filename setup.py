@@ -57,7 +57,7 @@ setuptools.setup(
     setup_requires=required,
     packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v2.0",
+        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
         "Programming Language :: Python :: 3.6",
         "Operating System :: OS Independent",
     ],
