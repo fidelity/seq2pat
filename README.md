@@ -70,7 +70,24 @@ See [requirements.txt](requirements.txt) for dependencies.
 
 ## Support
 
-Please submit bug reports and feature requests as [Issues](https://github.com/fidelity/seq2pat/issues).
+Please submit bug reports, questions and feature requests as [Issues](https://github.com/fidelity/seq2pat/issues).
+
+## Citation
+
+If you use Seq2PAt in a publication, please cite it as:
+
+```bibtex
+  @article{seq2pat2022,
+    author={Wang Xin, Hosseininasab Amin, Colunga Pablo, Kadioglu Serdar, van Hoeve Willem-Jan},
+    title={Seq2Pat: Sequence-to-Pattern Generation for Constraint-based Sequential Pattern Mining},
+    url={https://github.com/fidelity/textwiser},
+    journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+    volume={TBD},
+    number={TBD},
+    year={2022},
+    pages={TBD}
+  }
+```
 
 ## License
 
