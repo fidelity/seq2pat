@@ -74,7 +74,7 @@ Please submit bug reports, questions and feature requests as [Issues](https://gi
 
 ## Citation
 
-If you use Seq2PAt in a publication, please cite it as:
+If you use Seq2Pat in a publication, please cite it as:
 
 ```bibtex
   @article{seq2pat2022,
