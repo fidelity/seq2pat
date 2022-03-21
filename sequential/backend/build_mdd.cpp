@@ -56,7 +56,19 @@ vector<Pattern*> Build_MDD(vector<int>* lgapi, vector<int>* ugapi, vector<int>* 
 	Popl_nodes(N, L, num_att, max_attrs, min_attrs, items, attrs, lgapi, ugapi, lspni, lmedi, umedi, lavri, uavri,
 		lgap, ugap, lavr, uavr, lspn, lmed, umed, num_minmax, num_avr, num_med, tot_gap, tot_spn, tot_avr);
 
-	return DFS_queue;
+	vector<Pattern*> DFS_queue_local(DFS_queue);
+
+//	for (int i=0; i < datab_MDD.size(); i++){
+//	    delete datab_MDD[i];
+//	}
+//	for (int i=0; i < DFS_queue.size(); i++){
+//	    delete DFS_queue[i];
+//	}
+
+	std::vector<Node*>().swap(datab_MDD);
+	std::vector<Pattern*>().swap(DFS_queue);
+
+	return DFS_queue_local;
 }
 
 

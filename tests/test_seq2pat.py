@@ -1331,6 +1331,40 @@ class TestSeq2Pat(unittest.TestCase):
         with self.assertRaises(ValueError):
             patterns = seq2pat.get_patterns(min_frequency=min_frequency)
 
+    def test_one_hot_encoding(self):
+        # Seq2Pat over 3 sequences
+        seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
+                                     ["C", "B", "A"],
+                                     ["C", "A", "C", "D"]])
+
+        # Create price attributes
+        price = Attribute(values=[[5, 5, 3, 8, 2],
+                                  [1, 3, 3],
+                                  [4, 5, 2, 1]])
+
+        # Constraint to specify the median of prices in a pattern
+        seq2pat.add_constraint(3 <= price.median() <= 4)
+
+        # Find sequences with min_frequency=1
+        patterns = seq2pat.get_patterns(min_frequency=2)
+        print("Patterns: ", patterns)
+
+        sequences = [["A", "A", "B", "A", "D"],
+                     ["C", "B", "A"],
+                     ["C", "A", "C", "D"]]
+
+        attributes = [[[5, 5, 3, 8, 2],
+                      [1, 3, 3],
+                      [4, 5, 2, 1]]]
+
+        for i in range(2000000):
+            features = seq2pat.get_one_hot_encoding(sequences, attributes, patterns)
+
+        # features = seq2pat.get_one_hot_encoding(sequences, attributes, patterns)
+        print("Features: ", features)
+
+        # self.assertListEqual([[1, 1, 0], [0, 1, 1], [1, 0, 1]], features)
+
 
 if __name__ == '__main__':
     unittest.main()

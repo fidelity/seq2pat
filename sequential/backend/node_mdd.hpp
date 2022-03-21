@@ -29,7 +29,10 @@ public:
 	~Node() {
 		for (int i = 0; i < children.size(); i++){
 			delete children[i];
-		} 
+		}
+		for (int i=0; i < attr.size(); i++){
+		    delete attr[i];
+		}
 	}
 
 };

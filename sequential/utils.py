@@ -207,3 +207,30 @@ def calc_span(result: List[list]) -> list:
     return []
 
 
+def one_hot_encoding(seq2pat, items: List[list], attributes: List[List[list]], patterns: List[list]) -> List[list]:
+    feature_space = remove_frequency_in_result(patterns)
+    features = []
+    for idx, seq in enumerate(items):
+        int_seq = string_to_int(seq2pat._str_to_int, [seq])
+        setattr(seq2pat._cython_imp, 'items', int_seq)
+        setattr(seq2pat._cython_imp, 'theta', 1)
+        setattr(seq2pat._cython_imp, 'attrs', [[attr[idx]] for attr in attributes])
+
+        # Frequent mining
+        seq_patterns = seq2pat._cython_imp.mine()
+
+        # Map back to strings, if original is strings
+        seq_patterns = int_to_string(seq2pat._int_to_str, seq_patterns)
+        # # seq2pat.sequences = [seq]
+        # seq_patterns = seq2pat.get_patterns(min_frequency=1)
+        seq_patterns = remove_frequency_in_result(seq_patterns)
+        features.append([1 if pattern in seq_patterns else 0 for pattern in feature_space])
+        print(seq_patterns)
+    # print(features)
+
+    return features
+
+
+def remove_frequency_in_result(result: List[list]) -> list:
+    return list(map(lambda x: x[:-1], result))
+

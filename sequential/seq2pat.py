@@ -4,8 +4,10 @@
 from typing import NamedTuple, List, Dict, NoReturn
 from sequential.utils import Num, check_true, check_false, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map,\
-    string_to_int, int_to_string, check_sequence_feature_same_length
+    string_to_int, int_to_string, check_sequence_feature_same_length, \
+    remove_frequency_in_result
 from sequential.backend import seq_to_pat as stp
+import gc
 
 __version__ = "1.2.2"
 
@@ -122,6 +124,9 @@ class _Constants:
 
     # List where index correspond to the attribute ids and values to the minimum value for that attribute
     min_attrs = 'min_attrs'
+
+    # Minimum row count as a threshold of mined patterns
+    theta = 'theta'
 
 
 class Attribute:
@@ -405,10 +410,10 @@ class Seq2Pat:
             raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
 
         # Cython implementor object with input parameters set
-        self._cython_imp = self._get_cython_imp(min_frequency)
+        cython_imp = self._get_cython_imp(min_frequency)
 
         # Frequent mining
-        patterns = self._cython_imp.mine()
+        patterns = cython_imp.mine()
 
         # Map back to strings, if original is strings
         if self._is_string:
@@ -416,6 +421,9 @@ class Seq2Pat:
 
         # Sort sequences, most frequent pattern first
         patterns_sorted = sort_pattern(patterns)
+
+        del cython_imp
+        gc.collect()
 
         # Return frequent sequences
         return patterns_sorted
@@ -481,6 +489,51 @@ class Seq2Pat:
             cython_imp.theta = min_frequency
 
         return cython_imp
+
+    def get_one_hot_encoding(self, items: List[list], attributes: List[List[list]], patterns: List[list]):
+        """
+
+        Parameters
+        ----------
+        items
+        attributes
+        patterns
+
+        Returns
+        -------
+
+        """
+        # Create encoding space
+        encoding_space = remove_frequency_in_result(patterns)
+        encoding = []
+
+        for idx, sequence in enumerate(items):
+            # Transform each sequence to seq
+            if self._is_string:
+                int_seq = string_to_int(self._str_to_int, [sequence])
+            else:
+                int_seq = [sequence]
+
+            # Update implementer
+            cython_imp = self._get_cython_imp(min_frequency=1)
+            setattr(cython_imp, _Constants.items, int_seq)
+            setattr(cython_imp, _Constants.attrs, [[attr[idx]] for attr in attributes])
+
+            # Frequent mining
+            seq_patterns = cython_imp.mine()
+
+            # Map back to strings, if original is strings
+            seq_patterns = int_to_string(self._int_to_str, seq_patterns)
+            seq_patterns = remove_frequency_in_result(seq_patterns)
+
+            # Create one-hot encoding
+            encoding.append([1 if pattern in seq_patterns else 0 for pattern in encoding_space])
+
+            del cython_imp
+            gc.collect()
+
+        return encoding
+
 
     @staticmethod
     def _update_average_params(params: dict, constraint: _Constraint.Average) -> NoReturn:

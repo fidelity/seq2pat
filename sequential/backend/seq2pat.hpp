@@ -28,8 +28,8 @@ namespace patterns {
             vector<int> max_attrs, min_attrs;
 
             // Class object
-            Seq2pat ();
-            ~Seq2pat ();
+            Seq2pat();
+            ~Seq2pat();
 
             // Mining function
             std::vector< std::vector<int> > mine();

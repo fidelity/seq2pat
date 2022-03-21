@@ -4,6 +4,7 @@
 
 from seq2pat cimport Seq2pat
 from libcpp.vector cimport vector
+from libc.stdlib cimport free
 
 
 # seq2pat.pxd/seq_to_pat.pyx wrap seq2pat.hpp/seq2pat.cpp providing
@@ -21,14 +22,20 @@ from libcpp.vector cimport vector
 # then each setter is called via settattr() and
 # assigned to its corresponding c_seq2pat element
 cdef class PySeq2pat:
-    cdef Seq2pat c_seq2pat
+    cdef Seq2pat* c_seq2pat;
 
     def __cinit__(self):
         # Seq2pat c++ object as defined in seq2pat.hpp/seq2pat.cpp
-        self.c_seq2pat = Seq2pat()
+        self.c_seq2pat = new Seq2pat();
+
+    #def __dealloc__(self):
+    #   del self.c_seq2pat;
 
     def mine(self):
-        return self.c_seq2pat.mine()
+        try:
+            return self.c_seq2pat.mine()
+        finally:
+            del self.c_seq2pat
 
     @property
     def items(self):
@@ -277,4 +284,3 @@ cdef class PySeq2pat:
     @num_att.setter
     def num_att(self, num_att):
         self.c_seq2pat.num_att = num_att
-    
