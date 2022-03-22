@@ -46,7 +46,7 @@ public:
 		act_freq = 0;
 	}
 
-	~Pattern() { 
+	~Pattern() {
 		for (int i = 0; i < str_pnt.size(); i++){
 			delete str_pnt[i];
 		}
@@ -79,6 +79,7 @@ public:
 			}
 			delete umed[i];
 		}
+//		std::cout << "Finish pattern destructors\n";
 
 	}
 

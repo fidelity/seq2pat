@@ -28,14 +28,11 @@ cdef class PySeq2pat:
         # Seq2pat c++ object as defined in seq2pat.hpp/seq2pat.cpp
         self.c_seq2pat = new Seq2pat();
 
-    #def __dealloc__(self):
-    #   del self.c_seq2pat;
+    def __dealloc__(self):
+        del self.c_seq2pat
 
     def mine(self):
-        try:
-            return self.c_seq2pat.mine()
-        finally:
-            del self.c_seq2pat
+        return self.c_seq2pat.mine()
 
     @property
     def items(self):

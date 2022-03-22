@@ -521,6 +521,7 @@ class Seq2Pat:
 
             # Frequent mining
             seq_patterns = cython_imp.mine()
+            # print(seq_patterns)
 
             # Map back to strings, if original is strings
             seq_patterns = int_to_string(self._int_to_str, seq_patterns)
@@ -530,10 +531,10 @@ class Seq2Pat:
             encoding.append([1 if pattern in seq_patterns else 0 for pattern in encoding_space])
 
             del cython_imp
+            del seq_patterns
             gc.collect()
 
         return encoding
-
 
     @staticmethod
     def _update_average_params(params: dict, constraint: _Constraint.Average) -> NoReturn:

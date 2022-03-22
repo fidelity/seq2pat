@@ -30,9 +30,15 @@ public:
 		for (int i = 0; i < children.size(); i++){
 			delete children[i];
 		}
+
 		for (int i=0; i < attr.size(); i++){
+		    for (int j = 0; j < attr[i]->size(); j++)
+					delete attr[i]->at(j);
 		    delete attr[i];
 		}
+		std::vector<vector<Node*>*>().swap(children);
+		std::vector<vector<vector<int>*>*>().swap(attr);
+//		std::cout << "Finish node destructors\n";
 	}
 
 };

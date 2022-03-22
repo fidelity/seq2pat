@@ -1357,7 +1357,7 @@ class TestSeq2Pat(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]]
 
-        for i in range(2000000):
+        for i in range(1):
             features = seq2pat.get_one_hot_encoding(sequences, attributes, patterns)
 
         # features = seq2pat.get_one_hot_encoding(sequences, attributes, patterns)

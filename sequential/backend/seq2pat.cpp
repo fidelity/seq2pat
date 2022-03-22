@@ -30,11 +30,14 @@ namespace patterns {
     std::vector< std::vector<int> > Seq2pat::mine()
     {
         // Queue of MDD nodes
+        std::vector<Node*> datab_MDD;
         std::vector<Pattern*> mdd_q;
+        std::vector< std::vector<int> > results;
 
     	try{
     	    // Builds mdd structure and returns a queue of nodes
-            mdd_q = Build_MDD(  &(this->lgapi), &(this->ugapi),
+                    Build_MDD(  &datab_MDD, &mdd_q,
+                                &(this->lgapi), &(this->ugapi),
                                 &(this->lspni),
                                 &(this->uavri), &(this->lavri), // Note that the order is other way around
                                 &(this->umedi), &(this->lmedi),
@@ -59,7 +62,7 @@ namespace patterns {
 
         try{
             // Run frequent mining
-            return Freq_miner(  &mdd_q,
+            results = Freq_miner(  &mdd_q,
                                 &(this->uspni), &(this->lspni),
                                 &(this->uavri), &(this->lavri),
                                 &(this->umedi), &(this->lmedi),
@@ -73,6 +76,20 @@ namespace patterns {
                                 &(this->tot_avr),
                                 this->theta,
                                 this->L);
+//            std::cout << "The vector size is " << mdd_q.empty() << "\n";
+//            std::cout << "The vector size is " << DFS_queue.empty() << "\n";
+
+            for (int i=0; i < datab_MDD.size(); i++){
+                if (datab_MDD[i]!=NULL)
+                    datab_MDD[i]->~Node();
+            }
+
+//            for (int i=0; i < DFS_queue.size(); i++){
+//                if (DFS_queue[i]!=NULL)
+//                    std::cout << DFS_queue[i]->freq;
+//            }
+
+            return results;
         }
         catch(exception& e){
             throw e;

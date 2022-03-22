@@ -8,7 +8,7 @@
 #include "build_mdd.hpp"
 
 //Populates the MDD node vector
-void Popl_nodes(int N, int L, int num_att,vector<int>* max_attrs, vector<int>* min_attrs,
+void Popl_nodes(vector<Node*>* datab_m, vector<Pattern*>* dfs_q, int N, int L, int num_att,vector<int>* max_attrs, vector<int>* min_attrs,
                 vector<vector<int> >* items, vector<vector<vector<int> > >* attrs,
                 vector<int>* lgapi, vector<int>* ugapi, vector<int>* lspni, vector<int>* lmedi, vector<int>* umedi,
                 vector<int>* lavri, vector<int>* uavri,
@@ -17,31 +17,32 @@ void Popl_nodes(int N, int L, int num_att,vector<int>* max_attrs, vector<int>* m
                 vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_gap,
                 vector<int>* tot_spn, vector<int>* tot_avr);
 
-void Intlz_DFS(int ID, Node* fnod, Node* tnod, vector<int>* max_attrs, vector<int>* min_attrs,
+void Intlz_DFS(vector<Pattern*>* DFS_queue, int ID, Node* fnod, Node* tnod, vector<int>* max_attrs, vector<int>* min_attrs,
                 vector<int>* lspni, vector<int>* lmedi, vector<int>* umedi, vector<int>* lavri, vector<int>* uavri,
                 vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* lmed, vector<int>* umed,
                 vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_spn, vector<int>* tot_avr);		//Initializes the DFS pattern queue with every possible sized one pattern that can be extended
 
-void Add_arc(int ID, int strp, int endp, int L, int num_att, vector<int>* max_attrs, vector<int>* min_attrs, vector<vector<int> >* items,
+void Add_arc(vector<Node*>* datab_MDD, vector<Pattern*>* DFS_queue, int ID, int strp, int endp, int L, int num_att, vector<int>* max_attrs, vector<int>* min_attrs, vector<vector<int> >* items,
                 vector<vector<vector<int> > >* attrs, vector<int>* lspni, vector<int>* lmedi, vector<int>* umedi, vector<int>* lavri, vector<int>* uavri,
                 vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* lmed, vector<int>* umed,
                 vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_spn, vector<int>* tot_avr);		//Adds an arc to the MDD database
 
 //Constructs an empty node
-void Intlz_node(int nod);
+void Intlz_node(int nod, vector<Node*>* datab_MDD);
 
 //Checks satisfaction of gap constraints
 bool Check_gap(int i, int strt, int endp, vector<vector<vector<int> > >* attrs, vector<int>* lgapi,
                 vector<int>* ugapi, vector<int>* lgap, vector<int>* ugap);
 
 //MDD database is essentially a vector of nodes
-vector<Node*> datab_MDD;
+//vector<Node*> datab_MDD;
 
 //DFS queue of patterns to extend in mining algorithm
-vector<Pattern*> DFS_queue;
+//vector<Pattern*> DFS_queue;
 
 // Build MDD. It is called from minig function
-vector<Pattern*> Build_MDD(vector<int>* lgapi, vector<int>* ugapi, vector<int>* lspni,
+void Build_MDD(vector<Node*>* datab_MDD, vector<Pattern*>* DFS_queue,
+                            vector<int>* lgapi, vector<int>* ugapi, vector<int>* lspni,
                             vector<int>* uavri, vector<int>* lavri, vector<int>* umedi, vector<int>* lmedi,
                             vector<int>* lgap, vector<int>* ugap, vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* lmed, vector<int>* umed,
                             vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_gap, vector<int>* tot_spn, vector<int>* tot_avr,
@@ -50,29 +51,29 @@ vector<Pattern*> Build_MDD(vector<int>* lgapi, vector<int>* ugapi, vector<int>* 
                             vector<vector<int> >* items,
                             vector<vector<vector<int> > >* attrs) {
 
-	datab_MDD = vector<Node*>(M * L, NULL);
-	DFS_queue = vector<Pattern*>(L, NULL);
+	(*datab_MDD) = vector<Node*>(M * L, NULL);
+	(*DFS_queue) = vector<Pattern*>(L, NULL);
 
-	Popl_nodes(N, L, num_att, max_attrs, min_attrs, items, attrs, lgapi, ugapi, lspni, lmedi, umedi, lavri, uavri,
+	Popl_nodes(datab_MDD, DFS_queue, N, L, num_att, max_attrs, min_attrs, items, attrs, lgapi, ugapi, lspni, lmedi, umedi, lavri, uavri,
 		lgap, ugap, lavr, uavr, lspn, lmed, umed, num_minmax, num_avr, num_med, tot_gap, tot_spn, tot_avr);
 
-	vector<Pattern*> DFS_queue_local(DFS_queue);
-
 //	for (int i=0; i < datab_MDD.size(); i++){
-//	    delete datab_MDD[i];
+//	    if (datab_MDD[i]!=NULL)
+//	        datab_MDD[i]->~Node();
 //	}
 //	for (int i=0; i < DFS_queue.size(); i++){
-//	    delete DFS_queue[i];
+//	    if (DFS_queue[i]!=NULL)
+//	        DFS_queue[i]->~Pattern();
 //	}
 
-	std::vector<Node*>().swap(datab_MDD);
-	std::vector<Pattern*>().swap(DFS_queue);
+//	std::vector<Node*>().swap(datab_MDD);
+//	std::vector<Pattern*>().swap(DFS_queue);
 
-	return DFS_queue_local;
+//	return DFS_queue;
 }
 
 
-void Popl_nodes(int N, int L, int num_att,vector<int>* max_attrs, vector<int>* min_attrs, vector<vector<int> >* items, vector<vector<vector<int> > >* attrs,
+void Popl_nodes(vector<Node*>* datab_m, vector<Pattern*>* dfs_q, int N, int L, int num_att,vector<int>* max_attrs, vector<int>* min_attrs, vector<vector<int> >* items, vector<vector<vector<int> > >* attrs,
 vector<int>* lgapi, vector<int>* ugapi, vector<int>* lspni, vector<int>* lmedi, vector<int>* umedi, vector<int>* lavri, vector<int>* uavri,
 vector<int>* lgap, vector<int>* ugap, vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* lmed, vector<int>* umed, 
 vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_gap, vector<int>* tot_spn, vector<int>* tot_avr) {	//this function decides to build an arc between two nodes pointed to by strp and endp. An arc is contructed if it does not violate any of the imposed constraints
@@ -100,7 +101,7 @@ vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>
 					if (!(*lgap).empty() && (*lgapi)[0] == 0 && (*attrs)[0].at(i).at(endp - 1) - (*attrs)[0].at(i).at(strp - 1) < (*lgap)[0])
 						break;
 					if ((*tot_gap).empty() || ((*tot_gap)[0] == 0 && (*tot_gap).size() == 1) || Check_gap(i ,strp, endp, attrs, lgapi, ugapi, lgap, ugap))
-						Add_arc(i, strp, endp, L, num_att, max_attrs, min_attrs, items, attrs, lspni, lmedi, umedi, lavri, uavri, lavr, uavr, lspn, lmed, umed,
+						Add_arc(datab_m, dfs_q, i, strp, endp, L, num_att, max_attrs, min_attrs, items, attrs, lspni, lmedi, umedi, lavri, uavri, lavr, uavr, lspn, lmed, umed,
 							num_minmax, num_avr, num_med, tot_spn, tot_avr);
 					endp--;
 				}
@@ -135,7 +136,7 @@ vector<int>* lgap, vector<int>* ugap){	//checks upper and lower gap constraints 
 }
 
 
-void Add_arc(int ID, int strp, int endp, int L, int num_att, vector<int>* max_attrs, vector<int>* min_attrs, vector<vector<int> >* items, vector<vector<vector<int> > >* attrs, 
+void Add_arc(vector<Node*>* datab_MDD, vector<Pattern*>* DFS_queue, int ID, int strp, int endp, int L, int num_att, vector<int>* max_attrs, vector<int>* min_attrs, vector<vector<int> >* items, vector<vector<vector<int> > >* attrs,
 vector<int>* lspni, vector<int>* lmedi, vector<int>* umedi, vector<int>* lavri, vector<int>* uavri,
 vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* lmed, vector<int>* umed, 
 vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_spn, vector<int>* tot_avr) {						//Adds an arc from strp node to endp node
@@ -143,30 +144,30 @@ vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>
 	int fnod = (*items)[ID].at(strp - 1) + (strp - 1) * L;
 	int tnod = (*items)[ID].at(endp - 1) + (endp - 1) * L;
 
-	Intlz_node(fnod - 1);
-	Intlz_node(tnod - 1);
+	Intlz_node(fnod - 1, datab_MDD);
+	Intlz_node(tnod - 1, datab_MDD);
 
-	datab_MDD[tnod - 1]->assign_ID(ID + 1, endp, NULL, lspni, lmedi, umedi, lavri, uavri,
+	(*datab_MDD)[tnod - 1]->assign_ID(ID + 1, endp, NULL, lspni, lmedi, umedi, lavri, uavri,
 	lavr, uavr, lmed, umed,
 	num_minmax, num_avr, num_med, tot_spn, tot_avr, num_att, max_attrs, min_attrs, items, attrs);				//stores in MDD node the required information for constraint satisfaction in mining algorithm
-	datab_MDD[fnod - 1]->assign_ID(ID + 1, strp, datab_MDD[tnod - 1], lspni, lmedi, umedi, lavri, uavri,
+	(*datab_MDD)[fnod - 1]->assign_ID(ID + 1, strp, (*datab_MDD)[tnod - 1], lspni, lmedi, umedi, lavri, uavri,
 	lavr, uavr, lmed, umed, 
 	num_minmax, num_avr, num_med, tot_spn, tot_avr, num_att, max_attrs, min_attrs, items, attrs);
 
-	Intlz_DFS(ID, datab_MDD[fnod - 1], datab_MDD[tnod - 1], max_attrs, min_attrs, lspni, lmedi, umedi, lavri, uavri, lavr, uavr, lspn, lmed, umed,
+	Intlz_DFS(DFS_queue, ID, (*datab_MDD)[fnod - 1], (*datab_MDD)[tnod - 1], max_attrs, min_attrs, lspni, lmedi, umedi, lavri, uavri, lavr, uavr, lspn, lmed, umed,
 	num_minmax, num_avr, num_med, tot_spn, tot_avr);			//Adds pointer as starting point for mining algorithm
 }
 
 
-void Intlz_node(int nod) {								
-	if (datab_MDD[nod] == NULL) {	
-		datab_MDD[nod] = new Node();
-		datab_MDD[nod]->ID = nod + 1;
+void Intlz_node(int nod, vector<Node*>* datab_MDD) {
+	if ((*datab_MDD)[nod] == NULL) {
+		(*datab_MDD)[nod] = new Node();
+		(*datab_MDD)[nod]->ID = nod + 1;
 	}
 }
 
 
-void Intlz_DFS(int ID, Node* fnod, Node* tnod, vector<int>* max_attrs, vector<int>* min_attrs, 
+void Intlz_DFS(vector<Pattern*>* DFS_queue, int ID, Node* fnod, Node* tnod, vector<int>* max_attrs, vector<int>* min_attrs,
 vector<int>* lspni, vector<int>* lmedi, vector<int>* umedi, vector<int>* lavri, vector<int>* uavri,
 vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* lmed, vector<int>* umed, 
 vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_spn, vector<int>* tot_avr) {	//adds a pattern (of size one) to DFS queue of mining algorithm. A pattern is added to queue only if it satisfies or can satisfy imposed constraints
@@ -233,57 +234,57 @@ vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>
 
 
 
-		if (DFS_queue[fnod->item - 1] == NULL) {
-			DFS_queue[fnod->item - 1] = new Pattern();
-			DFS_queue[fnod->item - 1]->Update(ID + 1, umedi,  lmedi, tot_spn, tot_avr);
-			DFS_queue[fnod->item - 1]->patt_seq.push_back(fnod->item);
+		if ((*DFS_queue)[fnod->item - 1] == NULL) {
+			(*DFS_queue)[fnod->item - 1] = new Pattern();
+			(*DFS_queue)[fnod->item - 1]->Update(ID + 1, umedi,  lmedi, tot_spn, tot_avr);
+			(*DFS_queue)[fnod->item - 1]->patt_seq.push_back(fnod->item);
 		}
 
-		if (DFS_queue[fnod->item - 1]->seq_ID.back() != ID + 1)
-			DFS_queue[fnod->item - 1]->Update(ID + 1, umedi,  lmedi, tot_spn, tot_avr);
+		if ((*DFS_queue)[fnod->item - 1]->seq_ID.back() != ID + 1)
+			(*DFS_queue)[fnod->item - 1]->Update(ID + 1, umedi,  lmedi, tot_spn, tot_avr);
 
-		DFS_queue[fnod->item - 1]->str_pnt.back()->push_back(fnod);
+		(*DFS_queue)[fnod->item - 1]->str_pnt.back()->push_back(fnod);
 
 		for (int i = 0; i < (*tot_spn).size(); i++) {
-			if (DFS_queue[fnod->item - 1]->spn.back()->size() < (*tot_spn).size())
-				DFS_queue[fnod->item - 1]->spn.back()->push_back(new vector<vector<int>*>);
-			DFS_queue[fnod->item - 1]->spn.back()->at(i)->push_back(new vector<int>(2, fnod->attr.back()->at((*tot_spn)[i])->at(0)));
+			if ((*DFS_queue)[fnod->item - 1]->spn.back()->size() < (*tot_spn).size())
+				(*DFS_queue)[fnod->item - 1]->spn.back()->push_back(new vector<vector<int>*>);
+			(*DFS_queue)[fnod->item - 1]->spn.back()->at(i)->push_back(new vector<int>(2, fnod->attr.back()->at((*tot_spn)[i])->at(0)));
 		}
 		for (int i = 0; i < (*tot_avr).size(); i++){
-			if (DFS_queue[fnod->item - 1]->avr.back()->size() < (*tot_avr).size())
-				DFS_queue[fnod->item - 1]->avr.back()->push_back(new vector<int>);
-			DFS_queue[fnod->item - 1]->avr.back()->at(i)->push_back(fnod->attr.back()->at((*tot_avr)[i])->at(0));
+			if ((*DFS_queue)[fnod->item - 1]->avr.back()->size() < (*tot_avr).size())
+				(*DFS_queue)[fnod->item - 1]->avr.back()->push_back(new vector<int>);
+			(*DFS_queue)[fnod->item - 1]->avr.back()->at(i)->push_back(fnod->attr.back()->at((*tot_avr)[i])->at(0));
 		}
 
 		for (int i = 0; i < (*lmedi).size(); i++){
-			if (DFS_queue[fnod->item - 1]->lmed.back()->size() < (*lmedi).size())
-				DFS_queue[fnod->item - 1]->lmed.back()->push_back(new vector<vector<int>*>);
-			DFS_queue[fnod->item - 1]->lmed.back()->at(i)->push_back(new vector<int>(3));
+			if ((*DFS_queue)[fnod->item - 1]->lmed.back()->size() < (*lmedi).size())
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->push_back(new vector<vector<int>*>);
+			(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->push_back(new vector<int>(3));
 			if (fnod->attr.back()->at((*lmedi)[i])->at(0) < (*lmed)[i]){
-				DFS_queue[fnod->item - 1]->lmed.back()->at(i)->back()->at(0) = -1;
-				DFS_queue[fnod->item - 1]->lmed.back()->at(i)->back()->at(1) = fnod->attr.back()->at((*lmedi)[i])->at(0);
-				DFS_queue[fnod->item - 1]->lmed.back()->at(i)->back()->at(2) = (*max_attrs)[(*lmedi)[i]] + 1;
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->back()->at(0) = -1;
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->back()->at(1) = fnod->attr.back()->at((*lmedi)[i])->at(0);
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->back()->at(2) = (*max_attrs)[(*lmedi)[i]] + 1;
 			}
 			else {
-				DFS_queue[fnod->item - 1]->lmed.back()->at(i)->back()->at(0) = 1;
-				DFS_queue[fnod->item - 1]->lmed.back()->at(i)->back()->at(1) = (*min_attrs)[(*lmedi)[i]] - 1;
-				DFS_queue[fnod->item - 1]->lmed.back()->at(i)->back()->at(2) = fnod->attr.back()->at((*lmedi)[i])->at(0);
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->back()->at(0) = 1;
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->back()->at(1) = (*min_attrs)[(*lmedi)[i]] - 1;
+				(*DFS_queue)[fnod->item - 1]->lmed.back()->at(i)->back()->at(2) = fnod->attr.back()->at((*lmedi)[i])->at(0);
 			}
 		}
 
 		for (int i = 0; i < (*umedi).size(); i++){
-			if (DFS_queue[fnod->item - 1]->umed.back()->size() < (*umedi).size())
-				DFS_queue[fnod->item - 1]->umed.back()->push_back(new vector<vector<int>*>);
-			DFS_queue[fnod->item - 1]->umed.back()->at(i)->push_back(new vector<int>(3));
+			if ((*DFS_queue)[fnod->item - 1]->umed.back()->size() < (*umedi).size())
+				(*DFS_queue)[fnod->item - 1]->umed.back()->push_back(new vector<vector<int>*>);
+			(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->push_back(new vector<int>(3));
 			if (fnod->attr.back()->at((*umedi)[i])->at(0) <= (*umed)[i]){
-				DFS_queue[fnod->item - 1]->umed.back()->at(i)->back()->at(0) = 1;
-				DFS_queue[fnod->item - 1]->umed.back()->at(i)->back()->at(1) = fnod->attr.back()->at((*umedi)[i])->at(0);
-				DFS_queue[fnod->item - 1]->umed.back()->at(i)->back()->at(2) = (*max_attrs)[(*umedi)[i]] + 1;
+				(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->back()->at(0) = 1;
+				(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->back()->at(1) = fnod->attr.back()->at((*umedi)[i])->at(0);
+				(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->back()->at(2) = (*max_attrs)[(*umedi)[i]] + 1;
 			}
 			else {
-				DFS_queue[fnod->item - 1]->umed.back()->at(i)->back()->at(0) = -1;
-				DFS_queue[fnod->item - 1]->umed.back()->at(i)->back()->at(1) = (*min_attrs)[(*umedi)[i]] - 1;
-				DFS_queue[fnod->item - 1]->umed.back()->at(i)->back()->at(2) = fnod->attr.back()->at((*umedi)[i])->at(0);
+				(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->back()->at(0) = -1;
+				(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->back()->at(1) = (*min_attrs)[(*umedi)[i]] - 1;
+				(*DFS_queue)[fnod->item - 1]->umed.back()->at(i)->back()->at(2) = fnod->attr.back()->at((*umedi)[i])->at(0);
 			}
 		}
 
