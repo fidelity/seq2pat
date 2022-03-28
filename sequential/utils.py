@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import Union, NoReturn, List
+from typing import Union, NoReturn, List, Tuple
 import statistics
+
+# from sequential.seq2pat import _Constraint, _BaseConstraint
 
 Num = Union[int, float]
 
@@ -207,30 +209,76 @@ def calc_span(result: List[list]) -> list:
     return []
 
 
-def one_hot_encoding(seq2pat, items: List[list], attributes: List[List[list]], patterns: List[list]) -> List[list]:
-    feature_space = remove_frequency_in_result(patterns)
-    features = []
-    for idx, seq in enumerate(items):
-        int_seq = string_to_int(seq2pat._str_to_int, [seq])
-        setattr(seq2pat._cython_imp, 'items', int_seq)
-        setattr(seq2pat._cython_imp, 'theta', 1)
-        setattr(seq2pat._cython_imp, 'attrs', [[attr[idx]] for attr in attributes])
-
-        # Frequent mining
-        seq_patterns = seq2pat._cython_imp.mine()
-
-        # Map back to strings, if original is strings
-        seq_patterns = int_to_string(seq2pat._int_to_str, seq_patterns)
-        # # seq2pat.sequences = [seq]
-        # seq_patterns = seq2pat.get_patterns(min_frequency=1)
-        seq_patterns = remove_frequency_in_result(seq_patterns)
-        features.append([1 if pattern in seq_patterns else 0 for pattern in feature_space])
-        print(seq_patterns)
-    # print(features)
-
-    return features
-
-
-def remove_frequency_in_result(result: List[list]) -> list:
+def drop_frequency(result: List[list]) -> list:
     return list(map(lambda x: x[:-1], result))
 
+
+def is_subsequence(list1: list, list2: list) -> bool:
+    """
+    Check if list1 is a subsequence of list2.
+
+    """
+    len_list1 = len(list1)
+    len_list2 = len(list2)
+    index_list1 = 0
+    index_list2 = 0
+
+    # Traverse both list1 and list2
+    while index_list1 < len_list1 and index_list2 < len_list2:
+        # Compare current element of list2 with list1
+        if list1[index_list1] == list2[index_list2]:
+            # If matched, then move to next element in list1
+            index_list1 = index_list1 + 1
+        index_list2 = index_list2 + 1
+    return index_list1 == len_list1
+
+
+def get_matched_subsequences(seq: list, pattern: list) -> Tuple[list, list]:
+    """
+    Find all possible subsequences of a sequence in a recursive way.
+    For every element in the list, there are two choices, either to include it in the subsequence or not include it.
+    Apply this for every element in the list, find the subsequences for the two cases separately.
+
+    """
+    res_seq = []
+    res_ind = []
+    indices = list(range(len(seq)))
+
+    def get_subsequence(subsequence, output, ind_subsequence, ind_output):
+        # Base Case
+        # if the input is empty, append the output list
+        if len(subsequence) == 0:
+            if output == pattern:
+                res_seq.append(output)
+                res_ind.append(ind_output)
+            return
+
+        # output is passed with including the
+        # 1st element of input list
+        get_subsequence(subsequence[1:], output + [subsequence[0]],
+                        ind_subsequence[1:], ind_output + [ind_subsequence[0]])
+
+        # output is passed without including the
+        # 1st element of input list
+        get_subsequence(subsequence[1:], output,
+                        ind_subsequence[1:], ind_output)
+
+    get_subsequence(seq, [], indices, [])
+
+    return res_seq, res_ind
+
+
+def get_average_one_seq(seq):
+    return statistics.mean(seq)
+
+
+def get_median_one_seq(seq):
+    return statistics.median(seq)
+
+
+def get_gap_one_seq(seq):
+    return [i - j for i, j in zip(seq[1:], seq[:-1])]
+
+
+def get_span_one_seq(seq):
+    return max(seq) - min(seq)

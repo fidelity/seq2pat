@@ -33,6 +33,7 @@ vector<vector<int>> Freq_miner(vector<Pattern*>* dfs_q, vector<int>* uspni, vect
 	vector<int>* lmedi, vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* uspn, vector<int>* lmed, vector<int>* umed,
 	vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>* tot_spn, vector<int>* tot_avr, int theta, int L) {
     result.clear();
+    result.shrink_to_fit();
 
 	while (! (*dfs_q).empty()) {								//takes pattern out from last input to DFS queue and searches for its extension by possible events
 		if ( (*dfs_q).back() != NULL &&  (*dfs_q).back()->freq >= theta)
@@ -45,12 +46,7 @@ vector<vector<int>> Freq_miner(vector<Pattern*>* dfs_q, vector<int>* uspni, vect
 		}
 	}
 
-	vector<vector<int>> result_local(result);
-
-	std::vector<bool>().swap(indic_vec);
-	std::vector<vector<int>>().swap(result);
-
-	return result_local;
+	return result;
 }
 
 
@@ -97,7 +93,6 @@ vector<int>* lavr, vector<int>* uavr, vector<int>* lspn, vector<int>* uspn, vect
 		result.push_back(temp);
 	}
 	_patt->~Pattern();
-        
 }
 
 

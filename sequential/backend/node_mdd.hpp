@@ -38,7 +38,7 @@ public:
 		}
 		std::vector<vector<Node*>*>().swap(children);
 		std::vector<vector<vector<int>*>*>().swap(attr);
-//		std::cout << "Finish node destructors\n";
+		std::vector<int>().swap(seq_ID);
 	}
 
 };

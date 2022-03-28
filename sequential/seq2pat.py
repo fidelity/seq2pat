@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import NamedTuple, List, Dict, NoReturn
+from typing import NamedTuple, List, Dict, NoReturn, Union
 from sequential.utils import Num, check_true, check_false, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map,\
     string_to_int, int_to_string, check_sequence_feature_same_length, \
-    remove_frequency_in_result
+    drop_frequency, is_subsequence, get_matched_subsequences, get_average_one_seq, \
+    get_median_one_seq, get_span_one_seq, get_gap_one_seq
 from sequential.backend import seq_to_pat as stp
 import gc
 
@@ -219,6 +220,23 @@ class _BaseConstraint:
     def has_upper_bound(self):
         return self.upper_bound is not None
 
+    def check_satisfaction(self, value):
+        res = [True]
+
+        if self.has_upper_bound():
+            if value <= self.upper_bound:
+                res.append(True)
+            else:
+                res.append(False)
+
+        if self.has_lower_bound():
+            if value >= self.lower_bound:
+                res.append(True)
+            else:
+                res.append(False)
+
+        return all(res)
+
     def __le__(self, other):
         self._upper_bound = other
         return self
@@ -235,19 +253,46 @@ class _Constraint(NamedTuple):
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
 
+        def check_satisfaction(self, value):
+            return super().check_satisfaction(value)
+
     class Gap(_BaseConstraint):
 
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
 
+        def check_satisfaction(self, value):
+            res = [True]
+
+            if self.has_upper_bound():
+                if max(value) <= self.upper_bound:
+                    res.append(True)
+                else:
+                    res.append(False)
+
+            if self.has_lower_bound():
+                if min(value) >= self.lower_bound:
+                    res.append(True)
+                else:
+                    res.append(False)
+
+            return all(res)
+
     class Median(_BaseConstraint):
+
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
+
+        def check_satisfaction(self, value):
+            return super().check_satisfaction(value)
 
     class Span(_BaseConstraint):
 
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
+
+        def check_satisfaction(self, value):
+            return super().check_satisfaction(value)
 
 
 class Seq2Pat:
@@ -410,10 +455,10 @@ class Seq2Pat:
             raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
 
         # Cython implementor object with input parameters set
-        cython_imp = self._get_cython_imp(min_frequency)
+        self.cython_imp = self._get_cython_imp(min_frequency)
 
         # Frequent mining
-        patterns = cython_imp.mine()
+        patterns = self.cython_imp.mine()
 
         # Map back to strings, if original is strings
         if self._is_string:
@@ -422,7 +467,7 @@ class Seq2Pat:
         # Sort sequences, most frequent pattern first
         patterns_sorted = sort_pattern(patterns)
 
-        del cython_imp
+        # Clean up memory
         gc.collect()
 
         # Return frequent sequences
@@ -490,51 +535,113 @@ class Seq2Pat:
 
         return cython_imp
 
-    def get_one_hot_encoding(self, items: List[list], attributes: List[List[list]], patterns: List[list]):
+    def get_one_hot_encoding(self, items: List[list], patterns: List[list],
+                             constraints: Union[List[_BaseConstraint], None] = None):
         """
+        Get one-hot encoding for each sequence with interested patterns.
 
         Parameters
         ----------
-        items
-        attributes
-        patterns
+        items: List[list]
+            A list of sequences of items.
+        patterns: List[list]
+            A list of interested patterns, which defines the encoding space.
+        constraints: List[_BaseConstraint]
+            A list of constraints that can be applied to the found patterns and their encoding.
 
         Returns
         -------
+        One-hot encoding of the input sequences.
 
         """
         # Create encoding space
-        encoding_space = remove_frequency_in_result(patterns)
+        check_true(self._is_string and not isinstance(patterns[0][-1], int),
+                   ValueError("Patterns should not contain integers! "
+                              "Check if the frequency is appended to the end of given patterns."))
         encoding = []
 
-        for idx, sequence in enumerate(items):
-            # Transform each sequence to seq
-            if self._is_string:
-                int_seq = string_to_int(self._str_to_int, [sequence])
-            else:
-                int_seq = [sequence]
+        if not constraints:
+            # If not constrained, return the encoding by detecting the existence of subsequence
+            for seq in items:
+                encoding.append([1 if is_subsequence(pattern, seq) else 0 for pattern in patterns])
 
-            # Update implementer
-            cython_imp = self._get_cython_imp(min_frequency=1)
-            setattr(cython_imp, _Constants.items, int_seq)
-            setattr(cython_imp, _Constants.attrs, [[attr[idx]] for attr in attributes])
+        else:
+            for seq_ind, seq in enumerate(items):
+                seq_encoding = []
+                for pattern in patterns:
 
-            # Frequent mining
-            seq_patterns = cython_imp.mine()
-            # print(seq_patterns)
+                    if is_subsequence(pattern, seq):
 
-            # Map back to strings, if original is strings
-            seq_patterns = int_to_string(self._int_to_str, seq_patterns)
-            seq_patterns = remove_frequency_in_result(seq_patterns)
+                        if self._meet_constraints(pattern, seq, seq_ind, constraints):
+                            seq_encoding.append(1)
 
-            # Create one-hot encoding
-            encoding.append([1 if pattern in seq_patterns else 0 for pattern in encoding_space])
+                        else:
+                            seq_encoding.append(0)
 
-            del cython_imp
-            del seq_patterns
-            gc.collect()
+                    else:
+                        seq_encoding.append(0)
+
+                encoding.append(seq_encoding)
 
         return encoding
+
+    @staticmethod
+    def _meet_constraints(pattern: list, sequence: list, sequence_ind: int, constraints: List[_BaseConstraint]):
+        """
+        Check if a pattern is in an individual sequence of items, subject to defined constraints.
+
+        Parameters
+        ----------
+        pattern: list
+            A pattern that is going to be checked in the sequence.
+        sequence: list
+            A sequence of items within which a pattern is searched.
+        sequence_ind: int
+            The index of this sequence in the list of sequences.
+        constraints: _BaseConstraint
+            A list of constraints
+
+        Returns
+        -------
+        A boolean result to return if all constraints are met.
+
+        """
+        # Get all matched subsequences and their index
+        _, item_subsequences_indices = get_matched_subsequences(sequence, pattern)
+
+        check_all_constraints = False
+        for sub_ind, s in enumerate(item_subsequences_indices):
+
+            # Check constraints
+            res = [True]
+            for constraint in constraints:
+                # Get attributes
+                attrs = constraint.attribute.values[sequence_ind]
+
+                # Get subsequences of attributes
+                attr_subsequence = [attrs[i] for i in s]
+
+                if isinstance(constraint, _Constraint.Average):
+                    attr_info = get_average_one_seq(attr_subsequence)
+                    res.append(constraint.check_satisfaction(attr_info))
+
+                if isinstance(constraint, _Constraint.Median):
+                    attr_info = get_median_one_seq(attr_subsequence)
+                    res.append(constraint.check_satisfaction(attr_info))
+
+                if isinstance(constraint, _Constraint.Span):
+                    attr_info = get_span_one_seq(attr_subsequence)
+                    res.append(constraint.check_satisfaction(attr_info))
+
+                if isinstance(constraint, _Constraint.Gap):
+                    attr_info = get_gap_one_seq(attr_subsequence)
+                    res.append(constraint.check_satisfaction(attr_info))
+
+            if all(res):
+                check_all_constraints = True
+                break
+
+        return check_all_constraints
 
     @staticmethod
     def _update_average_params(params: dict, constraint: _Constraint.Average) -> NoReturn:

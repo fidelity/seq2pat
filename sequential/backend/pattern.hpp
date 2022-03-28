@@ -79,7 +79,15 @@ public:
 			}
 			delete umed[i];
 		}
-//		std::cout << "Finish pattern destructors\n";
+
+		vector<vector<Node*>*>().swap(str_pnt);
+		vector<vector<vector<vector<int>*>*>*>().swap(spn);
+		vector<vector<vector<int>*>*>().swap(avr);
+		vector<vector<vector<vector<int>*>*>*>().swap(lmed);
+		vector<vector<vector<vector<int>*>*>*>().swap(umed);
+
+		vector<int>().swap(patt_seq);
+		vector<int>().swap(seq_ID);
 
 	}
 

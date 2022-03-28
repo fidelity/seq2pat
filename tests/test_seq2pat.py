@@ -5,17 +5,16 @@ import os
 import unittest
 
 from sequential.seq2pat import Seq2Pat, Attribute
-from sequential.utils import read_data, get_max_column_size, get_max_value, compare_results, sort_pattern
+from sequential.utils import (read_data, get_max_column_size, get_max_value, compare_results, sort_pattern,
+                              drop_frequency)
 from sequential.backend import seq_to_pat as stp
 
 
 class TestSeq2Pat(unittest.TestCase):
-
     TEST_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_DIR = TEST_DIR + os.sep + "data" + os.sep
 
     def test_example(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "C", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -55,7 +54,6 @@ class TestSeq2Pat(unittest.TestCase):
                               ['C', 'D', 2]], patterns)
 
     def test_usage_example_average(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -81,7 +79,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_usage_example_gap(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -107,7 +104,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_usage_example_span(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -133,7 +129,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([['A', 'D', 2], ['B', 'A', 2]], sorted(patterns))
 
     def test_usage_example_median(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -159,7 +154,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_quick_start_int(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[[1, 1, 2, 1, 4],
                                      [3, 2, 1],
@@ -180,7 +174,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([[1, 4, 2], [2, 1, 2], [3, 1, 2]], patterns)
 
     def test_quick_start(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -201,11 +194,10 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_usage_lb_ub(self):
-
         # List of sequences
         sequences = [[1, 2, 3],
-                    [4, 5],
-                    [1, 3, 6, 7]]
+                     [4, 5],
+                     [1, 3, 6, 7]]
 
         # Sequential pattern finder
         seq2pat = Seq2Pat(sequences)
@@ -251,11 +243,10 @@ class TestSeq2Pat(unittest.TestCase):
         # seq2pat.__str__()
 
     def test_usage_lb(self):
-
         # List of sequences
         sequences = [[1, 2, 3],
-                    [4, 5],
-                    [1, 3, 6, 7]]
+                     [4, 5],
+                     [1, 3, 6, 7]]
 
         # Sequential pattern finder
         seq2pat = Seq2Pat(sequences)
@@ -296,7 +287,6 @@ class TestSeq2Pat(unittest.TestCase):
         # seq2pat.__str__()
 
     def test_usage(self):
-
         # Pattern data
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
@@ -324,7 +314,6 @@ class TestSeq2Pat(unittest.TestCase):
         seq2pat.get_patterns(min_frequency=100)
 
     def test_from_mpp(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -350,7 +339,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([], patterns)
 
     def test_bounds_with_minus_1(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -377,7 +365,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([['A', 'D', 2]], patterns)
 
     def test_min_frequency_as_1_integer(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -407,7 +394,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(patterns, results)
 
     def test_min_frequency_as_1dot0_float(self):
-
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -431,7 +417,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([], patterns)
 
     def test_string(self):
-
         # Seq2Pat
         seq2pat = Seq2Pat(sequences=[["A", "C", "B", "C"],
                                      ["D", "A", "E", "B", "W", "C"],
@@ -451,7 +436,6 @@ class TestSeq2Pat(unittest.TestCase):
                               ['A', 'C', 4], ['B', 'C', 4]], patterns)
 
     def test_string_from_int(self):
-
         # Seq2Pat
         seq2pat = Seq2Pat(sequences=[[1, 3, 2, 3],
                                      [4, 1, 5, 2, 10, 3],
@@ -465,7 +449,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual([[1, 2, 4], [1, 2, 3, 4], [1, 3, 4], [2, 3, 4]], patterns)
 
     def test_operator(self):
-
         # Attributes of sequences
         attributes = [[10, 20, 30],
                       [40, 50],
@@ -485,7 +468,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(c3.upper_bound, 1456)
 
     def test_input(self):
-
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         self.assertTrue(type(sequences) == list)
@@ -501,7 +483,6 @@ class TestSeq2Pat(unittest.TestCase):
         # print(attribute_1[:5])
 
     def test_input_item_variables(self):
-
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         m = get_max_column_size(sequences)
@@ -512,12 +493,11 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(3340, l)
 
     def test_invalid_freq(self):
-
         # Test get_patterns invalid input value error
         # List of sequences
         sequences = [[1, 2, 3],
-                    [4, 5],
-                    [1, 3, 6, 7]]
+                     [4, 5],
+                     [1, 3, 6, 7]]
 
         # Sequential pattern finder
         seq2pat = Seq2Pat(sequences)
@@ -529,7 +509,6 @@ class TestSeq2Pat(unittest.TestCase):
             seq2pat.get_patterns(0)
 
     def test_invalid_patterns(self):
-
         # Testing invalid sequences on sequential
         sequences = None
 
@@ -539,8 +518,8 @@ class TestSeq2Pat(unittest.TestCase):
             seq2pat = Seq2Pat(sequences)
 
         sequences = [[1, 2, 3],
-                    'string',
-                    [1, 3, 6, 7]]
+                     'string',
+                     [1, 3, 6, 7]]
 
         # non-list string input in the middle index of pattern input
         with self.assertRaises(ValueError):
@@ -549,8 +528,8 @@ class TestSeq2Pat(unittest.TestCase):
 
         # non-list integer input in the last index of pattern input
         sequences = [[1, 2, 3],
-                    [1, 3, 6, 7],
-                    1]
+                     [1, 3, 6, 7],
+                     1]
 
         with self.assertRaises(ValueError):
             # Sequential pattern finder
@@ -571,8 +550,8 @@ class TestSeq2Pat(unittest.TestCase):
                 seq2pat = Seq2Pat(sequences)
 
             sequences = [[1, 2, 3],
-                        'string',
-                        [1, 3, 6, 7]]
+                         'string',
+                         [1, 3, 6, 7]]
 
             # non-list string input in the middle index of pattern input
             with self.assertRaises(ValueError):
@@ -581,8 +560,8 @@ class TestSeq2Pat(unittest.TestCase):
 
             # non-list integer input in the last index of pattern input
             sequences = [[1, 2, 3],
-                        [1, 3, 6, 7],
-                        1]
+                         [1, 3, 6, 7],
+                         1]
 
             with self.assertRaises(ValueError):
                 # Sequential pattern finder
@@ -592,13 +571,13 @@ class TestSeq2Pat(unittest.TestCase):
             patterns = [set(),
                         [1, 2, 3],
                         [1, 3, 6, 7]]
+
         # multiple invalid line in sequences
         with self.assertRaises(ValueError):
             patterns = [set(), "string", 1]
             seq2pat = Seq2Pat(sequences)
 
     def test_invalid_attributes(self):
-
         # Testing invalid sequences on sequential
 
         # null input as attribute input
@@ -614,15 +593,15 @@ class TestSeq2Pat(unittest.TestCase):
 
         # non-list integer input in the last index of attribute input
         attribute = [[1, 2, 3],
-                    [1, 3, 6, 7],
-                    1]
+                     [1, 3, 6, 7],
+                     1]
         with self.assertRaises(ValueError):
             Attribute(attribute)
 
         # non-list object input in the first index of attribute input
         attribute = [set(),
-                    [1, 2, 3],
-                    [1, 3, 6, 7]]
+                     [1, 2, 3],
+                     [1, 3, 6, 7]]
 
         with self.assertRaises(ValueError):
             Attribute(attribute)
@@ -633,7 +612,6 @@ class TestSeq2Pat(unittest.TestCase):
             Attribute(attribute)
 
     def test_setter(self):
-
         # Testing cython object setters and getters
         python_seq2pat = stp.PySeq2pat()
         patterns_file = self.DATA_DIR + "input.txt"
@@ -702,7 +680,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(python_seq2pat.theta, 89)
 
     def test_seq2patfinder_default(self):
-
         # API and Cython object test.
         # Replicates command line:
         #   > ./MPP.exe
@@ -794,7 +771,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(sorted_controls, one_constraint_result)
 
     def test_input_one_constraint(self):
-
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 30 -ug 900 -ls 900 - us 3600 -out -write BMS_patt.txt
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -820,7 +796,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_input_no_constraint(self):
-
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.01 -out
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -838,7 +813,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_input_diff_constraint(self):
-
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 20 -ug 1000 -ls 800 - us 3700 -att input_att2.txt -la 20 -ua 80 -lm 30 -um 70 -out -write BMS_patt.txt
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -871,7 +845,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(sorted_control, test_patterns)
 
     def test_input_no_lower_constraint(self):
-
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -ug 900 - us 3600 -att input_att2.txt -ua 70 -um 60 -out -write BMS_patt.txt
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -903,7 +876,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(sorted_control, test_patterns)
 
     def test_input_no_upper_constraint(self):
-
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.01 -att input_att1.txt -lg 30 -ls 900 -att input_att2.txt -la 30 -lm 40 -out -write BMS_patt.txt
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -935,7 +907,6 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(sorted_control, test_patterns)
 
     def test_compare_results(self):
-
         a = [1, 2]
         b = [4, 5]
         c = [6, 7, 8]
@@ -947,19 +918,18 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual([], b_a)
 
     def test_attribute_mapping(self):
-
         # Test to verify that attributes that will be checked for constraint satisfaction
         # during mining are a one-to-one mapping between itself and items
         sequences = [[1, 2, 3],
-                    [4, 5],
-                    [1, 3, 6, 7]]
+                     [4, 5],
+                     [1, 3, 6, 7]]
         # Sequential pattern finder
         seq2pat = Seq2Pat(sequences)
 
         # Number of values in row 1 in attribute is larger than the number of event in sequence one of sequences
         attribute = [[1, 2, 3, 5],
-                    [4, 5],
-                    [1, 3, 6, 7]]
+                     [4, 5],
+                     [1, 3, 6, 7]]
 
         att1 = Attribute(attribute)
         with self.assertRaises(ValueError):
@@ -974,7 +944,6 @@ class TestSeq2Pat(unittest.TestCase):
             seq2pat.add_constraint(0 <= att1.gap() <= 10)
 
     def test_gap_inequality(self):
-
         # List of sequences
         sequences = [[11, 12, 13]]
 
@@ -1027,7 +996,6 @@ class TestSeq2Pat(unittest.TestCase):
                               [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_span_inequality(self):
-
         # List of sequences
         sequences = [[11, 12, 13]]
 
@@ -1080,7 +1048,6 @@ class TestSeq2Pat(unittest.TestCase):
                               [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_average_inequality(self):
-
         # List of sequences
         sequences = [[11, 12, 13]]
 
@@ -1131,7 +1098,6 @@ class TestSeq2Pat(unittest.TestCase):
                               [12, 13, 1]], seq2pat.get_patterns(1))
 
     def test_median_inequality(self):
-
         # List of sequences
         sequences = [[11, 12, 13]]
 
@@ -1279,7 +1245,6 @@ class TestSeq2Pat(unittest.TestCase):
                               [11, 13, 1],
                               [12, 13, 1]], seq2pat.get_patterns(min_frequency=min_frequency))
 
-
     def test_min_frequence_float_theta_ge_one(self):
         # List of sequences
         sequences = [[11, 12, 13], [11, 12, 13, 14]]
@@ -1331,7 +1296,7 @@ class TestSeq2Pat(unittest.TestCase):
         with self.assertRaises(ValueError):
             patterns = seq2pat.get_patterns(min_frequency=min_frequency)
 
-    def test_one_hot_encoding(self):
+    def test_one_hot_encoding_with_constraints(self):
         # Seq2Pat over 3 sequences
         seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                      ["C", "B", "A"],
@@ -1345,25 +1310,116 @@ class TestSeq2Pat(unittest.TestCase):
         # Constraint to specify the median of prices in a pattern
         seq2pat.add_constraint(3 <= price.median() <= 4)
 
-        # Find sequences with min_frequency=1
+        # Find sequences with min_frequency=2
         patterns = seq2pat.get_patterns(min_frequency=2)
-        print("Patterns: ", patterns)
 
+        # Define the sequences and their attributes to create one-hot encoding
         sequences = [["A", "A", "B", "A", "D"],
                      ["C", "B", "A"],
                      ["C", "A", "C", "D"]]
 
-        attributes = [[[5, 5, 3, 8, 2],
+        attributes = [[5, 5, 3, 8, 2],
                       [1, 3, 3],
-                      [4, 5, 2, 1]]]
+                      [4, 5, 2, 1]]
 
-        for i in range(1):
-            features = seq2pat.get_one_hot_encoding(sequences, attributes, patterns)
+        # Create price attributes
+        price = Attribute(values=attributes)
 
-        # features = seq2pat.get_one_hot_encoding(sequences, attributes, patterns)
-        print("Features: ", features)
+        # Define the same constraints in creating one-hot encoding
+        constraints = [3 <= price.median() <= 4]
 
-        # self.assertListEqual([[1, 1, 0], [0, 1, 1], [1, 0, 1]], features)
+        # Remove the frequency appended to the end of mined patterns
+        patterns = drop_frequency(patterns)
+
+        # Create encoding
+        encoding = seq2pat.get_one_hot_encoding(sequences, patterns, constraints)
+
+        self.assertListEqual([[1], [0], [1]], encoding)
+
+    def test_one_hot_encoding_without_constraints(self):
+        # Seq2Pat over 3 sequences
+        seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
+                                     ["C", "B", "A"],
+                                     ["C", "A", "C", "D"]])
+
+        # Find sequences with min_frequency=2
+        patterns = seq2pat.get_patterns(min_frequency=2)
+
+        # Define the sequences and their attributes to create one-hot encoding
+        sequences = [["A", "A", "B", "A", "D"],
+                     ["C", "B", "A"],
+                     ["C", "A", "C", "D"]]
+
+        # Remove the frequency appended to the end of mined patterns
+        patterns = drop_frequency(patterns)
+
+        # Create encoding
+        encoding = seq2pat.get_one_hot_encoding(sequences, patterns, constraints=None)
+
+        self.assertListEqual([[1, 1, 0], [0, 1, 1], [1, 0, 1]], encoding)
+
+    def test_one_hot_encoding_random_patterns(self):
+        # Define the sequences and their attributes to create one-hot encoding
+        sequences = [["A", "A", "B", "A", "D"],
+                     ["C", "B", "A"],
+                     ["C", "A", "C", "D"]]
+
+        seq2pat = Seq2Pat(sequences=sequences)
+
+        patterns = [['B', 'D'], ['A', 'C', 'D']]
+
+        # Create encoding
+        encoding = seq2pat.get_one_hot_encoding(sequences, patterns, constraints=None)
+
+        self.assertListEqual([[1, 0], [0, 0], [0, 1]], encoding)
+
+    def test_one_hot_encoding_random_patterns_with_constraints(self):
+        # Define the sequences and their attributes to create one-hot encoding
+        sequences = [["A", "A", "B", "A", "D"],
+                     ["C", "B", "A"],
+                     ["C", "A", "C", "D"]]
+
+        attributes = [[5, 5, 3, 8, 2],
+                      [1, 3, 3],
+                      [4, 5, 2, 1]]
+
+        seq2pat = Seq2Pat(sequences=sequences)
+
+        # Create price attributes
+        price = Attribute(values=attributes)
+
+        constraints = [price.median() <= 2]
+
+        patterns = [['B', 'D'], ['A', 'C', 'D']]
+
+        # Create encoding
+        encoding = seq2pat.get_one_hot_encoding(sequences, patterns, constraints=constraints)
+
+        self.assertListEqual([[0, 0], [0, 0], [0, 1]], encoding)
+
+    def test_one_hot_encoding_patterns_having_frequency(self):
+        # Define the sequences and their attributes to create one-hot encoding
+        sequences = [["A", "A", "B", "A", "D"],
+                     ["C", "B", "A"],
+                     ["C", "A", "C", "D"]]
+
+        attributes = [[5, 5, 3, 8, 2],
+                      [1, 3, 3],
+                      [4, 5, 2, 1]]
+
+        seq2pat = Seq2Pat(sequences=sequences)
+
+        # Create price attributes
+        price = Attribute(values=attributes)
+
+        constraints = [price.median() <= 2]
+
+        patterns = [['B', 'D', 1], ['A', 'C', 'D', 1]]
+
+        # Create encoding
+        with self.assertRaises(ValueError):
+            # This should fail when patterns have frequency appended to the end of patterns
+            encoding = seq2pat.get_one_hot_encoding(sequences, patterns, constraints=constraints)
 
 
 if __name__ == '__main__':
