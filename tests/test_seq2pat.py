@@ -770,17 +770,19 @@ class TestSeq2Pat(unittest.TestCase):
         sorted_controls = sort_pattern(control_patterns)
         self.assertListEqual(sorted_controls, one_constraint_result)
 
-        selected_patterns = drop_frequency(one_constraint_result[0:10])
-        print('Number of sequences: ', len(sequences))
-        print('Maximum length of sequences:, ', max(list(map(len, sequences))))
-        print("average length of sequences:, ", sum(list(map(len, sequences)))/len(sequences))
-        print('Selected patterns before drop frequency ', one_constraint_result[0:10])
-        print('Selected patterns after drop frequency ', selected_patterns)
-
-        from time import time
-        t = time()
-        encodings = seq2pat.get_one_hot_encoding(sequences, selected_patterns)
-        print("Runtime ", time()-t)
+        # selected_patterns = [[880, 1203], [765, 807]]
+        # print('Number of sequences: ', len(sequences))
+        # print('Maximum length of sequences:, ', max(list(map(len, sequences))))
+        # print("average length of sequences:, ", sum(list(map(len, sequences)))/len(sequences))
+        #
+        # from time import time
+        # t = time()
+        # encodings = seq2pat.get_one_hot_encoding(sequences[0:5], selected_patterns)
+        # print("Runtime ", time()-t)
+        #
+        # print('Sequences ', sequences[0:5])
+        # print('Attr1 ', attr1_data[0:5])
+        # print('Encoding ', encodings)
 
     def test_input_one_constraint(self):
         # API and Cython object test. Replicates command line:
