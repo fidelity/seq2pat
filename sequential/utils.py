@@ -233,6 +233,28 @@ def is_subsequence(list1: list, list2: list) -> bool:
     return index_list1 == len_list1
 
 
+def is_subsequence_in_rolling(list1: list, list2: list, rolling_window_size: int) -> bool:
+    """
+    Check if list1 is a subsequence of list2, within a rolling_window of list2.
+
+    """
+    res = False
+
+    if len(list1) > len(list2):
+        return False
+
+    if len(list2) <= rolling_window_size:
+        return is_subsequence(list1, list2)
+
+    else:
+        num_iters = len(list2) - rolling_window_size
+        for i in range(num_iters + 1):
+            if is_subsequence(list1, list2[i:i + rolling_window_size]):
+                res = True
+                break
+    return res
+
+
 def get_matched_subsequences(seq: list, pattern: list) -> Tuple[list, list]:
     """
     Find all possible subsequences of a sequence in a recursive way.

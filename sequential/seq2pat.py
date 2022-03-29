@@ -3,9 +3,9 @@
 
 from typing import NamedTuple, List, Dict, NoReturn, Union
 from sequential.utils import Num, check_true, check_false, get_max_column_size, \
-    get_min_value, get_max_value, sort_pattern, item_map,\
+    get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
-    drop_frequency, is_subsequence, get_matched_subsequences, get_average_one_seq, \
+    drop_frequency, is_subsequence, is_subsequence_in_rolling, get_matched_subsequences, get_average_one_seq, \
     get_median_one_seq, get_span_one_seq, get_gap_one_seq
 from sequential.backend import seq_to_pat as stp
 import gc
@@ -16,7 +16,6 @@ __version__ = "1.2.2"
 # IMPORTANT: Constant values should not be changed
 # These represent parameters in C++ backend that need to be set by matching exact names
 class _Constants:
-
     # List where values correspond to the value of upper gap constraints on an attribute, and
     # whose id can be found in ugapi at the same index
     ugap = 'ugap'
@@ -247,7 +246,6 @@ class _BaseConstraint:
 
 
 class _Constraint(NamedTuple):
-
     class Average(_BaseConstraint):
 
         def __init__(self, attribute: Attribute):
@@ -310,7 +308,7 @@ class Seq2Pat:
         check_true(sequences is not None, ValueError("Sequences cannot be null."))
         check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists."))
         check_true(len(sequences) >= 1, ValueError("Sequences cannot be an empty list."))
-        not_list = [(sequences[i], i) for i in range(len(sequences)) if not(isinstance(sequences[i], list))]
+        not_list = [(sequences[i], i) for i in range(len(sequences)) if not (isinstance(sequences[i], list))]
         check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
         is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
         check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
@@ -332,7 +330,7 @@ class Seq2Pat:
         self._max_value = get_max_value(self.sequences)
 
         # Constraint store: attribute_id -> constraint_name -> Constraint
-        self.attr_to_cts: Dict[int, Dict[str, _Constraint]] = dict()
+        self.attr_to_cts: Dict[Attribute, Dict[str, _Constraint]] = dict()
 
         # Cython implementor object
         self._cython_imp = None
@@ -441,7 +439,8 @@ class Seq2Pat:
 
         # Check min_frequency conditions
         if isinstance(min_frequency, float):
-            check_true(0.0 < min_frequency, ValueError("Frequency percentage should be greater than 0.0", min_frequency))
+            check_true(0.0 < min_frequency,
+                       ValueError("Frequency percentage should be greater than 0.0", min_frequency))
             check_true(min_frequency <= 1.0, ValueError("Frequency percentage should be less than 1.0", min_frequency))
             check_true(min_frequency * self._num_rows >= 1.0, ValueError("Frequency percentage should set the minimum "
                                                                          "row count to be no less than 1.0."
@@ -486,8 +485,10 @@ class Seq2Pat:
 
         # Dictionary to hold all parameters that need to be set in seq_to_pat more information about what each
         # parameter represents can be found under Constants declaration
-        params = {_Constants.lgap: [], _Constants.ugap: [], _Constants.lavr: [], _Constants.uavr: [], _Constants.lspn: [],
-                  _Constants.uspn: [], _Constants.lmed: [], _Constants.umed: [], _Constants.ugapi: [], _Constants.lgapi: [],
+        params = {_Constants.lgap: [], _Constants.ugap: [], _Constants.lavr: [], _Constants.uavr: [],
+                  _Constants.lspn: [],
+                  _Constants.uspn: [], _Constants.lmed: [], _Constants.umed: [], _Constants.ugapi: [],
+                  _Constants.lgapi: [],
                   _Constants.uspni: [], _Constants.lspni: [], _Constants.uavri: [], _Constants.lavri: [],
                   _Constants.umedi: [], _Constants.lmedi: [], _Constants.num_minmax: [], _Constants.num_avr: [],
                   _Constants.num_med: [], _Constants.tot_gap: [], _Constants.tot_spn: [], _Constants.tot_avr: [],
@@ -535,8 +536,7 @@ class Seq2Pat:
 
         return cython_imp
 
-    def get_one_hot_encoding(self, items: List[list], patterns: List[list],
-                             constraints: Union[List[_BaseConstraint], None] = None):
+    def get_one_hot_encoding(self, items: List[list], patterns: List[list], rolling_window_size: int = 20):
         """
         Get one-hot encoding for each sequence with interested patterns.
 
@@ -546,8 +546,10 @@ class Seq2Pat:
             A list of sequences of items.
         patterns: List[list]
             A list of interested patterns, which defines the encoding space.
-        constraints: List[_BaseConstraint]
-            A list of constraints that can be applied to the found patterns and their encoding.
+        rolling_window_size: int
+            The rolling window along a sequence within which patterns are detected. It controls the length of
+            sequence subject to the pattern detection and improve the performance in terms of runtime
+            (rolling_window_size=20 by default).
 
         Returns
         -------
@@ -555,38 +557,61 @@ class Seq2Pat:
 
         """
         # Create encoding space
-        check_true(self._is_string and not isinstance(patterns[0][-1], int),
-                   ValueError("Patterns should not contain integers! "
-                              "Check if the frequency is appended to the end of given patterns."))
+        if self._is_string:
+            check_true(not isinstance(patterns[0][-1], int),
+                       ValueError("Patterns should not contain integers! "
+                                  "Check if the frequency is appended to the end of given patterns."))
         encoding = []
 
-        if not constraints:
+        from time import time
+
+        if not self.attr_to_cts:
             # If not constrained, return the encoding by detecting the existence of subsequence
             for seq in items:
-                encoding.append([1 if is_subsequence(pattern, seq) else 0 for pattern in patterns])
+                encoding.append([1 if is_subsequence_in_rolling(pattern, seq, rolling_window_size)
+                                 else 0 for pattern in patterns])
 
         else:
+            attributes = []
+            constraints = []
+            for attribute, constraints_dict in self.attr_to_cts.items():
+
+                attributes.append(attribute.values)
+
+                for constraint_type, constraint in constraints_dict.items():
+                    constraints.append(constraint)
+
+            t = time()
             for seq_ind, seq in enumerate(items):
                 seq_encoding = []
                 for pattern in patterns:
 
-                    if is_subsequence(pattern, seq):
+                    if is_subsequence_in_rolling(pattern, seq, rolling_window_size):
 
-                        if self._meet_constraints(pattern, seq, seq_ind, constraints):
-                            seq_encoding.append(1)
+                        num_iters = max(0, len(seq) - rolling_window_size)
+                        res = 0
+                        for window_start_ind in range(num_iters + 1):
+                            if self._meet_constraints_in_rolling(pattern, seq, seq_ind, window_start_ind,
+                                                                 constraints, rolling_window_size):
+                                res = 1
+                                break
 
-                        else:
-                            seq_encoding.append(0)
+                        seq_encoding.append(res)
 
                     else:
                         seq_encoding.append(0)
 
                 encoding.append(seq_encoding)
 
+                if seq_ind % 100 == 0 and seq_ind >= 100:
+                    print('100 sequences time', (time()-t))
+                    t = time()
+
         return encoding
 
     @staticmethod
-    def _meet_constraints(pattern: list, sequence: list, sequence_ind: int, constraints: List[_BaseConstraint]):
+    def _meet_constraints_in_rolling(pattern: list, sequence: list, sequence_ind: int, window_start_ind: int,
+                                     constraints: List[_Constraint], rolling_window_size: int):
         """
         Check if a pattern is in an individual sequence of items, subject to defined constraints.
 
@@ -598,18 +623,24 @@ class Seq2Pat:
             A sequence of items within which a pattern is searched.
         sequence_ind: int
             The index of this sequence in the list of sequences.
-        constraints: _BaseConstraint
+        window_start_ind: int
+            The index where a rolling window starts.
+        constraints: _Constraint
             A list of constraints
+        rolling_window_size: int
+            The rolling window along a sequence within which patterns are detected.
 
         Returns
         -------
         A boolean result to return if all constraints are met.
 
         """
-        # Get all matched subsequences and their index
-        _, item_subsequences_indices = get_matched_subsequences(sequence, pattern)
 
-        check_all_constraints = False
+        # Get all matched subsequences and their index
+        _, item_subsequences_indices = get_matched_subsequences(
+            sequence[window_start_ind:window_start_ind + rolling_window_size], pattern)
+
+        meet_all_constraints = False
         for sub_ind, s in enumerate(item_subsequences_indices):
 
             # Check constraints
@@ -617,6 +648,7 @@ class Seq2Pat:
             for constraint in constraints:
                 # Get attributes
                 attrs = constraint.attribute.values[sequence_ind]
+                attrs = attrs[window_start_ind:window_start_ind + rolling_window_size]
 
                 # Get subsequences of attributes
                 attr_subsequence = [attrs[i] for i in s]
@@ -638,10 +670,10 @@ class Seq2Pat:
                     res.append(constraint.check_satisfaction(attr_info))
 
             if all(res):
-                check_all_constraints = True
+                meet_all_constraints = True
                 break
 
-        return check_all_constraints
+        return meet_all_constraints
 
     @staticmethod
     def _update_average_params(params: dict, constraint: _Constraint.Average) -> NoReturn:
