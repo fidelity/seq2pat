@@ -6,7 +6,7 @@ import unittest
 
 from sequential.seq2pat import Seq2Pat, Attribute
 from sequential.utils import (read_data, get_max_column_size, get_max_value, compare_results, sort_pattern,
-                              drop_frequency)
+                              drop_frequency, get_one_hot_encoding)
 from sequential.backend import seq_to_pat as stp
 
 
@@ -770,20 +770,6 @@ class TestSeq2Pat(unittest.TestCase):
         sorted_controls = sort_pattern(control_patterns)
         self.assertListEqual(sorted_controls, one_constraint_result)
 
-        # selected_patterns = [[880, 1203], [765, 807]]
-        # print('Number of sequences: ', len(sequences))
-        # print('Maximum length of sequences:, ', max(list(map(len, sequences))))
-        # print("average length of sequences:, ", sum(list(map(len, sequences)))/len(sequences))
-        #
-        # from time import time
-        # t = time()
-        # encodings = seq2pat.get_one_hot_encoding(sequences[0:5], selected_patterns)
-        # print("Runtime ", time()-t)
-        #
-        # print('Sequences ', sequences[0:5])
-        # print('Attr1 ', attr1_data[0:5])
-        # print('Encoding ', encodings)
-
     def test_input_one_constraint(self):
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 30 -ug 900 -ls 900 - us 3600 -out -write BMS_patt.txt
@@ -1335,8 +1321,6 @@ class TestSeq2Pat(unittest.TestCase):
                      ["C", "B", "A"],
                      ["C", "A", "C", "D"]]
 
-        seq2pat = Seq2Pat(sequences=sequences)
-
         attributes = [[5, 5, 3, 8, 2],
                       [1, 3, 3],
                       [4, 5, 2, 1]]
@@ -1345,12 +1329,12 @@ class TestSeq2Pat(unittest.TestCase):
         price = Attribute(values=attributes)
 
         # Define the same constraints in creating one-hot encoding
-        seq2pat.add_constraint(3 <= price.median() <= 4)
+        constraints = [3 <= price.median() <= 4]
 
         # Create encoding
-        encoding = seq2pat.get_one_hot_encoding(sequences, patterns)
+        encoding = get_one_hot_encoding(sequences, patterns, constraints=constraints)
 
-        self.assertListEqual([[1], [0], [1]], encoding)
+        self.assertListEqual([[1], [0], [1]], encoding.values.tolist())
 
     def test_one_hot_encoding_without_constraints(self):
         # Seq2Pat over 3 sequences
@@ -1364,16 +1348,17 @@ class TestSeq2Pat(unittest.TestCase):
         # Remove the frequency appended to the end of mined patterns
         patterns = drop_frequency(patterns)
 
+        # Define sequences
         sequences = [["A", "A", "B", "A", "D"],
                      ["C", "B", "A"],
                      ["C", "A", "C", "D"]]
 
         # Create encoding
-        encoding = seq2pat.get_one_hot_encoding(sequences, patterns)
+        encoding = get_one_hot_encoding(sequences, patterns)
 
-        self.assertListEqual([[1, 1, 0], [0, 1, 1], [1, 0, 1]], encoding)
+        self.assertListEqual([[1, 1, 0], [0, 1, 1], [1, 0, 1]], encoding.values.tolist())
 
-    def test_one_hot_encoding_random_patterns(self):
+    def test_one_hot_encoding_random_patterns_without_constraints(self):
         # Define the sequences and their attributes to create one-hot encoding
         sequences = [["A", "A", "B", "A", "D"],
                      ["C", "B", "A"],
@@ -1384,9 +1369,9 @@ class TestSeq2Pat(unittest.TestCase):
         patterns = [['B', 'D'], ['A', 'C', 'D']]
 
         # Create encoding
-        encoding = seq2pat.get_one_hot_encoding(sequences, patterns)
+        encoding = get_one_hot_encoding(sequences, patterns)
 
-        self.assertListEqual([[1, 0], [0, 0], [0, 1]], encoding)
+        self.assertListEqual([[1, 0], [0, 0], [0, 1]], encoding.values.tolist())
 
     def test_one_hot_encoding_random_patterns_with_constraints(self):
         # Define the sequences and their attributes to create one-hot encoding
@@ -1403,16 +1388,16 @@ class TestSeq2Pat(unittest.TestCase):
         # Create price attributes
         price = Attribute(values=attributes)
 
-        seq2pat.add_constraint(price.median() <= 2)
+        constraints = [price.median() <= 2]
 
         patterns = [['B', 'D'], ['A', 'C', 'D']]
 
         # Create encoding
-        encoding = seq2pat.get_one_hot_encoding(sequences, patterns)
+        encoding = get_one_hot_encoding(sequences, patterns, constraints=constraints)
 
-        self.assertListEqual([[0, 0], [0, 0], [0, 1]], encoding)
+        self.assertListEqual([[0, 0], [0, 0], [0, 1]], encoding.values.tolist())
 
-    def test_one_hot_encoding_patterns_having_frequency(self):
+    def test_one_hot_encoding_string_patterns_having_frequency(self):
         # Define the sequences and their attributes to create one-hot encoding
         sequences = [["A", "A", "B", "A", "D"],
                      ["C", "B", "A"],
@@ -1427,14 +1412,14 @@ class TestSeq2Pat(unittest.TestCase):
         # Create price attributes
         price = Attribute(values=attributes)
 
-        seq2pat.add_constraint(price.median() <= 2)
+        constraints = [price.median() <= 2]
 
         patterns = [['B', 'D', 1], ['A', 'C', 'D', 1]]
 
         # Create encoding
         with self.assertRaises(ValueError):
             # This should fail when patterns have frequency appended to the end of patterns
-            encoding = seq2pat.get_one_hot_encoding(sequences, patterns)
+            encoding = get_one_hot_encoding(sequences, patterns, constraints=constraints)
 
 
 if __name__ == '__main__':

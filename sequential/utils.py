@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import Union, NoReturn, List, Tuple
+from typing import Union, NoReturn, List, Tuple, NewType
 import statistics
+import pandas as pd
 
-# from sequential.seq2pat import _Constraint, _BaseConstraint
+import sequential.seq2pat as sp
 
 Num = Union[int, float]
 
@@ -233,26 +234,112 @@ def is_subsequence(list1: list, list2: list) -> bool:
     return index_list1 == len_list1
 
 
-def is_subsequence_in_rolling(list1: list, list2: list, rolling_window_size: int) -> bool:
+def is_subsequence_in_rolling(pattern: list, seq: list, seq_attr_ind: int,
+                              rolling_window_size: int, constraints: Union[List[object], None]) -> bool:
     """
-    Check if list1 is a subsequence of list2, within a rolling_window of list2.
+     Search the given pattern in a rolling_window of sequence
 
     """
     res = False
 
-    if len(list1) > len(list2):
-        return False
-
-    if len(list2) <= rolling_window_size:
-        return is_subsequence(list1, list2)
+    if len(seq) <= rolling_window_size:
+        res = subsequence_identifier(pattern, seq, seq_attr_ind, 0, rolling_window_size, constraints)
 
     else:
-        num_iters = len(list2) - rolling_window_size
+        num_iters = len(seq) - rolling_window_size
         for i in range(num_iters + 1):
-            if is_subsequence(list1, list2[i:i + rolling_window_size]):
+            if subsequence_identifier(pattern, seq[i:i + rolling_window_size], seq_attr_ind, i, rolling_window_size,
+                                      constraints):
                 res = True
                 break
     return res
+
+
+def subsequence_identifier(pattern: list, seq: list, seq_attr_ind: int, seq_attr_start: int, rolling_window_size: int,
+                           constraints: Union[List[object], None]) -> bool:
+    """
+    Identify if a pattern is in a given sequence, subject to the optional seq2pat._Constraint type of constraints.
+
+    """
+    res = False
+
+    if not is_subsequence(pattern, seq):
+        # if pattern is not a subsequence of seq, return False
+        return res
+    else:
+        if not constraints:
+            # if pattern is a subsequence and there is no constraint, return True
+            return True
+        else:
+            res = meet_constraints_in_rolling(pattern, seq, seq_attr_ind, seq_attr_start, rolling_window_size,
+                                              constraints)
+
+    return res
+
+
+def meet_constraints_in_rolling(pattern: list, sequence: list, seq_attr_ind: int, window_start_ind: int,
+                                rolling_window_size: int, constraints: Union[List[object], None]) -> bool:
+    """
+    Check if a pattern is in an individual sequence of items, subject to defined constraints.
+
+    Parameters
+    ----------
+    pattern: list
+        A pattern that is going to be checked in the sequence.
+    sequence: list
+        A sequence of items within which a pattern is searched.
+    seq_attr_ind: int
+        The index of this sequence in the list of sequences, and also the index of attributes.
+    window_start_ind: int
+        The index where a rolling window starts.
+    rolling_window_size: int
+        The rolling window along a sequence within which patterns are detected.
+    constraints: Union[List[object], None]
+        A list of constraints
+
+    Returns
+    -------
+    A boolean result to return if all constraints are met.
+
+    """
+
+    # Get all matched subsequences and their index
+    _, item_subsequences_indices = get_matched_subsequences(sequence, pattern)
+
+    meet_all_constraints = False
+    for sub_ind, s in enumerate(item_subsequences_indices):
+
+        # Check constraints
+        res = [True]
+        for constraint in constraints:
+            # Get attributes
+            attrs = constraint.attribute.values[seq_attr_ind]
+            attrs = attrs[window_start_ind:window_start_ind + rolling_window_size]
+
+            # Get subsequences of attributes
+            attr_subsequence = [attrs[i] for i in s]
+
+            if isinstance(constraint, sp._Constraint.Average):
+                attr_info = get_average_one_seq(attr_subsequence)
+                res.append(constraint.check_satisfaction(attr_info))
+
+            if isinstance(constraint, sp._Constraint.Median):
+                attr_info = get_median_one_seq(attr_subsequence)
+                res.append(constraint.check_satisfaction(attr_info))
+
+            if isinstance(constraint, sp._Constraint.Span):
+                attr_info = get_span_one_seq(attr_subsequence)
+                res.append(constraint.check_satisfaction(attr_info))
+
+            if isinstance(constraint, sp._Constraint.Gap):
+                attr_info = get_gap_one_seq(attr_subsequence)
+                res.append(constraint.check_satisfaction(attr_info))
+
+        if all(res):
+            meet_all_constraints = True
+            break
+
+    return meet_all_constraints
 
 
 def get_matched_subsequences(seq: list, pattern: list) -> Tuple[list, list]:
@@ -290,6 +377,53 @@ def get_matched_subsequences(seq: list, pattern: list) -> Tuple[list, list]:
     return res_seq, res_ind
 
 
+def get_one_hot_encoding(items: List[list], patterns: List[list], rolling_window_size: int = 10,
+                            constraints: Union[List[object], None] = None) -> pd.DataFrame:
+    """
+    Create a data frame having one-hot encoding of sequences.
+
+    Parameters
+    ----------
+    items: List[list]
+        A list of sequences of items.
+    patterns: List[list]
+        A list of interested patterns, which defines the encoding space.
+    rolling_window_size: int
+        The rolling window along a sequence within which patterns are detected. It controls the length of
+        sequence subject to the pattern detection and improve the performance in terms of runtime
+        (rolling_window_size=10 by default).
+    constraints: Union[List[object]
+        The constraints enforced in the creation of encoding
+
+    Returns
+    -------
+    A data frame having one-hot encoding of sequences using the given patterns. The patterns are searched within a
+    rolling window along the sequence by default (rolling_window_size=10 by default).
+
+    """
+
+    if isinstance(items[0][0], str):
+        check_true(not isinstance(patterns[0][-1], int),
+                   ValueError("Patterns should not contain integers! "
+                              "Check if the frequency is appended to the end of given patterns."))
+
+    df = pd.DataFrame()
+    df['sequence'] = items
+    df['seq_ind'] = list(range(len(items)))
+
+    for i, pattern in enumerate(patterns):
+        # For each pattern, create encoding for all sequences
+        df['feat' + str(i)] = df.apply(lambda row: is_subsequence_in_rolling(pattern, row['sequence'], row['seq_ind'],
+                                                                             rolling_window_size, constraints), axis=1)
+        # Cast bool type value to int
+        df['feat' + str(i)] = df['feat' + str(i)].astype(int)
+
+    df.drop(columns=['seq_ind'], inplace=True)
+    df.set_index('sequence', inplace=True)
+
+    return df
+
+
 def get_average_one_seq(seq):
     return statistics.mean(seq)
 
@@ -304,3 +438,4 @@ def get_gap_one_seq(seq):
 
 def get_span_one_seq(seq):
     return max(seq) - min(seq)
+

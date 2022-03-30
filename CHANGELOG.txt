@@ -3,6 +3,16 @@ CHANGELOG
 =========
 
 -------------------------------------------------------------------------------
+March, 30, 2022 1.2.3
+-------------------------------------------------------------------------------
+
+Major:
+- Add one-hot encoding as a new utils task
+- Clean up C++ vector variables datab_MDD, mdd_q from calling Build_MDD
+- Clean up vector variable attr in node_mdd.hpp
+- Clean up vector varaibles indic_vec, result from calling Freq_miner
+
+-------------------------------------------------------------------------------
 March, 07, 2022 1.2.2
 -------------------------------------------------------------------------------
 

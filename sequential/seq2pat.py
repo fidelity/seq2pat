@@ -4,13 +4,13 @@
 from typing import NamedTuple, List, Dict, NoReturn, Union
 from sequential.utils import Num, check_true, check_false, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
-    string_to_int, int_to_string, check_sequence_feature_same_length, \
-    drop_frequency, is_subsequence, is_subsequence_in_rolling, get_matched_subsequences, get_average_one_seq, \
-    get_median_one_seq, get_span_one_seq, get_gap_one_seq
+    string_to_int, int_to_string, check_sequence_feature_same_length
 from sequential.backend import seq_to_pat as stp
+
 import gc
 
-__version__ = "1.2.2"
+
+__version__ = "1.2.3"
 
 
 # IMPORTANT: Constant values should not be changed
@@ -535,145 +535,6 @@ class Seq2Pat:
             cython_imp.theta = min_frequency
 
         return cython_imp
-
-    def get_one_hot_encoding(self, items: List[list], patterns: List[list], rolling_window_size: int = 20):
-        """
-        Get one-hot encoding for each sequence with interested patterns.
-
-        Parameters
-        ----------
-        items: List[list]
-            A list of sequences of items.
-        patterns: List[list]
-            A list of interested patterns, which defines the encoding space.
-        rolling_window_size: int
-            The rolling window along a sequence within which patterns are detected. It controls the length of
-            sequence subject to the pattern detection and improve the performance in terms of runtime
-            (rolling_window_size=20 by default).
-
-        Returns
-        -------
-        One-hot encoding of the input sequences.
-
-        """
-        # Create encoding space
-        if self._is_string:
-            check_true(not isinstance(patterns[0][-1], int),
-                       ValueError("Patterns should not contain integers! "
-                                  "Check if the frequency is appended to the end of given patterns."))
-        encoding = []
-
-        from time import time
-
-        if not self.attr_to_cts:
-            # If not constrained, return the encoding by detecting the existence of subsequence
-            for seq in items:
-                encoding.append([1 if is_subsequence_in_rolling(pattern, seq, rolling_window_size)
-                                 else 0 for pattern in patterns])
-
-        else:
-            attributes = []
-            constraints = []
-            for attribute, constraints_dict in self.attr_to_cts.items():
-
-                attributes.append(attribute.values)
-
-                for constraint_type, constraint in constraints_dict.items():
-                    constraints.append(constraint)
-
-            t = time()
-            for seq_ind, seq in enumerate(items):
-                seq_encoding = []
-                for pattern in patterns:
-
-                    if is_subsequence_in_rolling(pattern, seq, rolling_window_size):
-
-                        num_iters = max(0, len(seq) - rolling_window_size)
-                        res = 0
-                        for window_start_ind in range(num_iters + 1):
-                            if self._meet_constraints_in_rolling(pattern, seq, seq_ind, window_start_ind,
-                                                                 constraints, rolling_window_size):
-                                res = 1
-                                break
-
-                        seq_encoding.append(res)
-
-                    else:
-                        seq_encoding.append(0)
-
-                encoding.append(seq_encoding)
-
-                if seq_ind % 100 == 0 and seq_ind >= 100:
-                    print('100 sequences time', (time()-t))
-                    t = time()
-
-        return encoding
-
-    @staticmethod
-    def _meet_constraints_in_rolling(pattern: list, sequence: list, sequence_ind: int, window_start_ind: int,
-                                     constraints: List[_Constraint], rolling_window_size: int):
-        """
-        Check if a pattern is in an individual sequence of items, subject to defined constraints.
-
-        Parameters
-        ----------
-        pattern: list
-            A pattern that is going to be checked in the sequence.
-        sequence: list
-            A sequence of items within which a pattern is searched.
-        sequence_ind: int
-            The index of this sequence in the list of sequences.
-        window_start_ind: int
-            The index where a rolling window starts.
-        constraints: _Constraint
-            A list of constraints
-        rolling_window_size: int
-            The rolling window along a sequence within which patterns are detected.
-
-        Returns
-        -------
-        A boolean result to return if all constraints are met.
-
-        """
-
-        # Get all matched subsequences and their index
-        _, item_subsequences_indices = get_matched_subsequences(
-            sequence[window_start_ind:window_start_ind + rolling_window_size], pattern)
-
-        meet_all_constraints = False
-        for sub_ind, s in enumerate(item_subsequences_indices):
-
-            # Check constraints
-            res = [True]
-            for constraint in constraints:
-                # Get attributes
-                attrs = constraint.attribute.values[sequence_ind]
-                attrs = attrs[window_start_ind:window_start_ind + rolling_window_size]
-
-                # Get subsequences of attributes
-                attr_subsequence = [attrs[i] for i in s]
-
-                if isinstance(constraint, _Constraint.Average):
-                    attr_info = get_average_one_seq(attr_subsequence)
-                    res.append(constraint.check_satisfaction(attr_info))
-
-                if isinstance(constraint, _Constraint.Median):
-                    attr_info = get_median_one_seq(attr_subsequence)
-                    res.append(constraint.check_satisfaction(attr_info))
-
-                if isinstance(constraint, _Constraint.Span):
-                    attr_info = get_span_one_seq(attr_subsequence)
-                    res.append(constraint.check_satisfaction(attr_info))
-
-                if isinstance(constraint, _Constraint.Gap):
-                    attr_info = get_gap_one_seq(attr_subsequence)
-                    res.append(constraint.check_satisfaction(attr_info))
-
-            if all(res):
-                meet_all_constraints = True
-                break
-
-        return meet_all_constraints
 
     @staticmethod
     def _update_average_params(params: dict, constraint: _Constraint.Average) -> NoReturn:
