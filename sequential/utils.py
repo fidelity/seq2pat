@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import Union, NoReturn, List, Tuple, NewType
+from typing import Union, NoReturn, List, Tuple, Dict
 import statistics
 import pandas as pd
+import numpy as np
 
 import sequential.seq2pat as sp
 
 Num = Union[int, float]
+
+class Constants:
+    unique_pos = 'unique_positive'
+    unique_neg = 'unique_negative'
+    intersection = 'intersection'
+    union = 'union'
+
+
 
 
 def check_true(expression: bool, exception: Exception) -> NoReturn:
@@ -235,7 +244,7 @@ def is_subsequence(list1: list, list2: list) -> bool:
 
 
 def is_subsequence_in_rolling(pattern: list, seq: list, seq_attr_ind: int,
-                              rolling_window_size: int, constraints: Union[List[object], None]) -> bool:
+                              rolling_window_size: int, constraints: Union[list, None]) -> bool:
     """
      Search the given pattern in a rolling_window of sequence
 
@@ -256,7 +265,7 @@ def is_subsequence_in_rolling(pattern: list, seq: list, seq_attr_ind: int,
 
 
 def subsequence_identifier(pattern: list, seq: list, seq_attr_ind: int, seq_attr_start: int, rolling_window_size: int,
-                           constraints: Union[List[object], None]) -> bool:
+                           constraints: Union[list, None]) -> bool:
     """
     Identify if a pattern is in a given sequence, subject to the optional seq2pat._Constraint type of constraints.
 
@@ -278,7 +287,7 @@ def subsequence_identifier(pattern: list, seq: list, seq_attr_ind: int, seq_attr
 
 
 def meet_constraints_in_rolling(pattern: list, sequence: list, seq_attr_ind: int, window_start_ind: int,
-                                rolling_window_size: int, constraints: Union[List[object], None]) -> bool:
+                                rolling_window_size: int, constraints: Union[list, None]) -> bool:
     """
     Check if a pattern is in an individual sequence of items, subject to defined constraints.
 
@@ -294,7 +303,7 @@ def meet_constraints_in_rolling(pattern: list, sequence: list, seq_attr_ind: int
         The index where a rolling window starts.
     rolling_window_size: int
         The rolling window along a sequence within which patterns are detected.
-    constraints: Union[List[object], None]
+    constraints: Union[list, None]
         A list of constraints
 
     Returns
@@ -377,8 +386,8 @@ def get_matched_subsequences(seq: list, pattern: list) -> Tuple[list, list]:
     return res_seq, res_ind
 
 
-def get_one_hot_encoding(items: List[list], patterns: List[list], rolling_window_size: int = 10,
-                            constraints: Union[List[object], None] = None) -> pd.DataFrame:
+def get_one_hot_encodings(items: List[list], patterns: List[list], constraints: Union[list, None] = None,
+                          rolling_window_size: int = 10, drop_pattern_frequency=True) -> pd.DataFrame:
     """
     Create a data frame having one-hot encoding of sequences.
 
@@ -388,12 +397,14 @@ def get_one_hot_encoding(items: List[list], patterns: List[list], rolling_window
         A list of sequences of items.
     patterns: List[list]
         A list of interested patterns, which defines the encoding space.
+    constraints: Union[list, None]
+        The constraints enforced in the creation of encoding
     rolling_window_size: int
         The rolling window along a sequence within which patterns are detected. It controls the length of
         sequence subject to the pattern detection and improve the performance in terms of runtime
         (rolling_window_size=10 by default).
-    constraints: Union[List[object]
-        The constraints enforced in the creation of encoding
+    drop_pattern_frequency: bool
+        Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=True by default.
 
     Returns
     -------
@@ -402,10 +413,15 @@ def get_one_hot_encoding(items: List[list], patterns: List[list], rolling_window
 
     """
 
-    if isinstance(items[0][0], str):
-        check_true(not isinstance(patterns[0][-1], int),
-                   ValueError("Patterns should not contain integers! "
-                              "Check if the frequency is appended to the end of given patterns."))
+    # Drop the frequency appended to the patterns by default
+    if drop_pattern_frequency:
+        patterns = drop_frequency(patterns)
+
+    else:
+        if isinstance(items[0][0], str):
+            check_true(not isinstance(patterns[0][-1], int),
+                       ValueError("Patterns should not contain integers! "
+                                  "Check if the frequency is appended to the end of given patterns."))
 
     df = pd.DataFrame()
     df['sequence'] = items
@@ -419,9 +435,126 @@ def get_one_hot_encoding(items: List[list], patterns: List[list], rolling_window
         df['feat' + str(i)] = df['feat' + str(i)].astype(int)
 
     df.drop(columns=['seq_ind'], inplace=True)
-    df.set_index('sequence', inplace=True)
 
     return df
+
+
+def run_pattern_mining(items: List[list], min_frequency: Num, constraints: Union[list, None] = None) -> List[list]:
+    """
+    Run pattern mining with constraints.
+
+    Parameters
+    ----------
+    items: List[list]
+        A list of sequences of items.
+    min_frequency: Num
+       If int, represents the minimum number of sequences (rows) a pattern should occur.
+       If float, should be (0.0, 1.0] and represents
+       the minimum percentage of sequences (rows) a pattern should occur.
+    constraints: Union[list, None]
+        The constraints enforced in pattern mining. constraints=None default.
+
+    Returns
+    -------
+    Mined patterns
+
+    """
+
+    seq2pat = sp.Seq2Pat(sequences=items)
+
+    if constraints:
+        for constraint in constraints:
+            seq2pat.add_constraint(constraint)
+
+    patterns = seq2pat.get_patterns(min_frequency=min_frequency)
+
+    return patterns
+
+
+def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, label_col_name,
+                              attr_col_to_constraint: Dict[str, list] = None,
+                              postive_label = 1, min_frequency: Num = 0.3,
+                              pattern_aggregation: str = 'union'):
+    """
+    Run dichotomic pattern mining (DPM)
+
+    Parameters
+    ----------
+    sequence_df: pd.DataFrame
+        An DataFrame which contains sequences, attributes and labels
+    sequence_col_name: str
+        Column name of sequences
+    label_col_name: str
+        Column name of labels
+    attr_col_to_constraint: Dict[str, list]
+        A dictionary holding a mapping from an attribute column name to the constraints enforced on the attribute
+    min_frequency: Num
+        If int, represents the minimum number of sequences (rows) a pattern should occur.
+        If float, should be (0.0, 1.0] and represents
+        the minimum percentage of sequences (rows) a pattern should occur.
+    pattern_aggregation: str
+        If 'union', DPM returns the union of patterns from mining positive and negative sequences.
+        If 'intersection', DPM returns the intersection of patterns from mining positive and negative sequences.
+        If 'unique_positive', DPM returns patterns that are unique in positive sequences.
+        If 'unique_negative', DPM returns patterns that are unique in negative sequences.
+
+    Returns
+    -------
+    Mined patterns by running DPM.
+
+    """
+    sequence_pos_df = sequence_df[sequence_df[label_col_name] == postive_label]
+    sequences_pos = sequence_pos_df[sequence_col_name].values.tolist()
+
+    if attr_col_to_constraint:
+        constraints_pos = []
+        for col_name, constraints in attr_col_to_constraint.items():
+            for constraint in constraints:
+                constraint.attribute.set_values(sequence_pos_df[col_name].values.tolist())
+                constraints_pos.append(constraint)
+    else:
+        constraints_pos = None
+
+    # Mine positive cohort
+    patterns_pos = run_pattern_mining(sequences_pos, min_frequency=min_frequency, constraints=constraints_pos)
+
+    sequence_neg_df = sequence_df[sequence_df[label_col_name] != postive_label]
+    sequences_neg = sequence_pos_df[sequence_col_name].values.tolist()
+
+    if attr_col_to_constraint:
+        constraints_neg = []
+        for col_name, constraints in attr_col_to_constraint.items():
+            for constraint in constraints:
+                constraint.attribute.set_values(sequence_neg_df[col_name].values.tolist())
+                constraints_neg.append(constraint)
+    else:
+        constraints_neg = None
+
+    # Mine negative cohort
+    patterns_neg = run_pattern_mining(sequences_neg, min_frequency=min_frequency, constraints=constraints_neg)
+
+    # Drop frequencies in the end of mined patterns
+    patterns_pos = drop_frequency(patterns_pos)
+    patterns_neg = drop_frequency(patterns_neg)
+
+    # Find pattern aggregations
+    if pattern_aggregation == Constants.unique_pos:
+        dpm_patterns = set(map(tuple, patterns_pos)) - set(map(tuple, patterns_neg))
+
+    elif pattern_aggregation == Constants.unique_neg:
+        dpm_patterns = set(map(tuple, patterns_neg)) - set(map(tuple, patterns_pos))
+
+    elif pattern_aggregation == Constants.intersection:
+        dpm_patterns = set(map(tuple, patterns_pos)).intersection(set(map(tuple, patterns_neg)))
+
+    elif pattern_aggregation == Constants.union:
+        dpm_patterns = set(map(tuple, patterns_pos)).union(set(map(tuple, patterns_neg)))
+
+    else:
+        raise ValueError("Invalid pattern_aggregation! It should be chosen from one of the following options: "
+                         "'unique_positive', 'unique_negative', 'intersection' and 'union'.")
+
+    return sorted(list(map(list, dpm_patterns)))
 
 
 def get_average_one_seq(seq):
@@ -438,4 +571,32 @@ def get_gap_one_seq(seq):
 
 def get_span_one_seq(seq):
     return max(seq) - min(seq)
+
+
+def validate_attribute_values(values: List[list]):
+    """
+    Validate attribute values
+
+    """
+    check_true(values is not None, ValueError("Values cannot be null"))
+    check_true(isinstance(values, list), ValueError("Values need to be a list of lists"))
+    check_true(len(values) >= 1, ValueError("Values cannot be an empty list."))
+    not_list = [("index: " + str(i), values[i]) for i in range(len(values)) if not isinstance(values[i], list)]
+    check_true(len(not_list) == 0, ValueError("Values need to be a list of lists. ", not_list))
+    is_empty_list = any([len(values[i]) == 0 for i in range(len(values))])
+    check_false(is_empty_list, ValueError("Values cannot contain any empty list."))
+
+
+def validate_sequences(sequences: List[list]):
+    """
+    Validate sequences
+
+    """
+    check_true(sequences is not None, ValueError("Sequences cannot be null."))
+    check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists."))
+    check_true(len(sequences) >= 1, ValueError("Sequences cannot be an empty list."))
+    not_list = [(sequences[i], i) for i in range(len(sequences)) if not (isinstance(sequences[i], list))]
+    check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
+    is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
+    check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
 

@@ -4,7 +4,8 @@
 from typing import NamedTuple, List, Dict, NoReturn, Union
 from sequential.utils import Num, check_true, check_false, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
-    string_to_int, int_to_string, check_sequence_feature_same_length
+    string_to_int, int_to_string, check_sequence_feature_same_length, \
+    validate_attribute_values, validate_sequences
 from sequential.backend import seq_to_pat as stp
 
 import gc
@@ -140,13 +141,8 @@ class Attribute:
         values: List[list]
             A list of lists corresponding to the values of each event.
         """
-        check_true(values is not None, ValueError("Values cannot be null"))
-        check_true(isinstance(values, list), ValueError("Values need to be a list of lists"))
-        check_true(len(values) >= 1, ValueError("Values cannot be an empty list."))
-        not_list = [("index: " + str(i), values[i]) for i in range(len(values)) if not isinstance(values[i], list)]
-        check_true(len(not_list) == 0, ValueError("Values need to be a list of lists. ", not_list))
-        is_empty_list = any([len(values[i]) == 0 for i in range(len(values))])
-        check_false(is_empty_list, ValueError("Values cannot contain any empty list."))
+        # Validate input values
+        validate_attribute_values(values)
 
         self._values = values
         self._max = get_max_value(values)
@@ -160,6 +156,18 @@ class Attribute:
         The values of the attribute
         """
         return self._values
+
+    def set_values(self, values: List[list]):
+        """
+        Set attribute values
+
+        """
+        # Validate input values
+        validate_attribute_values(values)
+
+        self._values = values
+        self._max = get_max_value(values)
+        self._min = get_min_value(values)
 
     def average(self):
         """
@@ -305,13 +313,8 @@ class Seq2Pat:
     """
 
     def __init__(self, sequences: List[list]):
-        check_true(sequences is not None, ValueError("Sequences cannot be null."))
-        check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists."))
-        check_true(len(sequences) >= 1, ValueError("Sequences cannot be an empty list."))
-        not_list = [(sequences[i], i) for i in range(len(sequences)) if not (isinstance(sequences[i], list))]
-        check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
-        is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
-        check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
+        # Validate input sequences
+        validate_sequences(sequences)
 
         # Input sequences
         self._sequences: List[list] = sequences
