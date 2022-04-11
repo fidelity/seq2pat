@@ -15,6 +15,7 @@ class Constants:
     unique_neg = 'unique_negative'
     intersection = 'intersection'
     union = 'union'
+    all_operations = 'all'
 
 
 
@@ -497,6 +498,8 @@ def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, labe
         If 'intersection', DPM returns the intersection of patterns from mining positive and negative sequences.
         If 'unique_positive', DPM returns patterns that are unique in positive sequences.
         If 'unique_negative', DPM returns patterns that are unique in negative sequences.
+        If 'all', DPM returns all patterns in the above cases with a tuple, following the order (union, intersection,
+        unique_positive, unique_negative)
 
     Returns
     -------
@@ -550,9 +553,25 @@ def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, labe
     elif pattern_aggregation == Constants.union:
         dpm_patterns = set(map(tuple, patterns_pos)).union(set(map(tuple, patterns_neg)))
 
+    elif pattern_aggregation == Constants.all_operations:
+
+        union_patterns = set(map(tuple, patterns_pos)).union(set(map(tuple, patterns_neg)))
+        union_patterns = sorted(list(map(list, union_patterns)))
+
+        intersection_patterns = set(map(tuple, patterns_pos)).intersection(set(map(tuple, patterns_neg)))
+        intersection_patterns = sorted(list(map(list, intersection_patterns)))
+
+        unique_pos_patterns = set(map(tuple, patterns_pos)) - set(map(tuple, patterns_neg))
+        unique_pos_patterns = sorted(list(map(list, unique_pos_patterns)))
+
+        unique_neg_patterns = set(map(tuple, patterns_neg)) - set(map(tuple, patterns_pos))
+        unique_neg_patterns = sorted(list(map(list, unique_neg_patterns)))
+
+        return union_patterns, intersection_patterns, unique_pos_patterns, unique_neg_patterns
+
     else:
         raise ValueError("Invalid pattern_aggregation! It should be chosen from one of the following options: "
-                         "'unique_positive', 'unique_negative', 'intersection' and 'union'.")
+                         "'unique_positive', 'unique_negative', 'intersection', 'union' and 'all'.")
 
     return sorted(list(map(list, dpm_patterns)))
 

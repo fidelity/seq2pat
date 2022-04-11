@@ -1813,6 +1813,46 @@ class TestDPMUtils(unittest.TestCase):
         self.assertListEqual([[1, 1, 0], [0, 1, 1], [1, 0, 1],
                               [1, 1, 0], [0, 1, 1], [1, 0, 1]], encodings.values[:, 1:].tolist())
 
+    def test_dpm_usage_all_aggregate_operations(self):
+        sequences_pos = [["A", "A", "B", "A", "D"],
+                         ["C", "B", "A"],
+                         ["C", "A", "C", "D"]]
+
+        # update attributes in the 2nd and 3rd row to add ['C', 'A']
+        values_pos = [[5, 5, 3, 8, 2],
+                      [3, 3, 3],
+                      [3, 5, 2, 1]]
+
+        sequences_neg = [["A", "A", "B", "A", "D"],
+                         ["C", "B", "A"],
+                         ["C", "A", "C", "D"]]
+
+        # Updating attributes in the first row to add ['B', 'A']
+        values_neg = [[5, 5, 3, 3, 2],
+                      [1, 3, 3],
+                      [4, 5, 2, 1]]
+
+        # Sequence data frame
+        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
+                                     'label': [1] * 3 + [0] * 3})
+
+        # Define constraints on attribute columns in data frame
+        price = Attribute(sequences_df['price'].values.tolist())
+        price_ct = 3 <= price.median() <= 4
+        attr_col_to_constraints = {'price': [price_ct]}
+
+        # patterns_pos: [['A', 'D'], ['C', 'A']]
+        # patterns_neg: [['A', 'D'], ['B', 'A']]
+        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+                                                 pattern_aggregation='all')
+
+        self.assertEqual(len(dpm_patterns), 4)
+        self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], dpm_patterns[0])
+        self.assertListEqual([['A', 'D']], dpm_patterns[1])
+        self.assertListEqual([['C', 'A']], dpm_patterns[2])
+        self.assertListEqual([['B', 'A']], dpm_patterns[3])
+
 
 if __name__ == '__main__':
     unittest.main()
