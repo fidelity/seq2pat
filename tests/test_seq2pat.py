@@ -1472,12 +1472,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='union')
 
         self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], dpm_patterns)
@@ -1508,12 +1508,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='intersection')
 
         self.assertListEqual([['A', 'D']], dpm_patterns)
@@ -1544,12 +1544,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='unique_positive')
 
         self.assertListEqual([['C', 'A']], dpm_patterns)
@@ -1580,12 +1580,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='unique_negative')
 
         self.assertListEqual([['B', 'A']], dpm_patterns)
@@ -1616,12 +1616,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='union')
 
         # Create encoding
@@ -1661,12 +1661,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='intersection')
 
         # Create encoding
@@ -1706,12 +1706,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='unique_positive')
 
         # Create encoding
@@ -1751,12 +1751,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='unique_negative')
 
         # Create encoding
@@ -1796,12 +1796,12 @@ class TestDPMUtils(unittest.TestCase):
         # Define constraints on attribute columns in data frame
         price = Attribute(sequences_df['price'].values.tolist())
         price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraint = {'price': [price_ct]}
+        attr_col_to_constraints = {'price': [price_ct]}
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
         dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraint=attr_col_to_constraint, min_frequency=2,
+                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
                                                  pattern_aggregation='union')
 
         # Create encoding

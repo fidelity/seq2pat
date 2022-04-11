@@ -472,7 +472,7 @@ def run_pattern_mining(items: List[list], min_frequency: Num, constraints: Union
 
 
 def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, label_col_name,
-                              attr_col_to_constraint: Dict[str, list] = None,
+                              attr_col_to_constraints: Dict[str, list] = None,
                               postive_label = 1, min_frequency: Num = 0.3,
                               pattern_aggregation: str = 'union'):
     """
@@ -486,7 +486,7 @@ def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, labe
         Column name of sequences
     label_col_name: str
         Column name of labels
-    attr_col_to_constraint: Dict[str, list]
+    attr_col_to_constraints: Dict[str, list]
         A dictionary holding a mapping from an attribute column name to the constraints enforced on the attribute
     min_frequency: Num
         If int, represents the minimum number of sequences (rows) a pattern should occur.
@@ -506,9 +506,9 @@ def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, labe
     sequence_pos_df = sequence_df[sequence_df[label_col_name] == postive_label]
     sequences_pos = sequence_pos_df[sequence_col_name].values.tolist()
 
-    if attr_col_to_constraint:
+    if attr_col_to_constraints:
         constraints_pos = []
-        for col_name, constraints in attr_col_to_constraint.items():
+        for col_name, constraints in attr_col_to_constraints.items():
             for constraint in constraints:
                 constraint.attribute.set_values(sequence_pos_df[col_name].values.tolist())
                 constraints_pos.append(constraint)
@@ -519,11 +519,11 @@ def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, labe
     patterns_pos = run_pattern_mining(sequences_pos, min_frequency=min_frequency, constraints=constraints_pos)
 
     sequence_neg_df = sequence_df[sequence_df[label_col_name] != postive_label]
-    sequences_neg = sequence_pos_df[sequence_col_name].values.tolist()
+    sequences_neg = sequence_neg_df[sequence_col_name].values.tolist()
 
-    if attr_col_to_constraint:
+    if attr_col_to_constraints:
         constraints_neg = []
-        for col_name, constraints in attr_col_to_constraint.items():
+        for col_name, constraints in attr_col_to_constraints.items():
             for constraint in constraints:
                 constraint.attribute.set_values(sequence_neg_df[col_name].values.tolist())
                 constraints_neg.append(constraint)
