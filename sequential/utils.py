@@ -10,14 +10,13 @@ import sequential.seq2pat as sp
 
 Num = Union[int, float]
 
+
 class Constants:
     unique_pos = 'unique_positive'
     unique_neg = 'unique_negative'
     intersection = 'intersection'
     union = 'union'
     all_operations = 'all'
-
-
 
 
 def check_true(expression: bool, exception: Exception) -> NoReturn:
@@ -618,4 +617,3 @@ def validate_sequences(sequences: List[list]):
     check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
     is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
-
