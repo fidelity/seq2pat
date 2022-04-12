@@ -471,25 +471,31 @@ def run_pattern_mining(items: List[list], min_frequency: Num, constraints: Union
     return patterns
 
 
-def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, label_col_name,
-                              attr_col_to_constraints: Dict[str, list] = None,
-                              postive_label = 1, min_frequency: Num = 0.3,
+def dichotomic_pattern_mining(items: List[list], labels: List[int],
+                              seq2pat_pos: object, seq2pat_neg: object,
+                              min_frequency_pos: Num = 0.3, min_frequency_neg: Num = 0.3,
                               pattern_aggregation: str = 'union'):
     """
     Run dichotomic pattern mining (DPM)
 
     Parameters
     ----------
-    sequence_df: pd.DataFrame
-        An DataFrame which contains sequences, attributes and labels
-    sequence_col_name: str
-        Column name of sequences
-    label_col_name: str
-        Column name of labels
-    attr_col_to_constraints: Dict[str, list]
-        A dictionary holding a mapping from an attribute column name to the constraints enforced on the attribute
-    min_frequency: Num
-        If int, represents the minimum number of sequences (rows) a pattern should occur.
+    items: List[list]
+        A list of sequences of items. This input is kept for consistency to Seq2pat APIs, but will not be used in DPM.
+    labels: List[int]
+        A list of binary labels. This input is kept for consistency to Seq2pat APIs, but will not be used in DPM.
+    seq2pat_pos: Seq2Pat object
+        A constraint model to mine patterns in positive sequences
+    seq2pat_neg: Seq2Pat object
+        A constraint model to mine patterns in negative sequences
+    min_frequency_pos: Num
+        Minimum frequency threshold for positive sequences
+        If int, represents the minimum number of sequences (rows) a pattern should occur
+        If float, should be (0.0, 1.0] and represents
+        the minimum percentage of sequences (rows) a pattern should occur.
+    min_frequency_neg: Num
+        Minimum frequency threshold for negative sequences
+        If int, represents the minimum number of sequences (rows) a pattern should occur
         If float, should be (0.0, 1.0] and represents
         the minimum percentage of sequences (rows) a pattern should occur.
     pattern_aggregation: str
@@ -505,35 +511,12 @@ def dichotomic_pattern_mining(sequence_df: pd.DataFrame, sequence_col_name, labe
     Mined patterns by running DPM.
 
     """
-    sequence_pos_df = sequence_df[sequence_df[label_col_name] == postive_label]
-    sequences_pos = sequence_pos_df[sequence_col_name].values.tolist()
-
-    if attr_col_to_constraints:
-        constraints_pos = []
-        for col_name, constraints in attr_col_to_constraints.items():
-            for constraint in constraints:
-                constraint.attribute.set_values(sequence_pos_df[col_name].values.tolist())
-                constraints_pos.append(constraint)
-    else:
-        constraints_pos = None
 
     # Mine positive cohort
-    patterns_pos = run_pattern_mining(sequences_pos, min_frequency=min_frequency, constraints=constraints_pos)
-
-    sequence_neg_df = sequence_df[sequence_df[label_col_name] != postive_label]
-    sequences_neg = sequence_neg_df[sequence_col_name].values.tolist()
-
-    if attr_col_to_constraints:
-        constraints_neg = []
-        for col_name, constraints in attr_col_to_constraints.items():
-            for constraint in constraints:
-                constraint.attribute.set_values(sequence_neg_df[col_name].values.tolist())
-                constraints_neg.append(constraint)
-    else:
-        constraints_neg = None
+    patterns_pos = seq2pat_pos.get_patterns(min_frequency=min_frequency_pos)
 
     # Mine negative cohort
-    patterns_neg = run_pattern_mining(sequences_neg, min_frequency=min_frequency, constraints=constraints_neg)
+    patterns_neg = seq2pat_neg.get_patterns(min_frequency=min_frequency_neg)
 
     # Drop frequencies in the end of mined patterns
     patterns_pos = drop_frequency(patterns_pos)
