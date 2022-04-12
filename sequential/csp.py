@@ -12,7 +12,34 @@ def print_vars(str, solver: cp_model.CpSolver, vars):
     print()
 
 
-def get_indexed_vars(model: cp_model.CpModel, indices, name, P, attributes):
+def add_lex_order(model, vars):
+    # Sort minFirst
+    size = len(vars)
+    for i, x in enumerate(vars):
+        if i == size - 1:
+            break
+        model.Add(vars[i] <= vars[i + 1])
+
+
+def add_element_ct(model: cp_model.CpModel, input_array, target_array):
+
+    # Range
+    R = range(len(target_array))
+
+    # The domain of the index variable is from 0 to input_array-1
+    index_vars = [model.NewIntVar(0, len(input_array) - 1, "index_" + str(i)) for i in R]
+
+    # Link sequence[index_vars[i]] = pattern[i]
+    for i in R:
+        model.AddElement(index_vars[i], input_array, target_array[i])
+
+    # Indexes are distinct
+    model.AddAllDifferent(index_vars)
+
+    return index_vars
+
+
+def get_indexed_vars(model: cp_model.CpModel, indices, name, attributes):
     """
     Helper function to create and return variables for
     vars = attributes[indices]
@@ -25,46 +52,53 @@ def get_indexed_vars(model: cp_model.CpModel, indices, name, P, attributes):
     :return:
 
     """
+
+    # Range
+    R = range(len(indices))
+
     # Define variables from attributes
     vars = [model.NewIntVarFromDomain(cp_model.Domain.FromValues(attributes),
-                                      name + str(i)) for i in P]
+                                      name + str(i)) for i in R]
 
     # Link attributes[index_i] = vars[i]
-    for i in P:
+    for i in R:
         model.AddElement(indices[i], attributes, vars[i])
 
     return vars
 
 
-def add_avg_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
+def add_avg_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
 
     if lb is None and ub is None:
         return []
 
-    # Average variables
-    vars = get_indexed_vars(model, indices, "avg_", P, attributes)
+    size = len(indices)
 
-    len_pattern = len(P)
+    # Average variables
+    vars = get_indexed_vars(model, indices, "avg_", attributes)
 
     # Average constraint
     if lb is not None:
-        model.Add(lb * len_pattern <= sum(vars))
+        model.Add(lb * size <= sum(vars))
 
     if ub is not None:
-        model.Add(sum(vars) <= ub * len_pattern)
+        model.Add(sum(vars) <= ub * size)
 
     return vars
 
 
-def add_gap_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
+def add_gap_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     if lb is None and ub is None:
         return []
 
+    # Range
+    R = range(len(indices))
+
     # Gap variables
-    vars = get_indexed_vars(model, indices, "gap_", P, attributes)
+    vars = get_indexed_vars(model, indices, "gap_", attributes)
 
     # Gap constraints
-    for i in reversed(P):
+    for i in reversed(R):
         if i == 0:
             break
 
@@ -77,57 +111,52 @@ def add_gap_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
     return vars
 
 
-def add_median_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
+def add_median_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
+
+    # Range
+    size = len(indices)
+    R = range(len(indices))
 
     if lb is None and ub is None:
         return [], []
 
     # Median variables
-    vars = get_indexed_vars(model, indices, "median_", P, attributes)
+    vars = get_indexed_vars(model, indices, "median_", attributes)
 
-    # Create sorted median variables
-    sorted_index = [model.NewIntVar(0, len(P)-1, "sorted_index") for i in P]
+    # Sorted version of median variables
     sorted_vars = [model.NewIntVarFromDomain(cp_model.Domain.FromValues(attributes),
-                                             "sorted_median_" + str(i)) for i in P]
+                                             "sorted_median_" + str(i)) for i in R]
 
-    # Link vars[sorted_index] = sorted_vars
-    for i in P:
-        model.AddElement(sorted_index[i], vars, sorted_vars[i])
+    # Link median vars and sorted median vars
+    sorted_index = add_element_ct(model, vars, sorted_vars)
 
-    # Indexes are distinct
-    model.AddAllDifferent(sorted_index)
-
-    # Sort minFirst
-    len_P = len(P)
-    for i in P:
-        if i == len_P - 1:
-            break
-        model.Add(sorted_vars[i] <= sorted_vars[i + 1])
+    # Sort vars
+    add_lex_order(model, sorted_vars)
 
     # Median constraint
-    is_odd = len_P % 2 == 1
+    is_odd = size % 2 == 1
     if lb is not None:
         if is_odd:
-            model.Add(lb <= sorted_vars[len_P//2])
+            model.Add(lb <= sorted_vars[size//2])
         else:
-            model.Add(lb * 2 <= sorted_vars[len_P//2] + sorted_vars[len_P//2 - 1])
+            model.Add(lb * 2 <= sorted_vars[size//2] + sorted_vars[size//2 - 1])
 
     if ub is not None:
         if is_odd:
-            model.Add(sorted_vars[len_P//2] <= ub)
+            model.Add(sorted_vars[size//2] <= ub)
         else:
-            model.Add(sorted_vars[len_P//2] + sorted_vars[len_P//2 - 1] <= ub * 2)
+            model.Add(sorted_vars[size//2] + sorted_vars[size//2 - 1] <= ub * 2)
 
     return vars, sorted_vars
 
 
-def add_span_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
+def add_span_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
 
     if lb is None and ub is None:
         return []
 
     # Span variables
-    vars = get_indexed_vars(model, indices, "span_", P, attributes)
+    vars = get_indexed_vars(model, indices, "span_", attributes)
 
     # Minimum, maximum variables
     min_value = int(min(attributes))
@@ -158,52 +187,42 @@ def is_satisfiable(sequence, pattern):
     # Example Input for Testing. This will come from constraints
     ####################################################
     average_lb = 0
-    average_ub = 10000
+    average_ub = 2
     average_attributes = list(np.array(sequence) * 1)
 
-    gap_lb = None
-    gap_ub = None
+    gap_lb = 0
+    gap_ub = 100
     gap_attributes = list(np.array(sequence) * 10)
 
     median_lb = 0
     median_ub = 1000
     median_attributes = list(np.array(sequence) * 100)
 
-    span_lb = 0
-    span_ub = 5000
+    span_lb = None
+    span_ub = None
     span_attributes = list(np.array(sequence) * 1000)
     ####################################################
 
     # Constraint model
     model = cp_model.CpModel()
 
-    # Constants and ranges
-    len_sequence = len(sequence)
-    len_pattern = len(pattern)
-    P = range(len_pattern)
+    # Index variables point into the sequence sequence[index_i] = pattern_i
+    index_vars = add_element_ct(model, sequence, pattern)
 
-    # Index variables for each element in the pattern pointing into the sequence
-    # The domain of the index variable is from 0 to sequence_len-1
-    index_vars = [model.NewIntVar(0, len_sequence - 1, "index_" + str(i)) for i in P]
-
-    # Indexes are distinct
-    model.AddAllDifferent(index_vars)
-
-    # Link sequence[index_vars[i]] = pattern[i]
-    for i in P:
-        model.AddElement(index_vars[i], sequence, pattern[i])
+    # Indexes are ordered
+    add_lex_order(model, index_vars)
 
     # Average constraint
-    avg_vars = add_avg_ct(model, index_vars, P, average_lb, average_ub, average_attributes)
+    avg_vars = add_avg_ct(model, index_vars, average_lb, average_ub, average_attributes)
 
     # Gap constraint
-    gap_vars = add_gap_ct(model, index_vars, P, gap_lb, gap_ub, gap_attributes)
+    gap_vars = add_gap_ct(model, index_vars, gap_lb, gap_ub, gap_attributes)
 
     # Median constraint
-    median_vars, sorted_median_vars = add_median_ct(model, index_vars, P, median_lb, median_ub, median_attributes)
+    median_vars, sorted_median_vars = add_median_ct(model, index_vars, median_lb, median_ub, median_attributes)
 
     # Span constraint
-    span_vars = add_span_ct(model, index_vars, P, span_lb, span_ub, span_attributes)
+    span_vars = add_span_ct(model, index_vars, span_lb, span_ub, span_attributes)
 
     # Solve the model
     solver = cp_model.CpSolver()
@@ -225,4 +244,4 @@ def is_satisfiable(sequence, pattern):
         return False
 
 
-is_satisfiable([2, 1, 3, 4], [2, 1, 3])
+is_satisfiable([1, 2, 3, 4], [1, 2, 3])
