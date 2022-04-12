@@ -175,22 +175,74 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1]*3 + [0]*3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='union')
 
         self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], dpm_patterns)
+
+    def test_dichotomic_pattern_mining_union_diff_min_freq(self):
+        sequences_pos = [["A", "A", "B", "A", "D"],
+                         ["C", "B", "A"],
+                         ["C", "A", "C", "D"]]
+
+        # update attributes in the 2nd and 3rd row to add ['C', 'A']
+        values_pos = [[5, 5, 3, 8, 2],
+                      [3, 3, 3],
+                      [3, 5, 2, 1]]
+
+        sequences_neg = [["A", "A", "B", "A", "D"],
+                         ["C", "B", "A"],
+                         ["C", "A", "C", "D"]]
+
+        # Updating attributes in the first row to add ['B', 'A']
+        values_neg = [[5, 5, 3, 3, 2],
+                      [1, 3, 3],
+                      [4, 5, 2, 1]]
+
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
+
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
+
+        # patterns_pos: [['A', 'D'], ['C', 'A']]
+        # patterns_neg: [['A', 'D'], ['B', 'A']]
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=1, min_frequency_neg=2,
+                                                 pattern_aggregation='union')
+
+        self.assertListEqual([['A', 'A', 'B', 'D'], ['A', 'B'], ['A', 'B', 'A', 'D'], ['A', 'B', 'D'], ['A', 'C'],
+                              ['A', 'D'], ['B', 'A'], ['B', 'A', 'D'], ['C', 'A'], ['C', 'A', 'C'],
+                              ['C', 'A', 'D'], ['C', 'B'], ['C', 'B', 'A']], dpm_patterns)
 
     def test_dichotomic_pattern_mining_intersection(self):
         sequences_pos = [["A", "A", "B", "A", "D"],
@@ -211,19 +263,26 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='intersection')
 
         self.assertListEqual([['A', 'D']], dpm_patterns)
@@ -247,19 +306,26 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='unique_positive')
 
         self.assertListEqual([['C', 'A']], dpm_patterns)
@@ -283,19 +349,26 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='unique_negative')
 
         self.assertListEqual([['B', 'A']], dpm_patterns)
@@ -319,24 +392,30 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='union')
 
         # Create encoding
-        sequences = sequences_df['sequence'].values.tolist()
-        price = Attribute(sequences_df['price'].values.tolist())
+        price = Attribute(values=values_pos + values_neg)
         price_ct = 3 <= price.median() <= 4
 
         encodings = get_one_hot_encodings(sequences, dpm_patterns, constraints=[price_ct],
@@ -364,24 +443,30 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='intersection')
 
         # Create encoding
-        sequences = sequences_df['sequence'].values.tolist()
-        price = Attribute(sequences_df['price'].values.tolist())
+        price = Attribute(values=values_pos + values_neg)
         price_ct = 3 <= price.median() <= 4
 
         encodings = get_one_hot_encodings(sequences, dpm_patterns, constraints=[price_ct],
@@ -409,24 +494,30 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='unique_positive')
 
         # Create encoding
-        sequences = sequences_df['sequence'].values.tolist()
-        price = Attribute(sequences_df['price'].values.tolist())
+        price = Attribute(values=values_pos + values_neg)
         price_ct = 3 <= price.median() <= 4
 
         encodings = get_one_hot_encodings(sequences, dpm_patterns, constraints=[price_ct],
@@ -454,24 +545,30 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='unique_negative')
 
         # Create encoding
-        sequences = sequences_df['sequence'].values.tolist()
-        price = Attribute(sequences_df['price'].values.tolist())
+        price = Attribute(values=values_pos + values_neg)
         price_ct = 3 <= price.median() <= 4
 
         encodings = get_one_hot_encodings(sequences, dpm_patterns, constraints=[price_ct],
@@ -499,23 +596,27 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='union')
-
-        # Create encoding
-        sequences = sequences_df['sequence'].values.tolist()
 
         encodings = get_one_hot_encodings(sequences, dpm_patterns,
                                           drop_pattern_frequency=False)
@@ -542,19 +643,26 @@ class TestDPMUtils(unittest.TestCase):
                       [1, 3, 3],
                       [4, 5, 2, 1]]
 
-        # Sequence data frame
-        sequences_df = pd.DataFrame({'sequence': sequences_pos + sequences_neg, 'price': values_pos + values_neg,
-                                     'label': [1] * 3 + [0] * 3})
+        # Define seq2pat_pos for positive cohort
+        seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+        price_attr_pos = Attribute(values=values_pos)
+        price_attr_ct_pos = 3 <= price_attr_pos.median() <= 4
+        seq2pat_pos.add_constraint(price_attr_ct_pos)
 
-        # Define constraints on attribute columns in data frame
-        price = Attribute(sequences_df['price'].values.tolist())
-        price_ct = 3 <= price.median() <= 4
-        attr_col_to_constraints = {'price': [price_ct]}
+        # Define seq2pat_neg for negative cohort
+        seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+        price_attr_neg = Attribute(values=values_neg)
+        price_attr_ct_neg = 3 <= price_attr_neg.median() <= 4
+        seq2pat_neg.add_constraint(price_attr_ct_neg)
+
+        sequences = sequences_pos + sequences_neg
+        labels = [1] * 3 + [0] * 3
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences_df, sequence_col_name='sequence', label_col_name='label',
-                                                 attr_col_to_constraints=attr_col_to_constraints, min_frequency=2,
+        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
+                                                 seq2pat_pos, seq2pat_neg,
+                                                 min_frequency_pos=2, min_frequency_neg=2,
                                                  pattern_aggregation='all')
 
         self.assertEqual(len(dpm_patterns), 4)
