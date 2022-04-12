@@ -17,7 +17,3 @@ class TestSeq2Pat(unittest.TestCase):
         has_pattern = is_satisfiable(sequence, pattern)
 
         print("has_pattern: ", has_pattern)
-
-
-
-

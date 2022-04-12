@@ -126,11 +126,12 @@ def add_span_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
     if lb is None and ub is None:
         return []
 
+    # Span variables
+    vars = get_indexed_vars(model, indices, "span_", P, attributes)
+
+    # Minimum, maximum variables
     min_value = int(min(attributes))
     max_value = int(max(attributes))
-
-    # Minimum, maximum variables of the span
-    vars = get_indexed_vars(model, indices, "span_", P, attributes)
     min_var = model.NewIntVar(min_value, max_value, "min_span")
     max_var = model.NewIntVar(min_value, max_value, "max_span")
 
@@ -138,12 +139,16 @@ def add_span_ct(model: cp_model.CpModel, indices, P, lb, ub, attributes):
     model.AddMaxEquality(max_var, vars)
     model.AddMinEquality(min_var, vars)
 
+    # Span variable
+    span_var = model.NewIntVar(min_value, max_value, "span_var")
+    model.Add(max_var - min_var == span_var)
+
     # Span constraint
     if lb is not None:
-        model.Add(lb <= max_var - min_var)
+        model.Add(lb <= span_var)
 
     if ub is not None:
-        model.Add(max_var - min_var <= ub)
+        model.Add(span_var <= ub)
 
     return vars
 
@@ -218,7 +223,6 @@ def is_satisfiable(sequence, pattern):
     else:
         print('No solution found.')
         return False
-
 
 
 is_satisfiable([2, 1, 3, 4], [2, 1, 3])
