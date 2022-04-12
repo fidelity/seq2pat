@@ -198,8 +198,8 @@ def is_satisfiable(sequence, pattern):
     median_ub = 1000
     median_attributes = list(np.array(sequence) * 100)
 
-    span_lb = None
-    span_ub = None
+    span_lb = 0
+    span_ub = 100000
     span_attributes = list(np.array(sequence) * 1000)
     ####################################################
 
