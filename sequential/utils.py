@@ -5,6 +5,7 @@ from typing import Union, NoReturn, List, Tuple, Dict
 import statistics
 import pandas as pd
 import numpy as np
+from sequential.csp import is_satisfiable
 
 import sequential.seq2pat as sp
 
@@ -417,11 +418,16 @@ def get_one_hot_encodings(items: List[list], patterns: List[list], constraints: 
     if drop_pattern_frequency:
         patterns = drop_frequency(patterns)
 
-    else:
-        if isinstance(items[0][0], str):
-            check_true(not isinstance(patterns[0][-1], int),
-                       ValueError("Patterns should not contain integers! "
-                                  "Check if the frequency is appended to the end of given patterns."))
+    if isinstance(items[0][0], str):
+        check_true(not isinstance(patterns[0][-1], int),
+                   ValueError("Patterns should not contain integers! "
+                              "Check if the frequency is appended to the end of given patterns."))
+        check_true(isinstance(patterns[0][0], str),
+                   ValueError("When items are strings, patterns should also be strings."))
+
+        str_to_int, int_to_str = item_map(items)
+        items = string_to_int(str_to_int, items)
+        patterns = string_to_int(str_to_int, patterns)
 
     df = pd.DataFrame()
     df['sequence'] = items
@@ -429,8 +435,13 @@ def get_one_hot_encodings(items: List[list], patterns: List[list], constraints: 
 
     for i, pattern in enumerate(patterns):
         # For each pattern, create encoding for all sequences
-        df['feat' + str(i)] = df.apply(lambda row: is_subsequence_in_rolling(pattern, row['sequence'], row['seq_ind'],
-                                                                             rolling_window_size, constraints), axis=1)
+        if rolling_window_size:
+            df['feat' + str(i)] = df.apply(lambda row: is_subsequence_in_rolling(pattern, row['sequence'],
+                                                                                 row['seq_ind'], rolling_window_size,
+                                                                                 constraints), axis=1)
+        else:
+            df['feat' + str(i)] = df.apply(lambda row: is_satisfiable(row['sequence'], pattern, row['seq_ind'],
+                                                                      constraints), axis=1)
         # Cast bool type value to int
         df['feat' + str(i)] = df['feat' + str(i)].astype(int)
 

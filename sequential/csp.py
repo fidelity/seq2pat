@@ -3,6 +3,7 @@
 
 import numpy as np
 from ortools.sat.python import cp_model
+import sequential.seq2pat as sp
 
 
 def print_vars(str, solver: cp_model.CpSolver, vars):
@@ -182,26 +183,26 @@ def add_span_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     return vars
 
 
-def is_satisfiable(sequence, pattern):
+def is_satisfiable(sequence, pattern, seq_ind, constraints):
 
-    # Example Input for Testing. This will come from constraints
-    ####################################################
-    average_lb = 0
-    average_ub = 2
-    average_attributes = list(np.array(sequence) * 1)
-
-    gap_lb = 0
-    gap_ub = 100
-    gap_attributes = list(np.array(sequence) * 10)
-
-    median_lb = 0
-    median_ub = 1000
-    median_attributes = list(np.array(sequence) * 100)
-
-    span_lb = 0
-    span_ub = 100000
-    span_attributes = list(np.array(sequence) * 1000)
-    ####################################################
+    # # Example Input for Testing. This will come from constraints
+    # ####################################################
+    # average_lb = 0
+    # average_ub = 2
+    # average_attributes = list(np.array(sequence) * 1)
+    #
+    # gap_lb = 0
+    # gap_ub = 100
+    # gap_attributes = list(np.array(sequence) * 10)
+    #
+    # median_lb = 0
+    # median_ub = 1000
+    # median_attributes = list(np.array(sequence) * 100)
+    #
+    # span_lb = 0
+    # span_ub = 100000
+    # span_attributes = list(np.array(sequence) * 1000)
+    # ####################################################
 
     # Constraint model
     model = cp_model.CpModel()
@@ -212,36 +213,63 @@ def is_satisfiable(sequence, pattern):
     # Indexes are ordered
     add_lex_order(model, index_vars)
 
-    # Average constraint
-    avg_vars = add_avg_ct(model, index_vars, average_lb, average_ub, average_attributes)
+    if constraints:
+        for constraint in constraints:
 
-    # Gap constraint
-    gap_vars = add_gap_ct(model, index_vars, gap_lb, gap_ub, gap_attributes)
+            if isinstance(constraint, sp._Constraint.Average):
+                average_ub = constraint.upper_bound
+                average_lb = constraint.lower_bound
 
-    # Median constraint
-    median_vars, sorted_median_vars = add_median_ct(model, index_vars, median_lb, median_ub, median_attributes)
+                attrs = constraint.attribute.values[seq_ind]
 
-    # Span constraint
-    span_vars = add_span_ct(model, index_vars, span_lb, span_ub, span_attributes)
+                # Average constraint
+                avg_vars = add_avg_ct(model, index_vars, average_lb, average_ub, attrs)
+
+            if isinstance(constraint, sp._Constraint.Gap):
+                gap_ub = constraint.upper_bound
+                gap_lb = constraint.lower_bound
+
+                attrs = constraint.attribute.values[seq_ind]
+
+                # Gap constraint
+                gap_vars = add_gap_ct(model, index_vars, gap_lb, gap_ub, attrs)
+
+            if isinstance(constraint, sp._Constraint.Median):
+                median_ub = constraint.upper_bound
+                median_lb = constraint.lower_bound
+
+                attrs = constraint.attribute.values[seq_ind]
+
+                # Median constraint
+                median_vars, sorted_median_vars = add_median_ct(model, index_vars, median_lb, median_ub, attrs)
+
+            if isinstance(constraint, sp._Constraint.Span):
+                span_ub = constraint.upper_bound
+                span_lb = constraint.lower_bound
+
+                attrs = constraint.attribute.values[seq_ind]
+
+                # Span constraint
+                span_vars = add_span_ct(model, index_vars, span_lb, span_ub, attrs)
 
     # Solve the model
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
-    print('%s found in %0.2fs' % (solver.StatusName(status), solver.WallTime()))
-    print('%s branches %s conflicts' % (solver.NumBranches(), solver.NumConflicts()))
+    # print('%s found in %0.2fs' % (solver.StatusName(status), solver.WallTime()))
+    # print('%s branches %s conflicts' % (solver.NumBranches(), solver.NumConflicts()))
 
     # If solution found
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        print_vars("index_vars: ", solver, index_vars)
-        print_vars("avg_vars: ", solver, avg_vars)
-        print_vars("gap_vars: ", solver, gap_vars)
-        print_vars("median_vars: ", solver, median_vars)
-        print_vars("sorted_median_vars: ", solver, sorted_median_vars)
-        print_vars("span_vars: ", solver, span_vars)
+        # print_vars("index_vars: ", solver, index_vars)
+        # print_vars("avg_vars: ", solver, avg_vars)
+        # print_vars("gap_vars: ", solver, gap_vars)
+        # print_vars("median_vars: ", solver, median_vars)
+        # print_vars("sorted_median_vars: ", solver, sorted_median_vars)
+        # print_vars("span_vars: ", solver, span_vars)
         return True
     else:
-        print('No solution found.')
+        # print('No solution found.')
         return False
 
 
-is_satisfiable([1, 2, 3, 4], [1, 2, 3])
+# is_satisfiable([1, 2, 3, 4], [1, 2, 3])
