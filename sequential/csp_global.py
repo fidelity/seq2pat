@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-import numpy as np
 from ortools.sat.python import cp_model
+
 import sequential.seq2pat as sp
 
 
@@ -270,6 +270,3 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
     else:
         # print('No solution found.')
         return False
-
-
-# is_satisfiable([1, 2, 3, 4], [1, 2, 3])

@@ -4,7 +4,6 @@
 
 from seq2pat cimport Seq2pat
 from libcpp.vector cimport vector
-from libc.stdlib cimport free
 
 
 # seq2pat.pxd/seq_to_pat.pyx wrap seq2pat.hpp/seq2pat.cpp providing
@@ -73,7 +72,7 @@ cdef class PySeq2pat:
     @theta.setter
     def theta(self, theta):
         self.c_seq2pat.theta = theta
-    
+
     @property
     def lgap(self):
         return self.c_seq2pat.lgap
@@ -125,7 +124,7 @@ cdef class PySeq2pat:
     @property
     def lmed(self):
         return self.c_seq2pat.lmed
-    
+
     @lmed.setter
     def lmed(self, lmed):
         self.c_seq2pat.lmed = lmed
@@ -165,7 +164,7 @@ cdef class PySeq2pat:
     @property
     def lspni(self):
         return self.c_seq2pat.lspni
-    
+
     @lspni.setter
     def lspni(self, lspni):
         self.c_seq2pat.lspni = lspni
@@ -189,7 +188,7 @@ cdef class PySeq2pat:
     @property
     def umedi(self):
         return self.c_seq2pat.umedi
-    
+
     @umedi.setter
     def umedi(self, umedi):
         self.c_seq2pat.umedi = umedi
@@ -229,7 +228,7 @@ cdef class PySeq2pat:
     @property
     def tot_gap(self):
         return self.c_seq2pat.tot_gap
-    
+
     @tot_gap.setter
     def tot_gap(self, tot_gap):
         self.c_seq2pat.tot_gap = tot_gap
@@ -241,7 +240,7 @@ cdef class PySeq2pat:
     @tot_spn.setter
     def tot_spn(self, tot_spn):
         self.c_seq2pat.tot_spn = tot_spn
-    
+
     @property
     def tot_avr(self):
         return self.c_seq2pat.tot_avr
@@ -277,7 +276,7 @@ cdef class PySeq2pat:
     @property
     def num_att(self):
         return self.c_seq2pat.num_att
-    
+
     @num_att.setter
     def num_att(self, num_att):
         self.c_seq2pat.num_att = num_att

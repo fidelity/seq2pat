@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import NamedTuple, List, Dict, NoReturn, Union
-from sequential.utils import Num, check_true, check_false, get_max_column_size, \
+import gc
+from typing import NamedTuple, List, Dict, NoReturn
+
+from sequential.backend import seq_to_pat as stp
+from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences
-from sequential.backend import seq_to_pat as stp
-
-import gc
-
 
 __version__ = "1.2.3"
 
@@ -388,7 +387,7 @@ class Seq2Pat:
         return constraint
 
     def remove_constraint(self, constraint: _BaseConstraint) -> NoReturn:
-        """
+       """
        Removes the given constraint from the constraint store.
 
        Attributes
@@ -402,20 +401,20 @@ class Seq2Pat:
 
        """
 
-        # Attribute and constraint id
-        attribute_id = constraint.attribute
-        constraint_id = constraint.__class__.__name__
+       # Attribute and constraint id
+       attribute_id = constraint.attribute
+       constraint_id = constraint.__class__.__name__
 
-        try:
-            # Remove the constraint from the attribute
-            del self.attr_to_cts[attribute_id][constraint_id]
+       try:
+           # Remove the constraint from the attribute
+           del self.attr_to_cts[attribute_id][constraint_id]
 
-            # If no constraint left on the attribute, remove the attribute
-            if len(self.attr_to_cts[attribute_id]) == 0:
-                del self.attr_to_cts[attribute_id]
+           # If no constraint left on the attribute, remove the attribute
+           if len(self.attr_to_cts[attribute_id]) == 0:
+               del self.attr_to_cts[attribute_id]
 
-        except KeyError:
-            raise KeyError("No " + constraint_id + " constraint to remove on this attribute.")
+       except KeyError:
+           raise KeyError("No " + constraint_id + " constraint to remove on this attribute.")
 
     def get_patterns(self, min_frequency: Num) -> List[list]:
         """

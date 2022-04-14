@@ -3,8 +3,8 @@
 
 import unittest
 import numpy as np
-from sequential.seq2pat import Seq2Pat, Attribute
-from sequential.csp import is_satisfiable
+from sequential.seq2pat import Attribute
+from sequential.csp_global import is_satisfiable
 
 
 class TestSeq2Pat(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # print("has_pattern: ", has_pattern)
 
-    def test_csp_example(self):
+    def test_csp_example2(self):
 
         sequence = [1, 1, 1, 2, 3, 1, 4, 1, 2, 3, 1, 4, 1, 2, 1, 1, 1]
         pattern = [1, 1]
@@ -54,7 +54,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         has_pattern = is_satisfiable(sequence, pattern, 0, None)
 
-        print("has_pattern: ", has_pattern)
+        # print("has_pattern: ", has_pattern)
 
 
 

@@ -1,11 +1,11 @@
-import unittest
+# -*- coding: utf-8 -*-
+# SPDX-License-Identifier: GPL-2.0
 
 import os
 import unittest
-import pandas as pd
 
 from sequential.seq2pat import Seq2Pat, Attribute
-from sequential.utils import (get_one_hot_encodings, dichotomic_pattern_mining)
+from sequential.dpm import get_one_hot_encodings, dichotomic_pattern_mining, DichotomicAggregation
 
 
 class TestDPMUtils(unittest.TestCase):
@@ -38,7 +38,8 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding
-        encodings = get_one_hot_encodings(sequences, patterns, constraints=[price_ct])
+        encodings = get_one_hot_encodings(sequences, patterns,
+                                          constraints=[price_ct], drop_pattern_frequency=True)
         # sequence      feat0
         # [A,A,B,A,D]    1
         # [C, B, A]      0
@@ -58,7 +59,7 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding
-        encodings = get_one_hot_encodings(sequences, patterns)
+        encodings = get_one_hot_encodings(sequences, patterns, drop_pattern_frequency=True)
         # encoding is a data frame
         # sequence      feat0 feat1 feat2
         # [A,A,B,A,D]    1    1     0
@@ -152,7 +153,7 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding with/without constraints
-        encodings = get_one_hot_encodings(sequences, patterns, [price_ct])
+        encodings = get_one_hot_encodings(sequences, patterns, [price_ct], drop_pattern_frequency=True)
 
         self.assertListEqual([[1], [0], [1]], encodings.values[:, 1:].tolist())
 
@@ -192,10 +193,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='union')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
         self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], dpm_patterns)
 
@@ -235,10 +234,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=1, min_frequency_neg=2,
-                                                 pattern_aggregation='union')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=1, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
         self.assertListEqual([['A', 'A', 'B', 'D'], ['A', 'B'], ['A', 'B', 'A', 'D'], ['A', 'B', 'D'], ['A', 'C'],
                               ['A', 'D'], ['B', 'A'], ['B', 'A', 'D'], ['C', 'A'], ['C', 'A', 'C'],
@@ -280,10 +277,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='intersection')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.intersection]
 
         self.assertListEqual([['A', 'D']], dpm_patterns)
 
@@ -323,10 +318,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='unique_positive')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.unique_pos]
 
         self.assertListEqual([['C', 'A']], dpm_patterns)
 
@@ -366,10 +359,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='unique_negative')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.unique_neg]
 
         self.assertListEqual([['B', 'A']], dpm_patterns)
 
@@ -409,10 +400,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='union')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
         # Create encoding
         price = Attribute(values=values_pos + values_neg)
@@ -460,10 +449,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='intersection')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.intersection]
 
         # Create encoding
         price = Attribute(values=values_pos + values_neg)
@@ -511,10 +498,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='unique_positive')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.unique_pos]
 
         # Create encoding
         price = Attribute(values=values_pos + values_neg)
@@ -562,10 +547,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='unique_negative')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.unique_neg]
 
         # Create encoding
         price = Attribute(values=values_pos + values_neg)
@@ -613,10 +596,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='union')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
         encodings = get_one_hot_encodings(sequences, dpm_patterns,
                                           drop_pattern_frequency=False)
@@ -660,16 +641,13 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        dpm_patterns = dichotomic_pattern_mining(sequences, labels,
-                                                 seq2pat_pos, seq2pat_neg,
-                                                 min_frequency_pos=2, min_frequency_neg=2,
-                                                 pattern_aggregation='all')
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
 
-        self.assertEqual(len(dpm_patterns), 4)
-        self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], dpm_patterns[0])
-        self.assertListEqual([['A', 'D']], dpm_patterns[1])
-        self.assertListEqual([['C', 'A']], dpm_patterns[2])
-        self.assertListEqual([['B', 'A']], dpm_patterns[3])
+        self.assertEqual(len(aggregation_to_patterns), 4)
+        self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], aggregation_to_patterns[DichotomicAggregation.union])
+        self.assertListEqual([['A', 'D']], aggregation_to_patterns[DichotomicAggregation.intersection])
+        self.assertListEqual([['C', 'A']], aggregation_to_patterns[DichotomicAggregation.unique_pos])
+        self.assertListEqual([['B', 'A']], aggregation_to_patterns[DichotomicAggregation.unique_neg])
 
 
 if __name__ == '__main__':
