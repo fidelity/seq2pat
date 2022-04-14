@@ -64,11 +64,11 @@ def dichotomic_pattern_mining(seq2pat_pos: sp.Seq2Pat, seq2pat_neg: sp.Seq2Pat,
     union_patterns = set(map(tuple, patterns_pos)).union(set(map(tuple, patterns_neg)))
     aggregation_to_patterns[DichotomicAggregation.union] = sorted(list(map(list, union_patterns)))
 
-    unique_pos_patterns = set(map(tuple, patterns_pos)) - set(map(tuple, patterns_neg))
-    aggregation_to_patterns[DichotomicAggregation.unique_pos] = sorted(list(map(list, unique_pos_patterns)))
-
     unique_neg_patterns = set(map(tuple, patterns_neg)) - set(map(tuple, patterns_pos))
     aggregation_to_patterns[DichotomicAggregation.unique_neg] = sorted(list(map(list, unique_neg_patterns)))
+
+    unique_pos_patterns = set(map(tuple, patterns_pos)) - set(map(tuple, patterns_neg))
+    aggregation_to_patterns[DichotomicAggregation.unique_pos] = sorted(list(map(list, unique_pos_patterns)))
 
     return aggregation_to_patterns
 
