@@ -7,23 +7,23 @@ from typing import Union, Tuple
 import sequential.seq2pat as sp
 
 
-def get_average(sequence):
+def _get_average(sequence):
     return statistics.mean(sequence)
 
 
-def get_median(sequence):
+def _get_median(sequence):
     return statistics.median(sequence)
 
 
-def get_gap(sequence):
+def _get_gap(sequence):
     return [i - j for i, j in zip(sequence[1:], sequence[:-1])]
 
 
-def get_span(sequence):
+def _get_span(sequence):
     return max(sequence) - min(sequence)
 
 
-def is_subsequence(list1: list, list2: list) -> bool:
+def _is_subsequence(list1: list, list2: list) -> bool:
     """
     Check if list1 is a subsequence of list2.
 
@@ -43,15 +43,15 @@ def is_subsequence(list1: list, list2: list) -> bool:
     return index_list1 == len_list1
 
 
-def subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
-                           rolling_window_size: int, seq_attr_start: int) -> bool:
+def _subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
+                            rolling_window_size: int, seq_attr_start: int) -> bool:
     """
     Identify if a pattern is in a given sequence, subject to the optional seq2pat._Constraint type of constraints.
 
     """
     res = False
 
-    if not is_subsequence(pattern, sequence):
+    if not _is_subsequence(pattern, sequence):
         # if pattern is not a subsequence of seq, return False
         return res
     else:
@@ -59,14 +59,14 @@ def subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, con
             # if pattern is a subsequence and there is no constraint, return True
             return True
         else:
-            res = meet_constraints_in_rolling(sequence, pattern, seq_attr_ind, constraints, rolling_window_size,
-                                              seq_attr_start)
+            res = _meet_constraints_in_rolling(sequence, pattern, seq_attr_ind, constraints, rolling_window_size,
+                                               seq_attr_start)
 
     return res
 
 
-def meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
-                                rolling_window_size: int, window_start_ind: int) -> bool:
+def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
+                                 rolling_window_size: int, window_start_ind: int) -> bool:
     """
     Check if a pattern is in an individual sequence of items, subject to defined constraints.
 
@@ -92,7 +92,7 @@ def meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int
     """
 
     # Get all matched subsequences and their index
-    _, item_subsequences_indices = get_matched_subsequences(sequence, pattern)
+    _, item_subsequences_indices = _get_matched_subsequences(sequence, pattern)
 
     meet_all_constraints = False
     for sub_ind, s in enumerate(item_subsequences_indices):
@@ -108,19 +108,19 @@ def meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int
             attr_subsequence = [attrs[i] for i in s]
 
             if isinstance(constraint, sp._Constraint.Average):
-                attr_info = get_average(attr_subsequence)
+                attr_info = _get_average(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
             if isinstance(constraint, sp._Constraint.Median):
-                attr_info = get_median(attr_subsequence)
+                attr_info = _get_median(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
             if isinstance(constraint, sp._Constraint.Span):
-                attr_info = get_span(attr_subsequence)
+                attr_info = _get_span(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
             if isinstance(constraint, sp._Constraint.Gap):
-                attr_info = get_gap(attr_subsequence)
+                attr_info = _get_gap(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
         if all(res):
@@ -130,7 +130,7 @@ def meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int
     return meet_all_constraints
 
 
-def get_matched_subsequences(sequence: list, pattern: list) -> Tuple[list, list]:
+def _get_matched_subsequences(sequence: list, pattern: list) -> Tuple[list, list]:
     """
     Find all possible subsequences of a sequence in a recursive way.
     For every element in the list, there are two choices, either to include it in the subsequence or not include it.
@@ -174,13 +174,13 @@ def is_satisfiable_in_rolling(sequence: list, pattern: list, seq_attr_ind: int, 
     res = False
 
     if len(sequence) <= rolling_window_size:
-        res = subsequence_identifier(sequence, pattern, seq_attr_ind, constraints, rolling_window_size, 0)
+        res = _subsequence_identifier(sequence, pattern, seq_attr_ind, constraints, rolling_window_size, 0)
 
     else:
         num_iters = len(sequence) - rolling_window_size
         for i in range(num_iters + 1):
-            if subsequence_identifier(sequence[i:i + rolling_window_size], pattern, seq_attr_ind, constraints,
-                                      rolling_window_size, i):
+            if _subsequence_identifier(sequence[i:i + rolling_window_size], pattern, seq_attr_ind, constraints,
+                                       rolling_window_size, i):
                 res = True
                 break
     return res

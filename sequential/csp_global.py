@@ -6,14 +6,14 @@ from ortools.sat.python import cp_model
 import sequential.seq2pat as sp
 
 
-def print_vars(str, solver: cp_model.CpSolver, vars):
+def _print_vars(str, solver: cp_model.CpSolver, vars):
     print(str, end=" ")
     for x in vars:
         print(solver.Value(x), end=" ")
     print()
 
 
-def add_lex_order(model, vars):
+def _add_lex_order(model, vars):
     # Sort minFirst
     size = len(vars)
     for i, x in enumerate(vars):
@@ -22,7 +22,7 @@ def add_lex_order(model, vars):
         model.Add(vars[i] <= vars[i + 1])
 
 
-def add_element_ct(model: cp_model.CpModel, input_array, target_array):
+def _add_element_ct(model: cp_model.CpModel, input_array, target_array):
 
     # Range
     R = range(len(target_array))
@@ -40,7 +40,7 @@ def add_element_ct(model: cp_model.CpModel, input_array, target_array):
     return index_vars
 
 
-def get_indexed_vars(model: cp_model.CpModel, indices, name, attributes):
+def _get_indexed_vars(model: cp_model.CpModel, indices, name, attributes):
     """
     Helper function to create and return variables for
     vars = attributes[indices]
@@ -68,7 +68,7 @@ def get_indexed_vars(model: cp_model.CpModel, indices, name, attributes):
     return vars
 
 
-def add_avg_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
+def _add_avg_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
 
     if lb is None and ub is None:
         return []
@@ -76,7 +76,7 @@ def add_avg_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     size = len(indices)
 
     # Average variables
-    vars = get_indexed_vars(model, indices, "avg_", attributes)
+    vars = _get_indexed_vars(model, indices, "avg_", attributes)
 
     # Average constraint
     if lb is not None:
@@ -88,7 +88,7 @@ def add_avg_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     return vars
 
 
-def add_gap_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
+def _add_gap_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     if lb is None and ub is None:
         return []
 
@@ -96,7 +96,7 @@ def add_gap_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     R = range(len(indices))
 
     # Gap variables
-    vars = get_indexed_vars(model, indices, "gap_", attributes)
+    vars = _get_indexed_vars(model, indices, "gap_", attributes)
 
     # Gap constraints
     for i in reversed(R):
@@ -112,7 +112,7 @@ def add_gap_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     return vars
 
 
-def add_median_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
+def _add_median_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
 
     # Range
     size = len(indices)
@@ -122,17 +122,17 @@ def add_median_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
         return [], []
 
     # Median variables
-    vars = get_indexed_vars(model, indices, "median_", attributes)
+    vars = _get_indexed_vars(model, indices, "median_", attributes)
 
     # Sorted version of median variables
     sorted_vars = [model.NewIntVarFromDomain(cp_model.Domain.FromValues(attributes),
                                              "sorted_median_" + str(i)) for i in R]
 
     # Link median vars and sorted median vars
-    sorted_index = add_element_ct(model, vars, sorted_vars)
+    sorted_index = _add_element_ct(model, vars, sorted_vars)
 
     # Sort vars
-    add_lex_order(model, sorted_vars)
+    _add_lex_order(model, sorted_vars)
 
     # Median constraint
     is_odd = size % 2 == 1
@@ -151,13 +151,13 @@ def add_median_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
     return vars, sorted_vars
 
 
-def add_span_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
+def _add_span_ct(model: cp_model.CpModel, indices, lb, ub, attributes):
 
     if lb is None and ub is None:
         return []
 
     # Span variables
-    vars = get_indexed_vars(model, indices, "span_", attributes)
+    vars = _get_indexed_vars(model, indices, "span_", attributes)
 
     # Minimum, maximum variables
     min_value = int(min(attributes))
@@ -208,10 +208,10 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
     model = cp_model.CpModel()
 
     # Index variables point into the sequence sequence[index_i] = pattern_i
-    index_vars = add_element_ct(model, sequence, pattern)
+    index_vars = _add_element_ct(model, sequence, pattern)
 
     # Indexes are ordered
-    add_lex_order(model, index_vars)
+    _add_lex_order(model, index_vars)
 
     if constraints:
         for constraint in constraints:
@@ -223,7 +223,7 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
                 attrs = constraint.attribute.values[seq_ind]
 
                 # Average constraint
-                avg_vars = add_avg_ct(model, index_vars, average_lb, average_ub, attrs)
+                avg_vars = _add_avg_ct(model, index_vars, average_lb, average_ub, attrs)
 
             if isinstance(constraint, sp._Constraint.Gap):
                 gap_ub = constraint.upper_bound
@@ -232,7 +232,7 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
                 attrs = constraint.attribute.values[seq_ind]
 
                 # Gap constraint
-                gap_vars = add_gap_ct(model, index_vars, gap_lb, gap_ub, attrs)
+                gap_vars = _add_gap_ct(model, index_vars, gap_lb, gap_ub, attrs)
 
             if isinstance(constraint, sp._Constraint.Median):
                 median_ub = constraint.upper_bound
@@ -241,7 +241,7 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
                 attrs = constraint.attribute.values[seq_ind]
 
                 # Median constraint
-                median_vars, sorted_median_vars = add_median_ct(model, index_vars, median_lb, median_ub, attrs)
+                median_vars, sorted_median_vars = _add_median_ct(model, index_vars, median_lb, median_ub, attrs)
 
             if isinstance(constraint, sp._Constraint.Span):
                 span_ub = constraint.upper_bound
@@ -250,7 +250,7 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
                 attrs = constraint.attribute.values[seq_ind]
 
                 # Span constraint
-                span_vars = add_span_ct(model, index_vars, span_lb, span_ub, attrs)
+                span_vars = _add_span_ct(model, index_vars, span_lb, span_ub, attrs)
 
     # Solve the model
     solver = cp_model.CpSolver()
@@ -260,12 +260,12 @@ def is_satisfiable(sequence, pattern, seq_ind, constraints):
 
     # If solution found
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        # print_vars("index_vars: ", solver, index_vars)
-        # print_vars("avg_vars: ", solver, avg_vars)
-        # print_vars("gap_vars: ", solver, gap_vars)
-        # print_vars("median_vars: ", solver, median_vars)
-        # print_vars("sorted_median_vars: ", solver, sorted_median_vars)
-        # print_vars("span_vars: ", solver, span_vars)
+        # _print_vars("index_vars: ", solver, index_vars)
+        # _print_vars("avg_vars: ", solver, avg_vars)
+        # _print_vars("gap_vars: ", solver, gap_vars)
+        # _print_vars("median_vars: ", solver, median_vars)
+        # _print_vars("sorted_median_vars: ", solver, sorted_median_vars)
+        # _print_vars("span_vars: ", solver, span_vars)
         return True
     else:
         # print('No solution found.')
