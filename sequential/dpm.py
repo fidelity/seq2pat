@@ -30,12 +30,12 @@ def dichotomic_pattern_mining(seq2pat_pos: sp.Seq2Pat, seq2pat_neg: sp.Seq2Pat,
     seq2pat_neg: Seq2Pat object
         A constraint model to mine patterns in negative sequences
     min_frequency_pos: Num
-        Minimum frequency threshold for positive sequences
+        Minimum frequency threshold for positive sequences. min_frequency_pos = 0.3 by default.
         If int, represents the minimum number of sequences (rows) a pattern should occur
         If float, should be (0.0, 1.0] and represents
         the minimum percentage of sequences (rows) a pattern should occur.
     min_frequency_neg: Num
-        Minimum frequency threshold for negative sequences
+        Minimum frequency threshold for negative sequences. min_frequency_neg = 0.3 by default.
         If int, represents the minimum number of sequences (rows) a pattern should occur
         If float, should be (0.0, 1.0] and represents
         the minimum percentage of sequences (rows) a pattern should occur.
@@ -43,6 +43,7 @@ def dichotomic_pattern_mining(seq2pat_pos: sp.Seq2Pat, seq2pat_neg: sp.Seq2Pat,
     Returns
     -------
     Dictionary of DPM patterns with keys for union, intersection, unique_pos and unique_neg.
+    Each aggregation has the patterns to be sorted.
 
     """
 
@@ -87,8 +88,8 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list], constrain
     constraints: Union[list, None]
         The constraints enforced in the creation of encoding
     rolling_window_size: int
-        The rolling window along a sequence within which patterns are detected. It controls the length of
-        sequence subject to the pattern detection and improve the performance in terms of runtime
+        The rolling window along a sequence within which patterns are detected locally. It controls the length of
+        sequence subject to the pattern detection, to speed up the encodings generation.
         (rolling_window_size=10 by default).
     drop_pattern_frequency: bool
         Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=False by default.

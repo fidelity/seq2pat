@@ -56,7 +56,13 @@ The library offers various constraint types, including a number of non-monotone 
 ## Usage Examples
 
 Examples on how to use the available constraints can be found 
-in the [Jupyter Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
+in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
+
+**Dichotomic Pattern Mining (DPM)** Supported by Seq2Pat, we proposed the Dichotomic Pattern Mining ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) approach to analyzing the correlations between 
+mined patterns and different outcomes of sequences. DPM can play an integrator role between Sequential 
+Pattern Mining and the downstream modeling tasks, by generating embeddings of sequences based on the mined patterns from sequences with positive or negative outcomes.
+An example on how to run DPM and generate pattern embeddings can be found in the 
+[Dichotomic Pattern Mining Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/dichotomic_pattern_mining.ipynb)
 
 ## Installation
 

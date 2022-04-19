@@ -31,30 +31,11 @@ class TestSeq2Pat(unittest.TestCase):
         has_pattern = is_satisfiable(sequence, pattern, 0, [attrs_avg_ct, attrs_gap_ct, attrs_median_ct,
                                                             attrs_span_ct])
 
-        # print("has_pattern: ", has_pattern)
+        self.assertEqual(has_pattern, True)
 
-    def test_csp_example2(self):
 
-        sequence = [1, 1, 1, 2, 3, 1, 4, 1, 2, 3, 1, 4, 1, 2, 1, 1, 1]
-        pattern = [1, 1]
-
-        values = [1, 1, 1, 2, 3, 1, 4, 1, 2, 3, 1, 4, 1, 2, 1, 1, 1]
-
-        # attrs1 = Attribute(values=[list(np.array(values) * 1)])
-        # attrs_avg_ct = 0 <= attrs1.average() <= 2
-        #
-        # attrs2 = Attribute(values=[list(np.array(values) * 10)])
-        # attrs_gap_ct = 0 <= attrs2.gap() <= 100
-        #
-        # attrs3 = Attribute(values=[list(np.array(values) * 100)])
-        # attrs_median_ct = 0 <= attrs3.median() <= 1000
-        #
-        # attrs4 = Attribute(values=[list(np.array(values) * 1000)])
-        # attrs_span_ct = 0 <= attrs4.span() <= 100000
-
-        has_pattern = is_satisfiable(sequence, pattern, 0, None)
-
-        # print("has_pattern: ", has_pattern)
+if __name__ == '__main__':
+    unittest.main()
 
 
 

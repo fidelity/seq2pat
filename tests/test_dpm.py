@@ -641,7 +641,8 @@ class TestDPMUtils(unittest.TestCase):
 
         # patterns_pos: [['A', 'D'], ['C', 'A']]
         # patterns_neg: [['A', 'D'], ['B', 'A']]
-        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2, min_frequency_neg=2)
+        aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, min_frequency_pos=2,
+                                                            min_frequency_neg=2)
 
         self.assertEqual(len(aggregation_to_patterns), 4)
         self.assertListEqual([['A', 'D'], ['B', 'A'], ['C', 'A']], aggregation_to_patterns[DichotomicAggregation.union])

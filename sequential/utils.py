@@ -190,6 +190,19 @@ def write_items(file_name: str, items: List[list]) -> NoReturn:
 
 
 def drop_frequency(result: List[list]) -> list:
+    """
+    Drop the frequency appended to each mined pattern.
+
+    Parameters
+    ----------
+    result: List[list]
+        The mined patterns with each one having the count appended to the end
+
+    Returns
+    -------
+    The list of mined patterns without appended frequency
+
+    """
     return list(map(lambda x: x[:-1], result))
 
 

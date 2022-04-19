@@ -69,19 +69,21 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1"># SPDX-License-Identifier: GPL-2.0</span>
 
+<span class="kn">import</span> <span class="nn">gc</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">NoReturn</span>
-<span class="kn">from</span> <span class="nn">sequential.utils</span> <span class="kn">import</span> <span class="n">Num</span><span class="p">,</span> <span class="n">check_true</span><span class="p">,</span> <span class="n">check_false</span><span class="p">,</span> <span class="n">get_max_column_size</span><span class="p">,</span> \
-    <span class="n">get_min_value</span><span class="p">,</span> <span class="n">get_max_value</span><span class="p">,</span> <span class="n">sort_pattern</span><span class="p">,</span> <span class="n">item_map</span><span class="p">,</span>\
-    <span class="n">string_to_int</span><span class="p">,</span> <span class="n">int_to_string</span><span class="p">,</span> <span class="n">check_sequence_feature_same_length</span>
-<span class="kn">from</span> <span class="nn">sequential.backend</span> <span class="kn">import</span> <span class="n">seq_to_pat</span> <span class="k">as</span> <span class="n">stp</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;1.2.2&quot;</span>
+<span class="kn">from</span> <span class="nn">sequential.backend</span> <span class="kn">import</span> <span class="n">seq_to_pat</span> <span class="k">as</span> <span class="n">stp</span>
+<span class="kn">from</span> <span class="nn">sequential.utils</span> <span class="kn">import</span> <span class="n">Num</span><span class="p">,</span> <span class="n">check_true</span><span class="p">,</span> <span class="n">get_max_column_size</span><span class="p">,</span> \
+    <span class="n">get_min_value</span><span class="p">,</span> <span class="n">get_max_value</span><span class="p">,</span> <span class="n">sort_pattern</span><span class="p">,</span> <span class="n">item_map</span><span class="p">,</span> \
+    <span class="n">string_to_int</span><span class="p">,</span> <span class="n">int_to_string</span><span class="p">,</span> <span class="n">check_sequence_feature_same_length</span><span class="p">,</span> \
+    <span class="n">validate_attribute_values</span><span class="p">,</span> <span class="n">validate_sequences</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;1.2.3&quot;</span>
 
 
 <span class="c1"># IMPORTANT: Constant values should not be changed</span>
 <span class="c1"># These represent parameters in C++ backend that need to be set by matching exact names</span>
 <span class="k">class</span> <span class="nc">_Constants</span><span class="p">:</span>
-
     <span class="c1"># List where values correspond to the value of upper gap constraints on an attribute, and</span>
     <span class="c1"># whose id can be found in ugapi at the same index</span>
     <span class="n">ugap</span> <span class="o">=</span> <span class="s1">&#39;ugap&#39;</span>
@@ -191,6 +193,9 @@
     <span class="c1"># List where index correspond to the attribute ids and values to the minimum value for that attribute</span>
     <span class="n">min_attrs</span> <span class="o">=</span> <span class="s1">&#39;min_attrs&#39;</span>
 
+    <span class="c1"># Minimum row count as a threshold of mined patterns</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="s1">&#39;theta&#39;</span>
+
 
 <div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute">[docs]</a><span class="k">class</span> <span class="nc">Attribute</span><span class="p">:</span>
 
@@ -203,13 +208,8 @@
 <span class="sd">        values: List[list]</span>
 <span class="sd">            A list of lists corresponding to the values of each event.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values cannot be null&quot;</span><span class="p">))</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values need to be a list of lists&quot;</span><span class="p">))</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values cannot be an empty list.&quot;</span><span class="p">))</span>
-        <span class="n">not_list</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;index: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">)]</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">not_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values need to be a list of lists. &quot;</span><span class="p">,</span> <span class="n">not_list</span><span class="p">))</span>
-        <span class="n">is_empty_list</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))])</span>
-        <span class="n">check_false</span><span class="p">(</span><span class="n">is_empty_list</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Values cannot contain any empty list.&quot;</span><span class="p">))</span>
+        <span class="c1"># Validate input values</span>
+        <span class="n">validate_attribute_values</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max</span> <span class="o">=</span> <span class="n">get_max_value</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
@@ -223,6 +223,18 @@
 <span class="sd">        The values of the attribute</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
+
+<div class="viewcode-block" id="Attribute.set_values"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.set_values">[docs]</a>    <span class="k">def</span> <span class="nf">set_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set attribute values</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate input values</span>
+        <span class="n">validate_attribute_values</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max</span> <span class="o">=</span> <span class="n">get_max_value</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min</span> <span class="o">=</span> <span class="n">get_min_value</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.average"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.average">[docs]</a>    <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -282,6 +294,23 @@
     <span class="k">def</span> <span class="nf">has_upper_bound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
+    <span class="k">def</span> <span class="nf">check_satisfaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_upper_bound</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lower_bound</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_upper_bound</span> <span class="o">=</span> <span class="n">other</span>
         <span class="k">return</span> <span class="bp">self</span>
@@ -292,25 +321,51 @@
 
 
 <span class="k">class</span> <span class="nc">_Constraint</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-
     <span class="k">class</span> <span class="nc">Average</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">check_satisfaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_satisfaction</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">class</span> <span class="nc">Gap</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
 
+        <span class="k">def</span> <span class="nf">check_satisfaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_upper_bound</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">:</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lower_bound</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
     <span class="k">class</span> <span class="nc">Median</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
+
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">check_satisfaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_satisfaction</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">class</span> <span class="nc">Span</span><span class="p">(</span><span class="n">_BaseConstraint</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="n">Attribute</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">check_satisfaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_satisfaction</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Seq2Pat"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat">[docs]</a><span class="k">class</span> <span class="nc">Seq2Pat</span><span class="p">:</span>
@@ -325,13 +380,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]):</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="n">sequences</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences cannot be null.&quot;</span><span class="p">))</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences need to be a list of lists.&quot;</span><span class="p">))</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences cannot be an empty list.&quot;</span><span class="p">))</span>
-        <span class="n">not_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">))]</span>
-        <span class="n">check_true</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">not_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences need to be a list of lists.&quot;</span><span class="p">,</span> <span class="n">not_list</span><span class="p">))</span>
-        <span class="n">is_empty_list</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">))])</span>
-        <span class="n">check_false</span><span class="p">(</span><span class="n">is_empty_list</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences cannot contain any empty list.&quot;</span><span class="p">))</span>
+        <span class="c1"># Validate input sequences</span>
+        <span class="n">validate_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
 
         <span class="c1"># Input sequences</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequences</span>
@@ -350,7 +400,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_value</span> <span class="o">=</span> <span class="n">get_max_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
 
         <span class="c1"># Constraint store: attribute_id -&gt; constraint_name -&gt; Constraint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Constraint</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Attribute</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Constraint</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># Cython implementor object</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -405,7 +455,7 @@
         <span class="k">return</span> <span class="n">constraint</span></div>
 
 <div class="viewcode-block" id="Seq2Pat.remove_constraint"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.remove_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">remove_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_BaseConstraint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+       <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       Removes the given constraint from the constraint store.</span>
 
 <span class="sd">       Attributes</span>
@@ -419,20 +469,20 @@
 
 <span class="sd">       &quot;&quot;&quot;</span>
 
-        <span class="c1"># Attribute and constraint id</span>
-        <span class="n">attribute_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">attribute</span>
-        <span class="n">constraint_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+       <span class="c1"># Attribute and constraint id</span>
+       <span class="n">attribute_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">attribute</span>
+       <span class="n">constraint_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Remove the constraint from the attribute</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">][</span><span class="n">constraint_id</span><span class="p">]</span>
+       <span class="k">try</span><span class="p">:</span>
+           <span class="c1"># Remove the constraint from the attribute</span>
+           <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">][</span><span class="n">constraint_id</span><span class="p">]</span>
 
-            <span class="c1"># If no constraint left on the attribute, remove the attribute</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">]</span>
+           <span class="c1"># If no constraint left on the attribute, remove the attribute</span>
+           <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+               <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">[</span><span class="n">attribute_id</span><span class="p">]</span>
 
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No &quot;</span> <span class="o">+</span> <span class="n">constraint_id</span> <span class="o">+</span> <span class="s2">&quot; constraint to remove on this attribute.&quot;</span><span class="p">)</span></div>
+       <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+           <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No &quot;</span> <span class="o">+</span> <span class="n">constraint_id</span> <span class="o">+</span> <span class="s2">&quot; constraint to remove on this attribute.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Seq2Pat.get_patterns"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.get_patterns">[docs]</a>    <span class="k">def</span> <span class="nf">get_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">:</span> <span class="n">Num</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -459,7 +509,8 @@
 
         <span class="c1"># Check min_frequency conditions</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-            <span class="n">check_true</span><span class="p">(</span><span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">min_frequency</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency percentage should be greater than 0.0&quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
+            <span class="n">check_true</span><span class="p">(</span><span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">min_frequency</span><span class="p">,</span>
+                       <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency percentage should be greater than 0.0&quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
             <span class="n">check_true</span><span class="p">(</span><span class="n">min_frequency</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency percentage should be less than 1.0&quot;</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">))</span>
             <span class="n">check_true</span><span class="p">(</span><span class="n">min_frequency</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency percentage should set the minimum &quot;</span>
                                                                          <span class="s2">&quot;row count to be no less than 1.0.&quot;</span>
@@ -473,10 +524,10 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Frequency should be integer (as a row count) or float (as a row percentage)&quot;</span><span class="p">)</span>
 
         <span class="c1"># Cython implementor object with input parameters set</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cython_imp</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cython_imp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cython_imp</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">)</span>
 
         <span class="c1"># Frequent mining</span>
-        <span class="n">patterns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span><span class="o">.</span><span class="n">mine</span><span class="p">()</span>
+        <span class="n">patterns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cython_imp</span><span class="o">.</span><span class="n">mine</span><span class="p">()</span>
 
         <span class="c1"># Map back to strings, if original is strings</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_string</span><span class="p">:</span>
@@ -484,6 +535,9 @@
 
         <span class="c1"># Sort sequences, most frequent pattern first</span>
         <span class="n">patterns_sorted</span> <span class="o">=</span> <span class="n">sort_pattern</span><span class="p">(</span><span class="n">patterns</span><span class="p">)</span>
+
+        <span class="c1"># Clean up memory</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 
         <span class="c1"># Return frequent sequences</span>
         <span class="k">return</span> <span class="n">patterns_sorted</span></div>
@@ -501,8 +555,10 @@
 
         <span class="c1"># Dictionary to hold all parameters that need to be set in seq_to_pat more information about what each</span>
         <span class="c1"># parameter represents can be found under Constants declaration</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lgap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">ugap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lavr</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">uavr</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lspn</span><span class="p">:</span> <span class="p">[],</span>
-                  <span class="n">_Constants</span><span class="o">.</span><span class="n">uspn</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lmed</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">umed</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">ugapi</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lgapi</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">_Constants</span><span class="o">.</span><span class="n">lgap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">ugap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lavr</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">uavr</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">lspn</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">uspn</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lmed</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">umed</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">ugapi</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="n">_Constants</span><span class="o">.</span><span class="n">lgapi</span><span class="p">:</span> <span class="p">[],</span>
                   <span class="n">_Constants</span><span class="o">.</span><span class="n">uspni</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lspni</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">uavri</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lavri</span><span class="p">:</span> <span class="p">[],</span>
                   <span class="n">_Constants</span><span class="o">.</span><span class="n">umedi</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">lmedi</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">num_minmax</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">num_avr</span><span class="p">:</span> <span class="p">[],</span>
                   <span class="n">_Constants</span><span class="o">.</span><span class="n">num_med</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">tot_gap</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">tot_spn</span><span class="p">:</span> <span class="p">[],</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">tot_avr</span><span class="p">:</span> <span class="p">[],</span>
