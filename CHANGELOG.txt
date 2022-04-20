@@ -3,11 +3,13 @@ CHANGELOG
 =========
 
 -------------------------------------------------------------------------------
-March, 30, 2022 1.2.3
+April, 20, 2022 1.2.3
 -------------------------------------------------------------------------------
 
 Major:
-- Add one-hot encoding as a new utils task
+- Add one-hot encodings, by mining patterns locally (csp_local.py) or globally
+  (csp_global.py) in each sequence
+- Add Dichotomic Pattern Mining notebook, running on sample data
 - Clean up C++ vector variables datab_MDD, mdd_q from calling Build_MDD
 - Clean up vector variable attr in node_mdd.hpp
 - Clean up vector varaibles indic_vec, result from calling Freq_miner
