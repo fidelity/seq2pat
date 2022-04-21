@@ -387,7 +387,7 @@ class Seq2Pat:
         return constraint
 
     def remove_constraint(self, constraint: _BaseConstraint) -> NoReturn:
-       """
+        """
        Removes the given constraint from the constraint store.
 
        Attributes
@@ -401,20 +401,20 @@ class Seq2Pat:
 
        """
 
-       # Attribute and constraint id
-       attribute_id = constraint.attribute
-       constraint_id = constraint.__class__.__name__
+        # Attribute and constraint id
+        attribute_id = constraint.attribute
+        constraint_id = constraint.__class__.__name__
 
-       try:
-           # Remove the constraint from the attribute
-           del self.attr_to_cts[attribute_id][constraint_id]
+        try:
+            # Remove the constraint from the attribute
+            del self.attr_to_cts[attribute_id][constraint_id]
 
-           # If no constraint left on the attribute, remove the attribute
-           if len(self.attr_to_cts[attribute_id]) == 0:
-               del self.attr_to_cts[attribute_id]
+            # If no constraint left on the attribute, remove the attribute
+            if len(self.attr_to_cts[attribute_id]) == 0:
+                del self.attr_to_cts[attribute_id]
 
-       except KeyError:
-           raise KeyError("No " + constraint_id + " constraint to remove on this attribute.")
+        except KeyError:
+            raise KeyError("No " + constraint_id + " constraint to remove on this attribute.")
 
     def get_patterns(self, min_frequency: Num) -> List[list]:
         """
@@ -456,10 +456,10 @@ class Seq2Pat:
             raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
 
         # Cython implementor object with input parameters set
-        self.cython_imp = self._get_cython_imp(min_frequency)
+        self._cython_imp = self._get_cython_imp(min_frequency)
 
         # Frequent mining
-        patterns = self.cython_imp.mine()
+        patterns = self._cython_imp.mine()
 
         # Map back to strings, if original is strings
         if self._is_string:

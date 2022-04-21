@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: GPL-2.0
 
 import statistics
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 
-import sequential.seq2pat as sp
+from sequential.seq2pat import _Constraint
 
 
 def _get_average(sequence):
@@ -65,7 +65,8 @@ def _subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, co
     return res
 
 
-def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
+def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int,
+                                 constraints: Union[List[_Constraint], None],
                                  rolling_window_size: int, window_start_ind: int) -> bool:
     """
     Check if a pattern is in an individual sequence of items, subject to defined constraints.
@@ -107,19 +108,19 @@ def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: in
             # Get subsequences of attributes
             attr_subsequence = [attrs[i] for i in s]
 
-            if isinstance(constraint, sp._Constraint.Average):
+            if isinstance(constraint, _Constraint.Average):
                 attr_info = _get_average(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
-            if isinstance(constraint, sp._Constraint.Median):
+            if isinstance(constraint, _Constraint.Median):
                 attr_info = _get_median(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
-            if isinstance(constraint, sp._Constraint.Span):
+            if isinstance(constraint, _Constraint.Span):
                 attr_info = _get_span(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
-            if isinstance(constraint, sp._Constraint.Gap):
+            if isinstance(constraint, _Constraint.Gap):
                 attr_info = _get_gap(attr_subsequence)
                 res.append(constraint.check_satisfaction(attr_info))
 
@@ -165,7 +166,8 @@ def _get_matched_subsequences(sequence: list, pattern: list) -> Tuple[list, list
     return res_seq, res_ind
 
 
-def is_satisfiable_in_rolling(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
+def is_satisfiable_in_rolling(sequence: list, pattern: list, seq_attr_ind: int,
+                              constraints: Union[List[_Constraint], None],
                               rolling_window_size: int) -> bool:
     """
      Search the given pattern in a rolling_window of sequence

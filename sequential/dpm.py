@@ -5,7 +5,8 @@ from typing import Union, List
 
 import pandas as pd
 
-import sequential.seq2pat as sp
+# import sequential.seq2pat as sp
+from sequential.seq2pat import Seq2Pat, _Constraint
 from sequential.csp_global import is_satisfiable
 from sequential.csp_local import is_satisfiable_in_rolling
 from sequential.utils import Num, drop_frequency, check_true, item_map, string_to_int
@@ -18,7 +19,7 @@ class DichotomicAggregation:
     unique_pos = 'unique_positive'
 
 
-def dichotomic_pattern_mining(seq2pat_pos: sp.Seq2Pat, seq2pat_neg: sp.Seq2Pat,
+def dichotomic_pattern_mining(seq2pat_pos: Seq2Pat, seq2pat_neg: Seq2Pat,
                               min_frequency_pos: Num = 0.3, min_frequency_neg: Num = 0.3):
     """
     Run dichotomic pattern mining (DPM)
@@ -74,7 +75,8 @@ def dichotomic_pattern_mining(seq2pat_pos: sp.Seq2Pat, seq2pat_neg: sp.Seq2Pat,
     return aggregation_to_patterns
 
 
-def get_one_hot_encodings(sequences: List[list], patterns: List[list], constraints: Union[list, None] = None,
+def get_one_hot_encodings(sequences: List[list], patterns: List[list],
+                          constraints: Union[List[_Constraint], None] = None,
                           rolling_window_size: int = 10, drop_pattern_frequency=False) -> pd.DataFrame:
     """
     Create a data frame having one-hot encoding of sequences.
@@ -97,6 +99,12 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list], constrain
     Returns
     -------
     A data frame having one-hot encoding of sequences using the given patterns.
+    
+    Example
+        sequence      feat0 feat1 feat2 ...
+        [A,A,B,A,D]    1    1     0     ...
+        [C,B,A]        0    1     1     ...
+        [C,A,C,D]      1    0     1     ...
 
     """
 
@@ -117,7 +125,6 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list], constrain
 
     df = pd.DataFrame()
     df['sequence'] = sequences
-    df['seq_ind'] = list(range(len(sequences)))
 
     # For each pattern, create encoding for all sequences
     for i, pattern in enumerate(patterns):
@@ -125,17 +132,15 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list], constrain
         # If window size is given, run the local/approximate model
         if rolling_window_size:
             df['feat' + str(i)] = df.apply(lambda row: is_satisfiable_in_rolling(row['sequence'], pattern,
-                                                                                 row['seq_ind'], constraints,
+                                                                                 row.name, constraints,
                                                                                  rolling_window_size), axis=1)
 
         # Otherwise, run the global model
         else:
             df['feat' + str(i)] = df.apply(lambda row: is_satisfiable(row['sequence'], pattern,
-                                                                      row['seq_ind'], constraints), axis=1)
+                                                                      row.name, constraints), axis=1)
 
         # Cast bool type value to int
         df['feat' + str(i)] = df['feat' + str(i)].astype(int)
-
-    df.drop(columns=['seq_ind'], inplace=True)
 
     return df

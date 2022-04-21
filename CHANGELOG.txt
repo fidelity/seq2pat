@@ -12,7 +12,7 @@ Major:
 - Add Dichotomic Pattern Mining notebook, running on sample data
 - Clean up C++ vector variables datab_MDD, mdd_q from calling Build_MDD
 - Clean up vector variable attr in node_mdd.hpp
-- Clean up vector varaibles indic_vec, result from calling Freq_miner
+- Clean up vector variables indic_vec, result from calling Freq_miner
 
 -------------------------------------------------------------------------------
 March, 07, 2022 1.2.2
