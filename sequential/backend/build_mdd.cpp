@@ -34,11 +34,6 @@ void Intlz_node(int nod, vector<Node*>* datab_MDD);
 bool Check_gap(int i, int strt, int endp, vector<vector<vector<int> > >* attrs, vector<int>* lgapi,
                 vector<int>* ugapi, vector<int>* lgap, vector<int>* ugap);
 
-//MDD database is essentially a vector of nodes
-//vector<Node*> datab_MDD;
-
-//DFS queue of patterns to extend in mining algorithm
-//vector<Pattern*> DFS_queue;
 
 // Build MDD. It is called from minig function
 void Build_MDD(vector<Node*>* datab_MDD, vector<Pattern*>* DFS_queue,

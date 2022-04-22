@@ -73,18 +73,18 @@ def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: in
 
     Parameters
     ----------
-    pattern: list
-        A pattern that is going to be checked in the sequence.
     sequence: list
         A sequence of items within which a pattern is searched.
+    pattern: list
+        A pattern that is going to be checked in the sequence.
     seq_attr_ind: int
         The index of this sequence in the list of sequences, and also the index of attributes.
-    window_start_ind: int
-        The index where a rolling window starts.
-    rolling_window_size: int
-        The rolling window along a sequence within which patterns are detected.
     constraints: Union[list, None]
         A list of constraints
+    rolling_window_size: int
+        The rolling window along a sequence within which patterns are detected.
+    window_start_ind: int
+        The index where a rolling window starts.
 
     Returns
     -------
@@ -99,7 +99,7 @@ def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: in
     for sub_ind, s in enumerate(item_subsequences_indices):
 
         # Check constraints
-        res = [True]
+        res = True
         for constraint in constraints:
             # Get attributes
             attrs = constraint.attribute.values[seq_attr_ind]
@@ -110,21 +110,29 @@ def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: in
 
             if isinstance(constraint, _Constraint.Average):
                 attr_info = _get_average(attr_subsequence)
-                res.append(constraint.check_satisfaction(attr_info))
+                if not constraint.check_satisfaction(attr_info):
+                    res = False
+                    break
 
             if isinstance(constraint, _Constraint.Median):
                 attr_info = _get_median(attr_subsequence)
-                res.append(constraint.check_satisfaction(attr_info))
+                if not constraint.check_satisfaction(attr_info):
+                    res = False
+                    break
 
             if isinstance(constraint, _Constraint.Span):
                 attr_info = _get_span(attr_subsequence)
-                res.append(constraint.check_satisfaction(attr_info))
+                if not constraint.check_satisfaction(attr_info):
+                    res = False
+                    break
 
             if isinstance(constraint, _Constraint.Gap):
                 attr_info = _get_gap(attr_subsequence)
-                res.append(constraint.check_satisfaction(attr_info))
+                if not constraint.check_satisfaction(attr_info):
+                    res = False
+                    break
 
-        if all(res):
+        if res:
             meet_all_constraints = True
             break
 

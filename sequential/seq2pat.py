@@ -9,8 +9,9 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences
+from sequential._version import __version__
 
-__version__ = "1.2.3"
+__version__ = __version__
 
 
 # IMPORTANT: Constant values should not be changed
@@ -125,9 +126,6 @@ class _Constants:
     # List where index correspond to the attribute ids and values to the minimum value for that attribute
     min_attrs = 'min_attrs'
 
-    # Minimum row count as a threshold of mined patterns
-    theta = 'theta'
-
 
 class Attribute:
 
@@ -155,18 +153,6 @@ class Attribute:
         The values of the attribute
         """
         return self._values
-
-    def set_values(self, values: List[list]):
-        """
-        Set attribute values
-
-        """
-        # Validate input values
-        validate_attribute_values(values)
-
-        self._values = values
-        self._max = get_max_value(values)
-        self._min = get_min_value(values)
 
     def average(self):
         """
@@ -227,21 +213,18 @@ class _BaseConstraint:
         return self.upper_bound is not None
 
     def check_satisfaction(self, value):
-        res = [True]
+        # Initialize returned results. When there are no constraints, result is explicitly set to be true.
+        res = True
 
         if self.has_upper_bound():
-            if value <= self.upper_bound:
-                res.append(True)
-            else:
-                res.append(False)
+            if value > self.upper_bound:
+                return False
 
         if self.has_lower_bound():
-            if value >= self.lower_bound:
-                res.append(True)
-            else:
-                res.append(False)
+            if value < self.lower_bound:
+                return False
 
-        return all(res)
+        return res
 
     def __le__(self, other):
         self._upper_bound = other
@@ -258,46 +241,34 @@ class _Constraint(NamedTuple):
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
 
-        def check_satisfaction(self, value):
-            return super().check_satisfaction(value)
-
     class Gap(_BaseConstraint):
 
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
 
         def check_satisfaction(self, value):
-            res = [True]
+            # Initialize returned results to be true.
+            res = True
 
             if self.has_upper_bound():
-                if max(value) <= self.upper_bound:
-                    res.append(True)
-                else:
-                    res.append(False)
+                if max(value) > self.upper_bound:
+                    return False
 
             if self.has_lower_bound():
-                if min(value) >= self.lower_bound:
-                    res.append(True)
-                else:
-                    res.append(False)
+                if min(value) < self.lower_bound:
+                    return False
 
-            return all(res)
+            return res
 
     class Median(_BaseConstraint):
 
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
 
-        def check_satisfaction(self, value):
-            return super().check_satisfaction(value)
-
     class Span(_BaseConstraint):
 
         def __init__(self, attribute: Attribute):
             super().__init__(attribute)
-
-        def check_satisfaction(self, value):
-            return super().check_satisfaction(value)
 
 
 class Seq2Pat:

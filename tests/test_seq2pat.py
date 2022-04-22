@@ -1295,6 +1295,64 @@ class TestSeq2Pat(unittest.TestCase):
         with self.assertRaises(ValueError):
             patterns = seq2pat.get_patterns(min_frequency=min_frequency)
 
+    def test_repeated_calls_seq2pat(self):
+        # List of sequences
+        sequences = [[11, 12, 13], [11, 12, 13, 14]]
+
+        # Sequential pattern finder
+        seq2pat = Seq2Pat(sequences)
+
+        unconstrained_result_1 = seq2pat.get_patterns(0.9)
+
+        self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [11, 13, 2], [12, 13, 2], [11, 12, 13, 14, 1],
+                              [11, 12, 14, 1], [11, 13, 14, 1], [11, 14, 1], [12, 13, 14, 1], [12, 14, 1],
+                              [13, 14, 1]], unconstrained_result_1)
+
+        unconstrained_result_2 = seq2pat.get_patterns(0.9)
+
+        self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [11, 13, 2], [12, 13, 2], [11, 12, 13, 14, 1],
+                              [11, 12, 14, 1], [11, 13, 14, 1], [11, 14, 1], [12, 13, 14, 1], [12, 14, 1],
+                              [13, 14, 1]], unconstrained_result_2)
+
+        unconstrained_result_3 = seq2pat.get_patterns(2)
+
+        self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [11, 13, 2], [12, 13, 2]], unconstrained_result_3)
+
+    def test_repeated_calls_seq2pat_add_remove_ct(self):
+        # List of sequences
+        sequences = [[11, 12, 13]]
+
+        # Sequential pattern finder
+        seq2pat = Seq2Pat(sequences)
+
+        unconstrained_result = seq2pat.get_patterns(1)
+
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
+                              [11, 13, 1],
+                              [12, 13, 1]], unconstrained_result)
+
+        # Attributes of sequences min average is 15 for sequence [11, 12],
+        # max average is 25 for sequence [12, 13]
+        attributes = [[10, 20, 30]]
+
+        att1 = Attribute(attributes)
+
+        # Should include any sequence with median between any two events with a value equal to or greater than 15
+        # and equal to or less than 19
+        med_constraint = seq2pat.add_constraint(15 <= att1.median() <= 19)
+        gap_constraint = seq2pat.add_constraint(5 <= att1.average() <= 15)
+
+        self.assertListEqual([[11, 12, 1]], seq2pat.get_patterns(1))
+
+        seq2pat.remove_constraint(med_constraint)
+        seq2pat.remove_constraint(gap_constraint)
+
+        self.assertListEqual([[11, 12, 1],
+                              [11, 12, 13, 1],
+                              [11, 13, 1],
+                              [12, 13, 1]], seq2pat.get_patterns(1))
+
 
 if __name__ == '__main__':
     unittest.main()

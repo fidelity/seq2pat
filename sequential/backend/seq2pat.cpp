@@ -29,13 +29,17 @@ namespace patterns {
 
     std::vector< std::vector<int> > Seq2pat::mine()
     {
-        // Queue of MDD nodes
+        // This is to create a single hold of data structures as the global objects to be passed into API calls.
+        // MDD database is essentially a vector of nodes
         std::vector<Node*>* datab_MDD = new vector<Node*>(M * L, NULL);
+        // mdd_q is DFS queue of patterns to extend in mining algorithm
         std::vector<Pattern*>* mdd_q = new vector<Pattern*>(L, NULL);
+
+        // results is to save mined patterns that satisfy constraints
         std::vector< std::vector<int> > results;
 
     	try{
-    	    // Builds mdd structure and returns a queue of nodes
+    	    // Builds mdd structure in datab_MDD and create mdd_q for pattern mining algorithm
             Build_MDD(datab_MDD, mdd_q,
                       &(this->lgapi), &(this->ugapi),
                       &(this->lspni),
@@ -87,7 +91,7 @@ namespace patterns {
 	        std::vector<vector<int>>().swap(result);
 	        // Delete pointers
             delete datab_MDD;
-            // mdd_q, the queue should be empty after calling Freq_miner()
+            // mdd_q, the queue should be empty after calling Freq_miner() with all its patterns get popped
             delete mdd_q;
 
             return results;
