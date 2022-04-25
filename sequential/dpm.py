@@ -76,7 +76,7 @@ def dichotomic_pattern_mining(seq2pat_pos: Seq2Pat, seq2pat_neg: Seq2Pat,
 
 def get_one_hot_encodings(sequences: List[list], patterns: List[list],
                           constraints: Union[List[_Constraint], None] = None,
-                          rolling_window_size: int = 10, drop_pattern_frequency=False) -> pd.DataFrame:
+                          rolling_window_size: Union[int, None] = 10, drop_pattern_frequency=False) -> pd.DataFrame:
     """
     Create a data frame having one-hot encoding of sequences.
 
@@ -88,10 +88,10 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list],
         A list of interested patterns, which defines the encoding space.
     constraints: Union[list, None]
         The constraints enforced in the creation of encoding
-    rolling_window_size: int
+    rolling_window_size: Union[int, None]
         The rolling window along a sequence within which patterns are detected locally. It controls the length of
         sequence subject to the pattern detection, to speed up the encodings generation.
-        (rolling_window_size=10 by default).
+        (rolling_window_size=10 by default). When rolling_window_size=None, patterns are detected globally.
     drop_pattern_frequency: bool
         Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=False by default.
 
@@ -134,13 +134,13 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list],
         # If window size is given, run the local/approximate model
         if rolling_window_size:
             df['feature_' + str(i)] = df.apply(lambda row: is_satisfiable_in_rolling(row['sequence'], pattern,
-                                                                                 row.name, constraints,
-                                                                                 rolling_window_size), axis=1)
+                                                                                     row.name, constraints,
+                                                                                     rolling_window_size), axis=1)
 
         # Otherwise, run the global model
         else:
             df['feature_' + str(i)] = df.apply(lambda row: is_satisfiable(row['sequence'], pattern,
-                                                                      row.name, constraints), axis=1)
+                                                                          row.name, constraints), axis=1)
 
         # Cast bool type value to int
         df['feature_' + str(i)] = df['feature_' + str(i)].astype(int)

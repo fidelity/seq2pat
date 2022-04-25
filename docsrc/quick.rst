@@ -14,12 +14,12 @@ Constraint-based Sequential Pattern Mining
     # Seq2Pat over 3 sequences
     seq2pat = Seq2Pat(sequences=[["A", "A", "B", "A", "D"],
                                  ["C", "B", "A"],
-                         ["C", "A", "C", "D"]])
+                                 ["C", "A", "C", "D"]])
 
     # Price attribute corresponding to each item
     price = Attribute(values=[[5, 5, 3, 8, 2],
-                      [1, 3, 3],
-                      [4, 5, 2, 1]])
+                              [1, 3, 3],
+                              [4, 5, 2, 1]])
 
     # Average price constraint
     seq2pat.add_constraint(3 <= price.average() <= 4)
