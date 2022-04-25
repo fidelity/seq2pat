@@ -9,9 +9,6 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences
-from sequential._version import __version__
-
-__version__ = __version__
 
 
 # IMPORTANT: Constant values should not be changed
