@@ -46,10 +46,13 @@ public:
 		act_freq = 0;
 	}
 
-	~Pattern() { 
+	~Pattern() {
 		for (int i = 0; i < str_pnt.size(); i++){
 			delete str_pnt[i];
 		}
+//		Clear the vector and deallocate memory
+		vector<vector<Node*>*>().swap(str_pnt);
+
 		for (int i = 0; i < spn.size(); i++){
 			for (int j = 0; j < spn[i]->size(); j++){
 				for (int k = 0; k < spn[i]->at(j)->size(); k++)
@@ -58,11 +61,15 @@ public:
 			}
 			delete spn[i];
 		}
+		vector<vector<vector<vector<int>*>*>*>().swap(spn);
+
 		for (int i = 0; i < avr.size(); i++){
 			for (int j = 0; j < avr[i]->size(); j++)
 					delete avr[i]->at(j);
 			delete avr[i];
 		}
+		vector<vector<vector<int>*>*>().swap(avr);
+
 		for (int i = 0; i < lmed.size(); i++){
 			for (int j = 0; j < lmed[i]->size(); j++){
 				for (int k = 0; k < lmed[i]->at(j)->size(); k++)
@@ -71,6 +78,8 @@ public:
 			}
 			delete lmed[i];
 		}
+		vector<vector<vector<vector<int>*>*>*>().swap(lmed);
+
 		for (int i = 0; i < umed.size(); i++){
 			for (int j = 0; j < umed[i]->size(); j++){
 				for (int k = 0; k < umed[i]->at(j)->size(); k++)
@@ -79,6 +88,10 @@ public:
 			}
 			delete umed[i];
 		}
+		vector<vector<vector<vector<int>*>*>*>().swap(umed);
+
+		vector<int>().swap(patt_seq);
+		vector<int>().swap(seq_ID);
 
 	}
 

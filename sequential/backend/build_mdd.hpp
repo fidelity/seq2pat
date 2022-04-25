@@ -10,7 +10,8 @@
 #include <cmath>
 
 
-vector<Pattern*> Build_MDD(vector<int>* lgapi, vector<int>* ugapi, vector<int>* lspni,
+void Build_MDD(vector<Node*>* datab_MDD, vector<Pattern*>* DFS_queue,
+                            vector<int>* lgapi, vector<int>* ugapi, vector<int>* lspni,
                             vector<int>* uavri, vector<int>* lavri, vector<int>* umedi, vector<int>* lmedi,
                             vector<int>* lgap, vector<int>* ugap, vector<int>* lavr, vector<int>* uavr,
                             vector<int>* lspn, vector<int>* lmed, vector<int>* umed,
@@ -22,6 +23,4 @@ vector<Pattern*> Build_MDD(vector<int>* lgapi, vector<int>* ugapi, vector<int>* 
 
 void Disp_nodes(int, int);
 
-//The vector defining the MDD database
-extern vector<Node*> datab_MDD;
 

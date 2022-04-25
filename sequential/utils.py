@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
 from typing import Union, NoReturn, List
-import statistics
 
 Num = Union[int, float]
 
@@ -190,20 +189,46 @@ def write_items(file_name: str, items: List[list]) -> NoReturn:
     open_file.close()
 
 
-def calc_average(result: List[list]) -> list:
-    patterns = [row[:-1] for row in result]
-    temp = list(map(statistics.mean, patterns))
-    return temp
+def drop_frequency(result: List[list]) -> list:
+    """
+    Drop the frequency appended to each mined pattern.
+
+    Parameters
+    ----------
+    result: List[list]
+        The mined patterns with each one having the count appended to the end
+
+    Returns
+    -------
+    The list of mined patterns without appended frequency
+
+    """
+    return list(map(lambda x: x[:-1], result))
 
 
-def calc_median(result: List[list]) -> list:
-    patterns = [row[:-1] for row in result]
-    temp = list(map(statistics.median, patterns))
-    return temp
+def validate_attribute_values(values: List[list]):
+    """
+    Validate attribute values
+
+    """
+    check_true(values is not None, ValueError("Values cannot be null"))
+    check_true(isinstance(values, list), ValueError("Values need to be a list of lists"))
+    check_true(len(values) >= 1, ValueError("Values cannot be an empty list."))
+    not_list = [("index: " + str(i), values[i]) for i in range(len(values)) if not isinstance(values[i], list)]
+    check_true(len(not_list) == 0, ValueError("Values need to be a list of lists. ", not_list))
+    is_empty_list = any([len(values[i]) == 0 for i in range(len(values))])
+    check_false(is_empty_list, ValueError("Values cannot contain any empty list."))
 
 
-def calc_span(result: List[list]) -> list:
-    patterns = [row[:-1] for row in result]
-    return []
+def validate_sequences(sequences: List[list]):
+    """
+    Validate sequences
 
-
+    """
+    check_true(sequences is not None, ValueError("Sequences cannot be null."))
+    check_true(isinstance(sequences, list), ValueError("Sequences need to be a list of lists."))
+    check_true(len(sequences) >= 1, ValueError("Sequences cannot be an empty list."))
+    not_list = [(sequences[i], i) for i in range(len(sequences)) if not (isinstance(sequences[i], list))]
+    check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
+    is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
+    check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))

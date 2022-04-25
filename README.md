@@ -22,6 +22,7 @@ Seq2Pat is developed as a joint collaboration between Fidelity Investments
 and the Tepper School of Business at CMU. Documentation is available at [fidelity.github.io/seq2pat](https://fidelity.github.io/seq2pat).
 
 ## Quick Start
+### Constraint-based Sequential Pattern Mining
 ```python
 # Example to show how to find frequent sequential patterns
 # from a given sequence database subject to constraints
@@ -44,6 +45,36 @@ seq2pat.add_constraint(3 <= price.average() <= 4)
 patterns = seq2pat.get_patterns(min_frequency=2)
 ```
 
+### Dichotomic Pattern Mining
+```python
+# Example to show how to run Dichotomic Pattern Mining 
+# on sequences with positive and negative outcomes
+from sequential.seq2pat import Seq2Pat
+from sequential.dpm import (get_one_hot_encodings, dichotomic_pattern_mining, 
+                            DichotomicAggregation)
+
+# Create seq2pat model for positive sequences
+sequences_pos = [["A", "A", "B", "A", "D"]]
+seq2pat_pos = Seq2Pat(sequences=sequences_pos)
+
+# Create seq2pat model for negative sequences
+sequences_neg = [["C", "B", "A"], ["C", "A", "C", "D"]]
+seq2pat_neg = Seq2Pat(sequences=sequences_neg)
+
+# Run DPM to get mined patterns
+aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, 
+                                                    min_frequency_pos=1, 
+                                                    min_frequency_neg=2)
+
+# DPM patterns with Union aggregation
+dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
+
+# Encodings of all sequences
+sequences = sequences_pos + sequences_neg
+encodings = get_one_hot_encodings(sequences, dpm_patterns,
+                                  drop_pattern_frequency=False)
+```
+
 ## Available Constraints
 
 The library offers various constraint types, including a number of non-monotone constraints.
@@ -56,7 +87,13 @@ The library offers various constraint types, including a number of non-monotone 
 ## Usage Examples
 
 Examples on how to use the available constraints can be found 
-in the [Jupyter Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
+in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
+
+Supported by Seq2Pat, we proposed **Dichotomic Pattern Mining** ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) to analyze the correlations between 
+mined patterns and different outcomes of sequences. DPM plays an integrator role between Sequential 
+Pattern Mining and the downstream modeling tasks, by generating embeddings of sequences based on the mined frequent patterns.
+An example on how to run DPM and generate pattern embeddings can be found in 
+[Dichotomic Pattern Mining Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/dichotomic_pattern_mining.ipynb).
 
 ## Installation
 
@@ -87,6 +124,19 @@ If you use Seq2Pat in a publication, please cite it as:
     year={2022},
     pages={TBD}
   }
+```
+
+To cite the Dichotomic Pattern Mining framework, please cite it as:
+
+```bibtex
+@inproceedings{DPM2022,
+    title={Dichotomic Pattern Mining with Applications to Intent Prediction from Semi-Structured Clickstream Datasets}, 
+    author={Xin Wang and Serdar Kadioglu},
+    booktitle={The AAAI-22 Workshop on Knowledge Discovery from Unstructured Data in Financial Services},
+    year={2022},
+    eprint={2201.09178},
+    archivePrefix={arXiv}
+}
 ```
 
 ## License

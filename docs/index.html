@@ -94,6 +94,7 @@ and the Tepper School of Business at CMU.</p>
 </section>
 <section id="quick-start">
 <span id="quick"></span><h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline"></a></h1>
+<p>Constraint-based Sequential Pattern Mining</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example to show how to find frequent sequential patterns</span>
 <span class="c1"># from a given sequence database subject to constraints</span>
 <span class="kn">from</span> <span class="nn">sequential.seq2pat</span> <span class="kn">import</span> <span class="n">Seq2Pat</span><span class="p">,</span> <span class="n">Attribute</span>
@@ -101,18 +102,47 @@ and the Tepper School of Business at CMU.</p>
 <span class="c1"># Seq2Pat over 3 sequences</span>
 <span class="n">seq2pat</span> <span class="o">=</span> <span class="n">Seq2Pat</span><span class="p">(</span><span class="n">sequences</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">],</span>
                              <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">],</span>
-                             <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]])</span>
+                     <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]])</span>
 
 <span class="c1"># Price attribute corresponding to each item</span>
 <span class="n">price</span> <span class="o">=</span> <span class="n">Attribute</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">[[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
-                          <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                          <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
 
 <span class="c1"># Average price constraint</span>
 <span class="n">seq2pat</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="mi">3</span> <span class="o">&lt;=</span> <span class="n">price</span><span class="o">.</span><span class="n">average</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">)</span>
 
 <span class="c1"># Patterns that occur at least twice (A-D)</span>
 <span class="n">patterns</span> <span class="o">=</span> <span class="n">seq2pat</span><span class="o">.</span><span class="n">get_patterns</span><span class="p">(</span><span class="n">min_frequency</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Dichotomic Pattern Mining</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example to show how to run Dichotomic Pattern Mining</span>
+<span class="c1"># on sequences with positive and negative outcomes</span>
+<span class="kn">from</span> <span class="nn">sequential.seq2pat</span> <span class="kn">import</span> <span class="n">Seq2Pat</span>
+<span class="kn">from</span> <span class="nn">sequential.dpm</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_one_hot_encodings</span><span class="p">,</span> <span class="n">dichotomic_pattern_mining</span><span class="p">,</span>
+                            <span class="n">DichotomicAggregation</span><span class="p">)</span>
+
+<span class="c1"># Create seq2pat model for positive sequences</span>
+<span class="n">sequences_pos</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]]</span>
+<span class="n">seq2pat_pos</span> <span class="o">=</span> <span class="n">Seq2Pat</span><span class="p">(</span><span class="n">sequences</span><span class="o">=</span><span class="n">sequences_pos</span><span class="p">)</span>
+
+<span class="c1"># Create seq2pat model for negative sequences</span>
+<span class="n">sequences_neg</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]]</span>
+<span class="n">seq2pat_neg</span> <span class="o">=</span> <span class="n">Seq2Pat</span><span class="p">(</span><span class="n">sequences</span><span class="o">=</span><span class="n">sequences_neg</span><span class="p">)</span>
+
+<span class="c1"># Run DPM to get mined patterns</span>
+<span class="n">aggregation_to_patterns</span> <span class="o">=</span> <span class="n">dichotomic_pattern_mining</span><span class="p">(</span><span class="n">seq2pat_pos</span><span class="p">,</span> <span class="n">seq2pat_neg</span><span class="p">,</span>
+                                                    <span class="n">min_frequency_pos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                    <span class="n">min_frequency_neg</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># DPM patterns with Union aggregation</span>
+<span class="n">dpm_patterns</span> <span class="o">=</span> <span class="n">aggregation_to_patterns</span><span class="p">[</span><span class="n">DichotomicAggregation</span><span class="o">.</span><span class="n">union</span><span class="p">]</span>
+
+<span class="c1"># Encodings of all sequences</span>
+<span class="n">sequences</span> <span class="o">=</span> <span class="n">sequences_pos</span> <span class="o">+</span> <span class="n">sequences_neg</span>
+<span class="n">encodings</span> <span class="o">=</span> <span class="n">get_one_hot_encodings</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">dpm_patterns</span><span class="p">,</span>
+                                  <span class="n">drop_pattern_frequency</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
