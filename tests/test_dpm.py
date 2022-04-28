@@ -39,7 +39,7 @@ class TestDPMUtils(unittest.TestCase):
 
         # Create encoding
         encodings = get_one_hot_encodings(sequences, patterns,
-                                          constraints=[price_ct])
+                                          constraints=[price_ct], drop_pattern_frequency=True)
         # sequence      feat0
         # [A,A,B,A,D]    1
         # [C, B, A]      0
@@ -74,7 +74,7 @@ class TestDPMUtils(unittest.TestCase):
 
         # Create encoding with csp_global when rolling_window_size=None
         encodings = get_one_hot_encodings(sequences, patterns, constraints=[price_ct],
-                                          rolling_window_size=None)
+                                          rolling_window_size=None, drop_pattern_frequency=True)
         # sequence      feat0
         # [A,A,B,A,D]    1
         # [C, B, A]      0
@@ -94,7 +94,7 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding
-        encodings = get_one_hot_encodings(sequences, patterns)
+        encodings = get_one_hot_encodings(sequences, patterns, drop_pattern_frequency=True)
         # encoding is a data frame
         # sequence      feat0 feat1 feat2
         # [A,A,B,A,D]    1    1     0
@@ -115,7 +115,8 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding
-        encodings = get_one_hot_encodings(sequences, patterns, rolling_window_size=None)
+        encodings = get_one_hot_encodings(sequences, patterns, rolling_window_size=None,
+                                          drop_pattern_frequency=True)
         # encoding is a data frame
         # sequence      feat0 feat1 feat2
         # [A,A,B,A,D]    1    1     0
@@ -241,7 +242,7 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding with/without constraints
-        encodings = get_one_hot_encodings(sequences, patterns, [price_ct])
+        encodings = get_one_hot_encodings(sequences, patterns, [price_ct], drop_pattern_frequency=True)
 
         self.assertListEqual([[1], [0], [1]], encodings.values[:, 1:].tolist())
 
