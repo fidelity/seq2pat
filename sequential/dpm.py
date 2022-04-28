@@ -76,7 +76,7 @@ def dichotomic_pattern_mining(seq2pat_pos: Seq2Pat, seq2pat_neg: Seq2Pat,
 
 def get_one_hot_encodings(sequences: List[list], patterns: List[list],
                           constraints: Union[List[_Constraint], None] = None,
-                          rolling_window_size: Union[int, None] = 10, drop_pattern_frequency=False) -> pd.DataFrame:
+                          rolling_window_size: Union[int, None] = 10, drop_pattern_frequency=True) -> pd.DataFrame:
     """
     Create a data frame having one-hot encoding of sequences.
 
@@ -93,7 +93,7 @@ def get_one_hot_encodings(sequences: List[list], patterns: List[list],
         sequence subject to the pattern detection, to speed up the encodings generation.
         (rolling_window_size=10 by default). When rolling_window_size=None, patterns are detected globally.
     drop_pattern_frequency: bool
-        Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=False by default.
+        Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=True by default.
 
     Returns
     -------
