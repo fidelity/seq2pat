@@ -70,8 +70,7 @@ dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
 # Encodings of all sequences
 sequences = sequences_pos + sequences_neg
-encodings = get_one_hot_encodings(sequences, dpm_patterns,
-                                  drop_pattern_frequency=False)
+encodings = get_one_hot_encodings(sequences, dpm_patterns, drop_pattern_frequency=False)
 ```
 
 ## Available Constraints
