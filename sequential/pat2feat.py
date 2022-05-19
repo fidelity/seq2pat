@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import List, Union, Dict, NamedTuple, NoReturn, Callable, Optional
+from typing import List, Union
 import pandas as pd
 
 from sequential.seq2pat import _Constraint
