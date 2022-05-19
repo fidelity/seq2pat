@@ -10,7 +10,7 @@ from sequential.csp_global import is_satisfiable
 from sequential.csp_local import is_satisfiable_in_rolling
 
 
-class OneHotEncoding:
+class _OneHotEncoding:
     """
     The implementer class of one-hot encodings generation.
     """
@@ -108,13 +108,14 @@ class Pat2Feat:
         Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=True by default.
     """
 
-    def __init__(self, featurization: Union[OneHotEncoding] = OneHotEncoding(), drop_pattern_frequency=True):
-
-        self.drop_pattern_frequency = drop_pattern_frequency
-        self._imp = featurization
+    def __init__(self):
+        # Initialize the implementer of one-hot encodings generation
+        self._imp = None
 
     def get_features(self, sequences: List[list], patterns: List[list],
-                     constraints: Union[List[_Constraint], None] = None):
+                     constraints: Union[List[_Constraint], None] = None,
+                     rolling_window_size: Union[int, None] = 10,
+                     drop_pattern_frequency: bool = True):
         """
         Create a data frame having one-hot encoding of sequences.
 
@@ -126,6 +127,12 @@ class Pat2Feat:
             A list of interested patterns, which defines the encoding space.
         constraints: Union[list, None]
             The constraints enforced in the creation of encoding. constraints=None by default.
+        rolling_window_size: Union[int, None]
+            The rolling window along a sequence within which patterns are detected locally. It controls the length of
+            sequence subject to the pattern detection, to speed up the encodings generation.
+            (rolling_window_size=10 by default). When rolling_window_size=None, patterns are detected globally.
+        drop_pattern_frequency: bool
+            Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=True by default.
 
         Returns
         -------
@@ -138,7 +145,9 @@ class Pat2Feat:
             [C,A,C,D]      1         0         1        ...
         """
 
-        if self.drop_pattern_frequency:
+        if drop_pattern_frequency:
             patterns = drop_frequency(patterns)
+
+        self._imp = _OneHotEncoding(rolling_window_size=rolling_window_size)
 
         return self._imp.transform(sequences, patterns, constraints=constraints)

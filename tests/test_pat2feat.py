@@ -5,7 +5,7 @@ import os
 import unittest
 
 from sequential.seq2pat import Seq2Pat, Attribute
-from sequential.pat2feat import Pat2Feat, OneHotEncoding
+from sequential.pat2feat import Pat2Feat
 
 
 class TestDPMUtils(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding
-        pat2feat = Pat2Feat(featurization=OneHotEncoding())
+        pat2feat = Pat2Feat()
         encodings = pat2feat.get_features(sequences, patterns, constraints=[price_ct])
         # sequence      feat0
         # [A,A,B,A,D]    1
@@ -73,8 +73,8 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding with csp_global when rolling_window_size=None
-        pat2feat = Pat2Feat(featurization=OneHotEncoding(rolling_window_size=None))
-        encodings = pat2feat.get_features(sequences, patterns, constraints=[price_ct])
+        pat2feat = Pat2Feat()
+        encodings = pat2feat.get_features(sequences, patterns, constraints=[price_ct], rolling_window_size=None)
         # sequence      feat0
         # [A,A,B,A,D]    1
         # [C, B, A]      0
@@ -94,7 +94,7 @@ class TestDPMUtils(unittest.TestCase):
         patterns = seq2pat.get_patterns(min_frequency=2)
 
         # Create encoding
-        pat2feat = Pat2Feat(featurization=OneHotEncoding())
+        pat2feat = Pat2Feat()
         encodings = pat2feat.get_features(sequences, patterns)
         # encoding is a data frame
         # sequence      feat0 feat1 feat2
