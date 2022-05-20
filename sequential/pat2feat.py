@@ -100,15 +100,10 @@ class Pat2Feat:
     """
     **Pat2Feat: Pat2Feat: Pattern-to-Feature Generation**
 
-    Attributes
-    ----------
-    featurization: Object
-        The implementor of a featurization method.
-    drop_pattern_frequency: bool
-        Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=True by default.
     """
 
     def __init__(self):
+
         # Initialize the implementer of one-hot encodings generation
         self._imp = None
 
