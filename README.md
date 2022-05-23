@@ -50,7 +50,8 @@ patterns = seq2pat.get_patterns(min_frequency=2)
 # Example to show how to run Dichotomic Pattern Mining 
 # on sequences with positive and negative outcomes
 from sequential.seq2pat import Seq2Pat
-from sequential.dpm import get_one_hot_encodings, dichotomic_pattern_mining, DichotomicAggregation
+from sequential.pat2feat import Pat2Feat
+from sequential.dpm import dichotomic_pattern_mining, DichotomicAggregation
 
 # Create seq2pat model for positive sequences
 sequences_pos = [["A", "A", "B", "A", "D"]]
@@ -70,7 +71,8 @@ dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
 # Encodings of all sequences
 sequences = sequences_pos + sequences_neg
-encodings = get_one_hot_encodings(sequences, dpm_patterns, drop_pattern_frequency=False)
+pat2feat = Pat2Feat()
+encodings = pat2feat.get_features(sequences, dpm_patterns, drop_pattern_frequency=False)
 ```
 
 ## Available Constraints
