@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: GPL-2.0
 
 import gc
-from typing import NamedTuple, List, Dict, NoReturn
+from typing import NamedTuple, List, Dict, NoReturn, Union
 
 from sequential.backend import seq_to_pat as stp
 from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
-    validate_attribute_values, validate_sequences
+    validate_attribute_values, validate_sequences, validate_max_span_index
 
 
 # IMPORTANT: Constant values should not be changed
@@ -277,11 +277,17 @@ class Seq2Pat:
     sequences : List[list]
         A list of sequences each with a list of events.
         The event values can be all strings or all integers.
+    max_span_index: Union[int, None]
+        The value to apply a default maximum span constraint on items' indices, max_span_index=9 by default (10 items).
+        This is going to avoid regular users to run into a scaling issue when data contains long sequences but no
+        constraints are used to run the mining efficiently and practically. Power users can choose to drop this
+        constraint by setting it to be None or increase the maximum span of index as the system has enough resources.
     """
 
-    def __init__(self, sequences: List[list]):
-        # Validate input sequences
+    def __init__(self, sequences: List[list], max_span_index: Union[int, None] = 9):
+        # Validate input
         validate_sequences(sequences)
+        validate_max_span_index(max_span_index)
 
         # Input sequences
         self._sequences: List[list] = sequences
@@ -304,6 +310,13 @@ class Seq2Pat:
 
         # Cython implementor object
         self._cython_imp = None
+
+        if max_span_index:
+            # Create index attribute
+            index_attr = Attribute([[i for i in range(len(seq))] for seq in sequences])
+
+            # Add default maximum span constraint on index. The minimum span is at least 1 between two indices
+            self.add_constraint(1 <= index_attr.span() <= max_span_index)
 
     @property
     def sequences(self) -> List[list]:

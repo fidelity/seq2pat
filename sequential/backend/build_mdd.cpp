@@ -98,16 +98,16 @@ bool Check_gap(int i, int strp, int endp, vector<vector<vector<int> > >* attrs, 
 vector<int>* lgap, vector<int>* ugap){	//checks upper and lower gap constraints imposed on any attribute value
 
 	for (int att = 0; att < (*lgap).size(); att++){
-		if ((*lgap)[att] == 0)
-			continue;
-		if (abs((*attrs)[(*lgapi)[att]].at(i).at(endp - 1) - (*attrs)[(*lgapi)[att]].at(i).at(strp - 1)) < (*lgap)[att])
+//		if ((*lgap)[att] == 0)
+//			continue;
+		if ((*attrs)[(*lgapi)[att]].at(i).at(endp - 1) - (*attrs)[(*lgapi)[att]].at(i).at(strp - 1) < (*lgap)[att])
 			return 0;
 	}
 
 	for (int att = 0; att < (*ugap).size(); att++){
-		if ((*ugap)[att] == 0)
-			continue;
-		if (abs((*attrs)[(*ugapi)[att]].at(i).at(endp - 1) - (*attrs)[(*ugapi)[att]].at(i).at(strp - 1)) > (*ugap)[att])
+//		if ((*ugap)[att] == 0)
+//			continue;
+		if ((*attrs)[(*ugapi)[att]].at(i).at(endp - 1) - (*attrs)[(*ugapi)[att]].at(i).at(strp - 1) > (*ugap)[att])
 			return 0;
 	}
 
