@@ -1379,7 +1379,7 @@ class TestSeq2Pat(unittest.TestCase):
         sequences = [[i for i in range(100)]]
 
         # Sequential pattern finder having the default maximum span constraint on item index, 13 items
-        seq2pat = Seq2Pat(sequences, max_span_index=12)
+        seq2pat = Seq2Pat(sequences, max_span_index=13)
 
         result = seq2pat.get_patterns(1)
         self.assertEqual(len(result), 360348)
