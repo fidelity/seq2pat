@@ -12,7 +12,7 @@ desired properties over patterns.
 Dichomotic Pattern Mining (AAAI'22, Frontiers'22) embeds Seq2Pat to exploit the dichotomy of positive vs. negative outcomes in populations. This allows  constraint-based sequence analysis to generate patterns that uniquely distinguishes cohorts.  
 
 From an algorithmic perspective, the library takes advantage of
-[multi-valued decision diagrams (AAAI'19](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
+[multi-valued decision diagrams (AAAI'19)](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
 
 From an implementation perspective, the library is written in ```Cython```
 that brings together the efficiency of a low-level ```C++``` backend and
