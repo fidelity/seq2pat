@@ -9,10 +9,10 @@ sequential patterns that occur frequently in large sequence databases.
 The library supports constraint-based reasoning to specify
 desired properties over patterns.
 
+Dichomotic Pattern Mining (AAAI'22, Frontiers'22) embeds Seq2Pat to exploit the dichotomy of positive vs. negative outcomes in populations. This allows  constraint-based sequence analysis to generate patterns that uniquely distinguishes cohorts.  
+
 From an algorithmic perspective, the library takes advantage of
-[multi-valued decision diagrams](https://www.springer.com/us/book/9783319428475).
-It is based on the state-of-the-art approach for sequential pattern mining
-from [Hosseininasab _et. al._ AAAI 2019](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
+[multi-valued decision diagrams (AAAI'19](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
 
 From an implementation perspective, the library is written in ```Cython```
 that brings together the efficiency of a low-level ```C++``` backend and
@@ -115,18 +115,30 @@ If you use Seq2Pat in a publication, please cite it as:
 
 ```bibtex
   @article{seq2pat2022,
-    author={Wang Xin, Hosseininasab Amin, Colunga Pablo, Kadioglu Serdar, van Hoeve Willem-Jan},
     title={Seq2Pat: Sequence-to-Pattern Generation for Constraint-based Sequential Pattern Mining},
+    author={Wang Xin, Hosseininasab Amin, Colunga Pablo, Kadioglu Serdar, van Hoeve Willem-Jan},
     url={https://github.com/fidelity/textwiser},
     journal={Proceedings of the AAAI Conference on Artificial Intelligence},
     volume={TBD},
     number={TBD},
-    year={2022},
-    pages={TBD}
+    pages={TBD},
+    year={2022}
   }
 ```
 
 To cite the Dichotomic Pattern Mining framework, please cite it as:
+
+```bibtex
+  @article{Frontiers2022,
+    title={Dichotomic Pattern Mining Integrated with Constraint Reasoning for Digital Behaviour Analyses}, 
+    author={Sohom Ghosh, Shefali Yadav, Xin Wang, Bibhash Chakrabarty, Serdar Kadioglu},
+    journal={Frontiers Journal on Knowledge Discovery from Unstructured Data in Finance},
+    volume={TBD},
+    number={TBD},
+    pages={TBD},
+    year={2022}    
+}
+```
 
 ```bibtex
 @inproceedings{DPM2022,
