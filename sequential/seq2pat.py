@@ -281,7 +281,7 @@ class Seq2Pat:
         The value to apply a default maximum span constraint on items' indices, max_span_index=9 by default (10 items).
         This is going to avoid regular users to run into a scaling issue when data contains long sequences but no
         constraints are used to run the mining efficiently and practically. Power users can choose to drop this
-        constraint by setting it to be None or increase the maximum span of index as the system has enough resources.
+        constraint by setting it to be None or increase the maximum span of index as the system has resources to support.
     """
 
     def __init__(self, sequences: List[list], max_span_index: Union[int, None] = 9):
@@ -315,7 +315,8 @@ class Seq2Pat:
             # Create index attribute
             index_attr = Attribute([[i for i in range(len(seq))] for seq in sequences])
 
-            # Add default maximum span constraint on index. The minimum span is at least 1 between two indices
+            # Add default maximum span constraint on index.
+            # The minimum span is at least 1 between two indices. Here we add it explicitly.
             self.add_constraint(1 <= index_attr.span() <= max_span_index)
 
     @property
