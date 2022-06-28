@@ -1376,13 +1376,14 @@ class TestSeq2Pat(unittest.TestCase):
 
     def test_default_maximum_span_index_customize(self):
         # List of sequences
-        sequences = [[i for i in range(100)]]
+        sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]]
+        # print(sequences)
 
         # Sequential pattern finder having the default maximum span constraint on item index, 13 items
         seq2pat = Seq2Pat(sequences, max_span_index=13)
 
         result = seq2pat.get_patterns(1)
-        self.assertEqual(len(result), 360348)
+        self.assertEqual(len(result), 36843)
         # maximum length in result is 13 items plus the frequency
         self.assertEqual(max(list(map(len, result))), 14)
 
