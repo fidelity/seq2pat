@@ -317,7 +317,7 @@ class Seq2Pat:
 
             # Add default maximum span constraint on index.
             # The minimum span is at least 1 between two indices. Here we add it explicitly.
-            # Given 10 items, the maximum difference on the index is (max_span_index - 1)
+            # Given max_span_index items, the maximum difference on the index is (max_span_index - 1)
             self.add_constraint(1 <= index_attr.span() <= (max_span_index - 1))
 
     @property
