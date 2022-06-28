@@ -278,13 +278,13 @@ class Seq2Pat:
         A list of sequences each with a list of events.
         The event values can be all strings or all integers.
     max_span_index: Union[int, None]
-        The value to apply a default maximum span constraint on items' indices, max_span_index=9 by default (10 items).
+        The value to apply a default maximum span constraint on items' indices, max_span_index=10 by default (10 items).
         This is going to avoid regular users to run into a scaling issue when data contains long sequences but no
         constraints are used to run the mining efficiently and practically. Power users can choose to drop this
         constraint by setting it to be None or increase the maximum span of index as the system has resources to support.
     """
 
-    def __init__(self, sequences: List[list], max_span_index: Union[int, None] = 9):
+    def __init__(self, sequences: List[list], max_span_index: Union[int, None] = 10):
         # Validate input
         validate_sequences(sequences)
         validate_max_span_index(max_span_index)
@@ -317,7 +317,8 @@ class Seq2Pat:
 
             # Add default maximum span constraint on index.
             # The minimum span is at least 1 between two indices. Here we add it explicitly.
-            self.add_constraint(1 <= index_attr.span() <= max_span_index)
+            # Given 10 items, the maximum difference on the index is (max_span_index - 1)
+            self.add_constraint(1 <= index_attr.span() <= (max_span_index - 1))
 
     @property
     def sequences(self) -> List[list]:
