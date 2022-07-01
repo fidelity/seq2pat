@@ -1354,7 +1354,7 @@ class TestSeq2Pat(unittest.TestCase):
                               [11, 13, 1],
                               [12, 13, 1]], seq2pat.get_patterns(1))
 
-    def test_default_maximum_span_index(self):
+    def test_max_span(self):
         # List of sequences
         sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]]
 
@@ -1364,7 +1364,7 @@ class TestSeq2Pat(unittest.TestCase):
         default_result = seq2pat.get_patterns(1)
         self.assertEqual(len(default_result), 2546)
 
-    def test_default_maximum_span_index_none(self):
+    def test_max_span_none(self):
         # List of sequences
         sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]]
 
@@ -1374,7 +1374,7 @@ class TestSeq2Pat(unittest.TestCase):
         unconstrained_result = seq2pat.get_patterns(1)
         self.assertEqual(len(unconstrained_result), 8178)
 
-    def test_default_maximum_span_index_customize(self):
+    def test_max_span_customize(self):
         # List of sequences
         sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]]
         # print(sequences)
