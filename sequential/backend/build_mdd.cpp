@@ -98,17 +98,17 @@ bool Check_gap(int i, int strp, int endp, vector<vector<vector<int> > >* attrs, 
 vector<int>* lgap, vector<int>* ugap){	//checks upper and lower gap constraints imposed on any attribute value
 
 	for (int att = 0; att < (*lgap).size(); att++){
-// Allow lower bound of gap constraint to be 0 if not work with abs values
-//		if ((*lgap)[att] == 0)
-//			continue;
+// It enables the case when lower bound of gap constraint is 0. If lower bound is not a number, continue
+		if (isnan((*lgap)[att]))
+			continue;
 		if ((*attrs)[(*lgapi)[att]].at(i).at(endp - 1) - (*attrs)[(*lgapi)[att]].at(i).at(strp - 1) < (*lgap)[att])
 			return 0;
 	}
 
 	for (int att = 0; att < (*ugap).size(); att++){
-// Allow upper bound of gap constraint to be 0 if not work with abs values
-//		if ((*ugap)[att] == 0)
-//			continue;
+// It enables the case when upper bound of gap constraint is 0. If upper bound is not a number, continue
+		if (isnan((*ugap)[att]))
+			continue;
 		if ((*attrs)[(*ugapi)[att]].at(i).at(endp - 1) - (*attrs)[(*ugapi)[att]].at(i).at(strp - 1) > (*ugap)[att])
 			return 0;
 	}

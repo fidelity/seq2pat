@@ -15,18 +15,18 @@ class _OneHotEncoding:
     The implementer class of one-hot encodings generation.
     """
 
-    def __init__(self, rolling_window_size: Union[int, None] = 10):
+    def __init__(self, max_span: Union[int, None] = 10):
         """
         Attributes
         ----------
-        rolling_window_size: Union[int, None]
-            The rolling window along a sequence within which patterns are detected locally. It controls the length of
-            sequence subject to the pattern detection, to speed up the encodings generation.
-            (rolling_window_size=10 by default). When rolling_window_size=None, patterns are detected globally.
+        max_span: Union[int, None]
+            The size of a rolling window along a sequence, within which patterns are detected locally.
+            It controls the length of sequence subject to the pattern detection, thus to speeds up the encodings
+            generation (max_span=10 by default). When max_span=None, patterns are detected globally.
 
         """
 
-        self.rolling_window_size = rolling_window_size
+        self.max_span = max_span
 
     def transform(self, sequences: List[list], patterns: List[list],
                   constraints: Union[List[_Constraint], None] = None):
@@ -75,10 +75,10 @@ class _OneHotEncoding:
         for i, pattern in enumerate(patterns):
 
             # If window size is given, run the local/approximate model
-            if self.rolling_window_size:
+            if self.max_span:
                 df['feature_' + str(i)] = df.apply(lambda row: is_satisfiable_in_rolling(row['sequence'], pattern,
                                                                                          row.name, constraints,
-                                                                                         self.rolling_window_size),
+                                                                                         self.max_span),
                                                    axis=1)
 
             # Otherwise, run the global model
@@ -109,7 +109,7 @@ class Pat2Feat:
 
     def get_features(self, sequences: List[list], patterns: List[list],
                      constraints: Union[List[_Constraint], None] = None,
-                     rolling_window_size: Union[int, None] = 10,
+                     max_span: Union[int, None] = 10,
                      drop_pattern_frequency: bool = True):
         """
         Create a data frame having one-hot encoding of sequences.
@@ -122,10 +122,10 @@ class Pat2Feat:
             A list of interested patterns, which defines the encoding space.
         constraints: Union[list, None]
             The constraints enforced in the creation of encoding. constraints=None by default.
-        rolling_window_size: Union[int, None]
-            The rolling window along a sequence within which patterns are detected locally. It controls the length of
-            sequence subject to the pattern detection, to speed up the encodings generation.
-            (rolling_window_size=10 by default). When rolling_window_size=None, patterns are detected globally.
+        max_span: Union[int, None]
+            The size of a rolling window along a sequence, within which patterns are detected locally.
+            It controls the length of sequence subject to the pattern detection, thus to speeds up the encodings
+            generation (max_span=10 by default). When max_span=None, patterns are detected globally.
         drop_pattern_frequency: bool
             Drop the frequency appended in the end of each input pattern, drop_pattern_frequency=True by default.
 
@@ -143,6 +143,6 @@ class Pat2Feat:
         if drop_pattern_frequency:
             patterns = drop_frequency(patterns)
 
-        self._imp = _OneHotEncoding(rolling_window_size=rolling_window_size)
+        self._imp = _OneHotEncoding(max_span=max_span)
 
         return self._imp.transform(sequences, patterns, constraints=constraints)
