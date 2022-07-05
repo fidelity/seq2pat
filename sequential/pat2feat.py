@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 
-from typing import List, Union
+from typing import List, Optional
 import pandas as pd
 
 from sequential.seq2pat import _Constraint
@@ -15,11 +15,11 @@ class _OneHotEncoding:
     The implementer class of one-hot encodings generation.
     """
 
-    def __init__(self, max_span: Union[int, None] = 10):
+    def __init__(self, max_span: Optional[int] = 10):
         """
         Attributes
         ----------
-        max_span: Union[int, None]
+        max_span: Optional[int]
             The size of a rolling window along a sequence, within which patterns are detected locally.
             It controls the length of sequence subject to the pattern detection, thus to speeds up the encodings
             generation (max_span=10 by default). When max_span=None, patterns are detected globally.
@@ -29,7 +29,7 @@ class _OneHotEncoding:
         self.max_span = max_span
 
     def transform(self, sequences: List[list], patterns: List[list],
-                  constraints: Union[List[_Constraint], None] = None):
+                  constraints: Optional[List[_Constraint]] = None):
         """
         Create one-hot encodings of sequences with the provided patterns and constraints
 
@@ -39,7 +39,7 @@ class _OneHotEncoding:
             A list of sequences of items.
         patterns: List[list]
             A list of interested patterns, which defines the encoding space.
-        constraints: Union[list, None]
+        constraints: Optional[List[_Constraint]]
             The constraints enforced in the creation of encoding. constraints=None by default.
 
         Returns
@@ -108,8 +108,8 @@ class Pat2Feat:
         self._imp = None
 
     def get_features(self, sequences: List[list], patterns: List[list],
-                     constraints: Union[List[_Constraint], None] = None,
-                     max_span: Union[int, None] = 10,
+                     constraints: Optional[List[_Constraint]] = None,
+                     max_span: Optional[int] = 10,
                      drop_pattern_frequency: bool = True):
         """
         Create a data frame having one-hot encoding of sequences.
@@ -120,9 +120,9 @@ class Pat2Feat:
             A list of sequences of items.
         patterns: List[list]
             A list of interested patterns, which defines the encoding space.
-        constraints: Union[list, None]
+        constraints: Optional[List[_Constraint]]
             The constraints enforced in the creation of encoding. constraints=None by default.
-        max_span: Union[int, None]
+        max_span: Optional[int]
             The size of a rolling window along a sequence, within which patterns are detected locally.
             It controls the length of sequence subject to the pattern detection, thus to speeds up the encodings
             generation (max_span=10 by default). When max_span=None, patterns are detected globally.

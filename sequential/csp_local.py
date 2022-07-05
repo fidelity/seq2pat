@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 import statistics
-from typing import Union, Tuple, List
+from typing import Optional, Tuple, List
 
 from sequential.seq2pat import _Constraint
 
@@ -43,8 +43,8 @@ def _is_subsequence(list1: list, list2: list) -> bool:
     return index_list1 == len_list1
 
 
-def _subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, constraints: Union[list, None],
-                            rolling_window_size: int, seq_attr_start: int) -> bool:
+def _subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, constraints: Optional[List[_Constraint]],
+                            max_span: int, seq_attr_start: int) -> bool:
     """
     Identify if a pattern is in a given sequence, subject to the optional seq2pat._Constraint type of constraints.
 
@@ -59,15 +59,15 @@ def _subsequence_identifier(sequence: list, pattern: list, seq_attr_ind: int, co
             # if pattern is a subsequence and there is no constraint, return True
             return True
         else:
-            res = _meet_constraints_in_rolling(sequence, pattern, seq_attr_ind, constraints, rolling_window_size,
+            res = _meet_constraints_in_rolling(sequence, pattern, seq_attr_ind, constraints, max_span,
                                                seq_attr_start)
 
     return res
 
 
 def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: int,
-                                 constraints: Union[List[_Constraint], None],
-                                 rolling_window_size: int, window_start_ind: int) -> bool:
+                                 constraints: Optional[List[_Constraint]],
+                                 max_span: int, window_start_ind: int) -> bool:
     """
     Check if a pattern is in an individual sequence of items, subject to defined constraints.
 
@@ -79,9 +79,9 @@ def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: in
         A pattern that is going to be checked in the sequence.
     seq_attr_ind: int
         The index of this sequence in the list of sequences, and also the index of attributes.
-    constraints: Union[list, None]
+    constraints: Optional[List[_Constraint]]
         A list of constraints
-    rolling_window_size: int
+    max_span: int
         The rolling window along a sequence within which patterns are detected.
     window_start_ind: int
         The index where a rolling window starts.
@@ -103,7 +103,7 @@ def _meet_constraints_in_rolling(sequence: list, pattern: list, seq_attr_ind: in
         for constraint in constraints:
             # Get attributes
             attrs = constraint.attribute.values[seq_attr_ind]
-            attrs = attrs[window_start_ind:window_start_ind + rolling_window_size]
+            attrs = attrs[window_start_ind:window_start_ind + max_span]
 
             # Get subsequences of attributes
             attr_subsequence = [attrs[i] for i in s]
@@ -175,22 +175,22 @@ def _get_matched_subsequences(sequence: list, pattern: list) -> Tuple[list, list
 
 
 def is_satisfiable_in_rolling(sequence: list, pattern: list, seq_attr_ind: int,
-                              constraints: Union[List[_Constraint], None],
-                              rolling_window_size: int) -> bool:
+                              constraints: Optional[List[_Constraint]],
+                              max_span: int) -> bool:
     """
      Search the given pattern in a rolling_window of sequence
 
     """
     res = False
 
-    if len(sequence) <= rolling_window_size:
-        res = _subsequence_identifier(sequence, pattern, seq_attr_ind, constraints, rolling_window_size, 0)
+    if len(sequence) <= max_span:
+        res = _subsequence_identifier(sequence, pattern, seq_attr_ind, constraints, max_span, 0)
 
     else:
-        num_iters = len(sequence) - rolling_window_size
+        num_iters = len(sequence) - max_span
         for i in range(num_iters + 1):
-            if _subsequence_identifier(sequence[i:i + rolling_window_size], pattern, seq_attr_ind, constraints,
-                                       rolling_window_size, i):
+            if _subsequence_identifier(sequence[i:i + max_span], pattern, seq_attr_ind, constraints,
+                                       max_span, i):
                 res = True
                 break
     return res

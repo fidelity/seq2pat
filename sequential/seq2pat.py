@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 import gc
-from typing import NamedTuple, List, Dict, NoReturn, Union
+from typing import NamedTuple, List, Dict, NoReturn, Optional
 
 from sequential.backend import seq_to_pat as stp
 from sequential.utils import Num, check_true, get_max_column_size, \
@@ -277,7 +277,7 @@ class Seq2Pat:
     sequences : List[list]
         A list of sequences each with a list of events.
         The event values can be all strings or all integers.
-    max_span: Union[int, None]
+    max_span: Optional[int]
         The value for applying a built-in maximum span constraint to the length of items in mining, max_span=10 by
         default (10 items). This is going to avoid regular users to run into a scaling issue when data contains long
         sequences but no constraints are used to run the mining efficiently and practically.
@@ -285,7 +285,7 @@ class Seq2Pat:
         as the system has resources to support.
     """
 
-    def __init__(self, sequences: List[list], max_span: Union[int, None] = 10):
+    def __init__(self, sequences: List[list], max_span: Optional[int] = 10):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
