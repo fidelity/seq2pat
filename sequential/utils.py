@@ -232,3 +232,14 @@ def validate_sequences(sequences: List[list]):
     check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
     is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
+
+
+def validate_max_span(max_span: Union[int, None]):
+    """
+    Validate max_span
+
+    """
+    if max_span:
+        check_true(isinstance(max_span, int), ValueError("Maximum span should be an integer."))
+        check_true(max_span > 1, ValueError("Maximum span should be greater than 1."))
+

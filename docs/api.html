@@ -112,12 +112,18 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="sequential.seq2pat.Seq2Pat">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sequential.seq2pat.</span></span><span class="sig-name descname"><span class="pre">Seq2Pat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sequential.seq2pat.</span></span><span class="sig-name descname"><span class="pre">Seq2Pat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p><strong>Seq2Pat: Sequence-to-Pattern Generation Library</strong></p>
 <dl class="simple">
 <dt>sequences<span class="classifier">List[list]</span></dt><dd><p>A list of sequences each with a list of events.
 The event values can be all strings or all integers.</p>
+</dd>
+<dt>max_span: Optional[int]</dt><dd><p>The value for applying a built-in maximum span constraint to the length of items in mining, max_span=10 by
+default (10 items). This is going to avoid regular users to run into a scaling issue when data contains long
+sequences but no constraints are used to run the mining efficiently and practically.
+Power users can choose to drop this constraint by setting it to be None or increase the maximum span
+as the system has resources to support.</p>
 </dd>
 </dl>
 <dl class="py method">

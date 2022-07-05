@@ -297,7 +297,7 @@ class TestSeq2Pat(unittest.TestCase):
         # print("Attribute_1: ", attribute_1[:5])
 
         # Sequential pattern finder
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         # Constraints on attribute 1
         att1 = Attribute(attribute_1)
@@ -692,7 +692,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         # Load Attributes
         attribute_file = self.DATA_DIR + "input_att1.txt"
@@ -777,7 +777,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         # Load Attributes
         attribute_file = self.DATA_DIR + "input_att1.txt"
@@ -802,7 +802,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         test_patterns = seq2pat.get_patterns(.01)
         results_file = self.DATA_DIR + "no_constraints_results.txt"
@@ -821,7 +821,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         # Load Attributes
         attribute_file = self.DATA_DIR + "input_att1.txt"
@@ -852,7 +852,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         # Load Attributes
         attribute_file = self.DATA_DIR + "input_att1.txt"
@@ -883,7 +883,7 @@ class TestSeq2Pat(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences)
+        seq2pat = Seq2Pat(sequences, max_span=None)
 
         # Load Attributes
         attribute_file = self.DATA_DIR + "input_att1.txt"
@@ -1016,6 +1016,7 @@ class TestSeq2Pat(unittest.TestCase):
 
         # Should be empty upper and lower bounds exceed span between any two events
         span_constraint = seq2pat.add_constraint(11 <= att1.span() <= 19)
+
         self.assertListEqual([], seq2pat.get_patterns(1))
 
         seq2pat.remove_constraint(11 <= att1.span() <= 19)
@@ -1352,6 +1353,39 @@ class TestSeq2Pat(unittest.TestCase):
                               [11, 12, 13, 1],
                               [11, 13, 1],
                               [12, 13, 1]], seq2pat.get_patterns(1))
+
+    def test_max_span(self):
+        # List of sequences
+        sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]]
+
+        # Sequential pattern finder having the default maximum span constraint on item index
+        seq2pat = Seq2Pat(sequences)
+
+        default_result = seq2pat.get_patterns(1)
+        self.assertEqual(len(default_result), 2546)
+
+    def test_max_span_none(self):
+        # List of sequences
+        sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]]
+
+        # Sequential pattern finder with no default maximum span constraint on item index
+        seq2pat = Seq2Pat(sequences, max_span=None)
+
+        unconstrained_result = seq2pat.get_patterns(1)
+        self.assertEqual(len(unconstrained_result), 8178)
+
+    def test_max_span_customize(self):
+        # List of sequences
+        sequences = [[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]]
+        # print(sequences)
+
+        # Sequential pattern finder having the default maximum span constraint on item index, 13 items
+        seq2pat = Seq2Pat(sequences, max_span=13)
+
+        result = seq2pat.get_patterns(1)
+        self.assertEqual(len(result), 36843)
+        # maximum length in result is 13 items plus the frequency
+        self.assertEqual(max(list(map(len, result))), 14)
 
 
 if __name__ == '__main__':

@@ -72,9 +72,9 @@ class TestDPMUtils(unittest.TestCase):
         # Find sequences with min_frequency=2
         patterns = seq2pat.get_patterns(min_frequency=2)
 
-        # Create encoding with csp_global when rolling_window_size=None
+        # Create encoding with csp_global when max_span=None
         pat2feat = Pat2Feat()
-        encodings = pat2feat.get_features(sequences, patterns, constraints=[price_ct], rolling_window_size=None)
+        encodings = pat2feat.get_features(sequences, patterns, constraints=[price_ct], max_span=None)
         # sequence      feat0
         # [A,A,B,A,D]    1
         # [C, B, A]      0
@@ -117,7 +117,7 @@ class TestDPMUtils(unittest.TestCase):
 
         # Create encoding
         pat2feat = Pat2Feat()
-        encodings = pat2feat.get_features(sequences, patterns, rolling_window_size=None,
+        encodings = pat2feat.get_features(sequences, patterns, max_span=None,
                                           drop_pattern_frequency=True)
         # encoding is a data frame
         # sequence      feat0 feat1 feat2
@@ -151,7 +151,7 @@ class TestDPMUtils(unittest.TestCase):
 
         # Create encoding, do not need to drop frequency in the end of each pattern
         pat2feat = Pat2Feat()
-        encodings = pat2feat.get_features(sequences, patterns, rolling_window_size=None,
+        encodings = pat2feat.get_features(sequences, patterns, max_span=None,
                                           drop_pattern_frequency=False)
 
         self.assertListEqual([[1, 0], [0, 0], [0, 1]], encodings.values[:, 1:].tolist())
@@ -199,7 +199,7 @@ class TestDPMUtils(unittest.TestCase):
         # Create encoding
         pat2feat = Pat2Feat()
         encodings = pat2feat.get_features(sequences, patterns, constraints=[price_ct],
-                                          rolling_window_size=None, drop_pattern_frequency=False)
+                                          max_span=None, drop_pattern_frequency=False)
 
         self.assertListEqual([[0, 0], [0, 0], [0, 1]], encodings.values[:, 1:].tolist())
 

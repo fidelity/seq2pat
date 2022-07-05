@@ -63,6 +63,7 @@ vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>
 		int strp = endp - 1;					//strp initialized to one to last event in sequence
 		while (strp > 0) {
 			while (antmon == 0) {				//while antimonotone property of contraints is violated backtrack on endp
+			    // Original MPP repo uses abs(att[i] - att[i-1]) as the gap value. Here we remove abs().
 				if (!(*ugap).empty() && (*ugapi)[0] == 0 && (*attrs)[0].at(i).at(endp - 1) - (*attrs)[0].at(i).at(strp - 1) > (*ugap)[0]) {		//antimonotone contraints are upper gap
 					endp--;
 					if (strp == endp) {
@@ -77,6 +78,7 @@ vector<int>* num_minmax, vector<int>* num_avr, vector<int>* num_med, vector<int>
 			if (antmon == 1) {				//while monotone property of constraints is staisfied add arc from strp to all nodes between strp and endp
 				int last_p = endp;
 				while (endp != strp) {
+				    // Original MPP repo uses abs(att[i] - att[i-1]) as the gap value. Here we remove abs().
 					if (!(*lgap).empty() && (*lgapi)[0] == 0 && (*attrs)[0].at(i).at(endp - 1) - (*attrs)[0].at(i).at(strp - 1) < (*lgap)[0])
 						break;
 					if ((*tot_gap).empty() || ((*tot_gap)[0] == 0 && (*tot_gap).size() == 1) || Check_gap(i ,strp, endp, attrs, lgapi, ugapi, lgap, ugap))
@@ -98,16 +100,22 @@ bool Check_gap(int i, int strp, int endp, vector<vector<vector<int> > >* attrs, 
 vector<int>* lgap, vector<int>* ugap){	//checks upper and lower gap constraints imposed on any attribute value
 
 	for (int att = 0; att < (*lgap).size(); att++){
-		if ((*lgap)[att] == 0)
+        // Original MPP repo uses zero to indicate non-presence of constraints. When (*lgap)[att] == 0, we skip over the constraint.
+        // Here we enable the case when lower bound of gap constraint is 0. If lower bound is not a number, we skip over the constraint.
+		if (isnan((*lgap)[att]))
 			continue;
-		if (abs((*attrs)[(*lgapi)[att]].at(i).at(endp - 1) - (*attrs)[(*lgapi)[att]].at(i).at(strp - 1)) < (*lgap)[att])
+        // Original MPP repo uses abs(att[i] - att[i-1]) as the gap value. Here we remove abs().
+		if ((*attrs)[(*lgapi)[att]].at(i).at(endp - 1) - (*attrs)[(*lgapi)[att]].at(i).at(strp - 1) < (*lgap)[att])
 			return 0;
 	}
 
 	for (int att = 0; att < (*ugap).size(); att++){
-		if ((*ugap)[att] == 0)
+        // Original MPP repo uses zero to indicate non-presence of constraints. When (*ugap)[att] == 0, we skip over the constraint.
+        // Here we enable the case when upper bound of gap constraint is 0. If upper bound is not a number, we skip over the constraint.
+		if (isnan((*ugap)[att]))
 			continue;
-		if (abs((*attrs)[(*ugapi)[att]].at(i).at(endp - 1) - (*attrs)[(*ugapi)[att]].at(i).at(strp - 1)) > (*ugap)[att])
+        // Original MPP repo uses abs(att[i] - att[i-1]) as the gap value. Here we remove abs().
+		if ((*attrs)[(*ugapi)[att]].at(i).at(endp - 1) - (*attrs)[(*ugapi)[att]].at(i).at(strp - 1) > (*ugap)[att])
 			return 0;
 	}
 
