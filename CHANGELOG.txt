@@ -6,7 +6,7 @@ CHANGELOG
 June, 28, 2022 1.3.3
 -------------------------------------------------------------------------------
 
-Minor:
+Major:
 - Add a default index attribute and a default maximum span constraint
 - A fix to use original gap value instead of abs gap value in Check_gap() in build_mdd.cpp
 - Update unit tests where the default constraint may change results
