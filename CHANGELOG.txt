@@ -9,7 +9,7 @@ June, 28, 2022 1.3.3
 Major:
 - Add a built-in maximum span constraint on items' indices to simplify and speed up usages
 - A fix to use original gap value instead of abs gap value in Check_gap() in build_mdd.cpp
-- Update unit tests where the default constraint may change results
+- Update unit tests where the built-in constraint may change results
 
 -------------------------------------------------------------------------------
 May, 20, 2022 1.3.2
