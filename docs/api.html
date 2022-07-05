@@ -119,7 +119,7 @@
 <dt>sequences<span class="classifier">List[list]</span></dt><dd><p>A list of sequences each with a list of events.
 The event values can be all strings or all integers.</p>
 </dd>
-<dt>max_span: Union[int, None]</dt><dd><p>The value for applying a built-in maximum span constraint to the length of items in mining, max_span=10 by
+<dt>max_span: Optional[int]</dt><dd><p>The value for applying a built-in maximum span constraint to the length of items in mining, max_span=10 by
 default (10 items). This is going to avoid regular users to run into a scaling issue when data contains long
 sequences but no constraints are used to run the mining efficiently and practically.
 Power users can choose to drop this constraint by setting it to be None or increase the maximum span
