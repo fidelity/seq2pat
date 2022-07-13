@@ -101,8 +101,8 @@ vector<int>* lgap, vector<int>* ugap){	//checks upper and lower gap constraints 
 
 	for (int att = 0; att < (*lgap).size(); att++){
         // Original MPP repo uses zero to indicate non-presence of constraints. When (*lgap)[att] == 0, we skip over the constraint.
-        // Here we enable the case when lower bound of gap constraint is 0. If lower bound is not a number, we skip over the constraint.
-		if (isnan((*lgap)[att]))
+        // Here we enable the case when lower bound of gap constraint is 0. If lower bound is NaN (Not-A-Number) value, we skip over the constraint.
+		if (isnan(static_cast<double>((*lgap)[att])))
 			continue;
         // Original MPP repo uses abs(att[i] - att[i-1]) as the gap value. Here we remove abs().
 		if ((*attrs)[(*lgapi)[att]].at(i).at(endp - 1) - (*attrs)[(*lgapi)[att]].at(i).at(strp - 1) < (*lgap)[att])
@@ -111,8 +111,8 @@ vector<int>* lgap, vector<int>* ugap){	//checks upper and lower gap constraints 
 
 	for (int att = 0; att < (*ugap).size(); att++){
         // Original MPP repo uses zero to indicate non-presence of constraints. When (*ugap)[att] == 0, we skip over the constraint.
-        // Here we enable the case when upper bound of gap constraint is 0. If upper bound is not a number, we skip over the constraint.
-		if (isnan((*ugap)[att]))
+        // Here we enable the case when upper bound of gap constraint is 0. If upper bound is NaN (Not-A-Number) value, we skip over the constraint.
+		if (isnan(static_cast<double>((*ugap)[att])))
 			continue;
         // Original MPP repo uses abs(att[i] - att[i-1]) as the gap value. Here we remove abs().
 		if ((*attrs)[(*ugapi)[att]].at(i).at(endp - 1) - (*attrs)[(*ugapi)[att]].at(i).at(strp - 1) > (*ugap)[att])
