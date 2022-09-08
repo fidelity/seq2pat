@@ -9,7 +9,7 @@ sequential patterns that occur frequently in large sequence databases.
 The library supports constraint-based reasoning to specify
 desired properties over patterns.
 
-Dichomotic Pattern Mining (AAAI'22, Frontiers'22) embeds Seq2Pat to exploit the dichotomy of positive vs. negative outcomes in populations. This allows  constraint-based sequence analysis to generate patterns that uniquely distinguishes cohorts.  
+Dichomotic Pattern Mining (AAAI'22, Frontiers'22) embeds Seq2Pat to exploit the dichotomy of positive vs. negative outcomes in populations. This allows  constraint-based sequence analysis to generate patterns that uniquely distinguishes cohorts. These patterns can be turned into feature vectors to feed into machine learning models for downstream tasks, e.g., intent prediction, intruder detection, and more generally, for digital behavior analysis. 
 
 From an algorithmic perspective, the library takes advantage of
 [multi-valued decision diagrams (AAAI'19)](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
@@ -61,18 +61,26 @@ seq2pat_pos = Seq2Pat(sequences=sequences_pos)
 sequences_neg = [["C", "B", "A"], ["C", "A", "C", "D"]]
 seq2pat_neg = Seq2Pat(sequences=sequences_neg)
 
-# Run DPM to get mined patterns
+# Run DPM to mine patterns that are aggregated as the 
+# union, intersection, or the unique patterns among positive and negative sequences
 aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg, 
                                                     min_frequency_pos=1, 
                                                     min_frequency_neg=2)
 
-# DPM patterns with Union aggregation
+# DPM patterns with union aggregation of positive and negative patterns
+# see also intersection, unique_pos, and unique_neq
 dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
-# Encodings of all sequences
-sequences = sequences_pos + sequences_neg
+# Most interestingly, we can generate features from DRPM patterns (pat2feat) 
+# to create machine learning models in downstream tasks, e.g., intent prediction
+# To do that, we can the input sequences into one-hot feature vectors 
+# Binary features denote existence of found patterns in each sequence
 pat2feat = Pat2Feat()
+sequences = sequences_pos + sequences_neg
 encodings = pat2feat.get_features(sequences, dpm_patterns, drop_pattern_frequency=False)
+
+# These encodings can be used as feature vectors in ML models
+# to predict the positive vs. negative labels in the dataset
 ```
 
 ## Available Constraints
