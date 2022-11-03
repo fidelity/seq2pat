@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
-
+import collections
 import os
 import unittest
 
 from sequential.seq2pat import Seq2Pat, Attribute
-from sequential.utils import (read_data, get_max_column_size, get_max_value, compare_results, sort_pattern)
+from sequential.utils import (read_data, get_max_column_size, get_max_value, compare_results, sort_pattern,
+                              list_to_counter, counter_to_list)
 from sequential.backend import seq_to_pat as stp
 
 
@@ -1386,6 +1387,70 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(len(result), 36843)
         # maximum length in result is 13 items plus the frequency
         self.assertEqual(max(list(map(len, result))), 14)
+
+    def test_sequence_contain_zeros(self):
+        sequences = [[0, 0], [0, 0]]
+
+        with self.assertRaises(ValueError):
+            seq2pat = Seq2Pat(sequences)
+
+    def test_thread(self):
+        for i in range(2000000):
+            seq2pat = Seq2Pat(
+                sequences=[["a", "a", "a"], ["a", "b", "c"], ["a", "b", "b"], ["a", "a", "a"], ["a", "b", "c"],
+                           ["a", "b", "b"], ["a", "a", "a"], ["a", "b", "c"], ["a", "b", "b"]])
+            traces = seq2pat.get_patterns(min_frequency=5)
+
+    def test_list_to_counter(self):
+        patterns = [[11, 12, 1],
+                    [11, 12, 13, 1],
+                    [11, 13, 1],
+                    [12, 13, 1]]
+
+        counter = list_to_counter(patterns)
+
+        self.assertEqual(counter, collections.Counter({(11, 12): 1, (11, 12, 13): 1, (11, 13): 1, (12, 13): 1}))
+
+    def test_counter_to_list(self):
+        counter = collections.Counter({(11, 12): 1, (11, 12, 13): 2, (11, 13): 1, (12, 13): 1})
+
+        results = counter_to_list(counter)
+
+        self.assertEqual(results, [[11, 12, 13, 2], [11, 12, 1], [11, 13, 1], [12, 13, 1]])
+
+    def test_batch_patterns(self):
+        # Seq2Pat over 3 sequences
+        seq2pat = Seq2Pat(sequences=[["A", "C", "B", "A", "D"],
+                                     ["C", "B", "A"],
+                                     ["C", "A", "C", "D"]], n_chunks=1)
+
+        # Patterns
+        patterns = seq2pat.get_patterns(min_frequency=2)
+        # print("Initial Patterns: ", patterns, "\n")
+
+        # Attribute - I: Price
+        price = Attribute(values=[[5, 5, 3, 8, 2],
+                                  [1, 3, 3],
+                                  [4, 5, 2, 1]])
+
+        # Attribute - II: Timestamp
+        timestamp = Attribute(values=[[1, 1, 2, 3, 3],
+                                      [3, 8, 9],
+                                      [2, 5, 5, 7]])
+
+        # Add Constraint
+        avg_constraint = 3 <= price.average() <= 5
+        # avg_constraint = 4 <= price.average() <= 4
+        seq2pat.add_constraint(avg_constraint)
+
+        # Patterns
+        patterns = seq2pat.get_patterns(min_frequency=2)
+        # print("Average Constraint:", patterns, "\n")
+        self.assertListEqual([['A', 'C', 2], ['A', 'D', 2], ['C', 'A', 'D', 2]],
+                             patterns)
+
+
+
 
 
 if __name__ == '__main__':

@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
-
+import collections
 import gc
 from typing import NamedTuple, List, Dict, NoReturn, Optional
+from threading import Thread
+from multiprocessing import Process, Queue
+from copy import deepcopy
 
 from sequential.backend import seq_to_pat as stp
 from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
-    validate_attribute_values, validate_sequences, validate_max_span
+    validate_attribute_values, validate_sequences, validate_max_span, \
+    aggregate_patterns
 
 
 # IMPORTANT: Constant values should not be changed
@@ -285,7 +289,7 @@ class Seq2Pat:
         as the system has resources to support.
     """
 
-    def __init__(self, sequences: List[list], max_span: Optional[int] = 10):
+    def __init__(self, sequences: List[list], max_span: Optional[int] = 10, n_chunks=None):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
@@ -320,6 +324,8 @@ class Seq2Pat:
             # The minimum span is at least 1 between two indices. Here we add it explicitly.
             # Given max_span items, the maximum difference on the index is (max_span - 1)
             self.add_constraint(1 <= index_attr.span() <= (max_span - 1))
+
+        self.n_chunks = n_chunks
 
     @property
     def sequences(self) -> List[list]:
@@ -400,6 +406,13 @@ class Seq2Pat:
         except KeyError:
             raise KeyError("No " + constraint_id + " constraint to remove on this attribute.")
 
+    def _run_thread(self, min_frequency, q):
+        # Cython implementor object with input parameters set
+        self._cython_imp = self._get_cython_imp(min_frequency)
+
+        # Frequent mining
+        q.put(self._cython_imp.mine())
+
     def get_patterns(self, min_frequency: Num) -> List[list]:
         """
         Performs the mining operation enforcing the constraints and
@@ -439,11 +452,22 @@ class Seq2Pat:
         else:
             raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
 
-        # Cython implementor object with input parameters set
-        self._cython_imp = self._get_cython_imp(min_frequency)
+        if not self.n_chunks:
+            q = Queue()
+            thread = Process(target=self._run_thread, args=(min_frequency, q))
+            thread.start()
 
-        # Frequent mining
-        patterns = self._cython_imp.mine()
+            patterns = q.get()
+            thread.join()
+
+        else:
+            patterns = self._get_patterns_batch(min_frequency)
+
+        # # Cython implementor object with input parameters set
+        # self._cython_imp = self._get_cython_imp(min_frequency)
+        #
+        # # Frequent mining
+        # patterns = self._cython_imp.mine()
 
         # Map back to strings, if original is strings
         if self._is_string:
@@ -457,6 +481,34 @@ class Seq2Pat:
 
         # Return frequent sequences
         return patterns_sorted
+
+    def _get_patterns_batch(self, min_frequency) -> List[list]:
+        """
+        Get patterns from each batch of sequences and return the aggregated results
+        """
+        sequences = self.sequences
+        attr_to_cs = self.attr_to_cts
+
+        n_sequences = len(sequences)
+        chunk_size = n_sequences // self.n_chunks
+
+        batch_patterns = []
+        for i in range(0, self.n_chunks + 1):
+            batch_sequences = sequences[i*chunk_size:(i+1)*chunk_size]
+            batch_seq2pat = Seq2Pat(batch_sequences)
+            for attr in attr_to_cs:
+                for cs in attr_to_cs[attr]:
+                    old_constraint = attr_to_cs[attr][cs]
+                    new_constraint = deepcopy(old_constraint)
+                    new_constraint.attribute.values = old_constraint.attribute.values[i*chunk_size:(i+1)*chunk_size]
+                    batch_seq2pat.attr_to_cts[attr][cs] = new_constraint
+
+            results = batch_seq2pat.get_patterns(min_frequency)
+            batch_patterns.append(results)
+
+        agg_patterns = aggregate_patterns(batch_patterns)
+
+        return agg_patterns
 
     def _get_cython_imp(self, min_frequency) -> stp.PySeq2pat:
         """

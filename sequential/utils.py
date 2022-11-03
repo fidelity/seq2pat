@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
-
+import collections
 from typing import Union, NoReturn, List
 
 Num = Union[int, float]
@@ -232,6 +232,9 @@ def validate_sequences(sequences: List[list]):
     check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
     is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
+    if not isinstance(sequences[0][0], str):
+        min_int = get_min_value(sequences)
+        check_true(min_int > 0, ValueError("Integers that are representing items can not contain 0."))
 
 
 def validate_max_span(max_span: Union[int, None]):
@@ -242,4 +245,37 @@ def validate_max_span(max_span: Union[int, None]):
     if max_span:
         check_true(isinstance(max_span, int), ValueError("Maximum span should be an integer."))
         check_true(max_span > 1, ValueError("Maximum span should be greater than 1."))
+
+
+def list_to_counter(patterns):
+    """
+    Transform patterns to counter
+    """
+    patterns_without_frequency = list(map(lambda x: tuple(x[:-1]), patterns))
+    frequencies = list(map(lambda x: x[-1], patterns))
+
+    return collections.Counter(dict(zip(patterns_without_frequency, frequencies)))
+
+
+def counter_to_list(patterns_counter):
+    """
+    Transform counter of patterns to list
+    """
+    results = []
+    for key, value in patterns_counter.items():
+        results.append(list(key) + [value])
+
+    return sort_pattern(results)
+
+
+def aggregate_patterns(batch_patterns):
+    counter = collections.Counter()
+    for patterns in batch_patterns:
+        counter.update(list_to_counter(patterns))
+
+    aggregated_patterns = counter_to_list(counter)
+
+    return sort_pattern(aggregated_patterns)
+
+
 
