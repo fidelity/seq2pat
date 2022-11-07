@@ -1,6 +1,9 @@
 # Evaluations of ML models using Seq2Pat features
 This directory contains the source code and notebooks to train and evaluate various ML models using Seq2Pat features. 
-This source repo has been used to implement the experiments in our AAAI-IAAI22 paper, ["Seq2Pat: Sequence-to-Pattern Generation for Constraint-based Sequential Pattern Mining"](https://ojs.aaai.org/index.php/AAAI/article/view/21542).
+This source repo has been used to implement the experiments in our papers:
+* [[AAAI-IAAI'22] Seq2Pat: Sequence-to-Pattern Generation for Constraint-based Sequential Pattern Mining](https://ojs.aaai.org/index.php/AAAI/article/view/21542),
+* [[KDF'22] Dichotomic Pattern Mining with Applications to Intent Prediction from Semi-Structured Clickstream Datasets](https://arxiv.org/abs/2201.09178),
+* [[Frontiers in AI 2022] Dichotomic Pattern Mining Integrated With Constraint Reasoning for Digital Behavior Analysis](https://www.frontiersin.org/articles/10.3389/frai.2022.868085/full).
 
 ## Running on sample data
 We are running on the same sample dataset that has been introduced in the `dichotomic_pattern_mining` notebook, while the generated features are combined with the original sequences data for training the downstream ML models.
