@@ -4,7 +4,7 @@
 Seq2Pat: Sequence-to-Pattern Generation Library
 ===============================================
 
-Seq2Pat (AAAI'22) is a research library for sequence-to-pattern generation to discover
+Seq2Pat ([AAAI'22](https://ojs.aaai.org/index.php/AAAI/article/view/21542)) is a research library for sequence-to-pattern generation to discover
 sequential patterns that occur frequently in large sequence databases.
 The library supports constraint-based reasoning to specify
 desired properties over patterns.
