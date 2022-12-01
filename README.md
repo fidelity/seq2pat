@@ -9,7 +9,7 @@ sequential patterns that occur frequently in large sequence databases.
 The library supports constraint-based reasoning to specify
 desired properties over patterns.
 
-Dichomotic Pattern Mining (AAAI'22, Frontiers'22) embeds Seq2Pat to exploit the dichotomy of positive vs. negative outcomes in populations. This allows  constraint-based sequence analysis to generate patterns that uniquely distinguishes cohorts. These patterns can be turned into feature vectors to feed into machine learning models for downstream tasks, e.g., intent prediction, intruder detection, and more generally, for digital behavior analysis. 
+Dichomotic Pattern Mining ([KDF@AAAI'22](https://arxiv.org/abs/2201.09178), [Frontiers'22](https://www.frontiersin.org/articles/10.3389/frai.2022.868085/full)) embeds Seq2Pat to exploit the dichotomy of positive vs. negative outcomes in populations. This allows  constraint-based sequence analysis to generate patterns that uniquely distinguishes cohorts. These patterns can be turned into feature vectors to feed into machine learning models for downstream tasks, e.g., intent prediction, intruder detection, and more generally, for digital behavior analysis. 
 
 From an algorithmic perspective, the library takes advantage of
 [multi-valued decision diagrams (AAAI'19)](https://aaai.org/ojs/index.php/AAAI/article/view/3962).
@@ -98,9 +98,8 @@ Examples on how to use the available constraints can be found
 in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
 
 Supported by Seq2Pat, we proposed **Dichotomic Pattern Mining** ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) to analyze the correlations between 
-mined patterns and different outcomes of sequences. DPM plays an integrator role between Sequential 
-Pattern Mining and the downstream modeling tasks, by generating embeddings of sequences based on the mined frequent patterns.
-An example on how to run DPM and generate pattern embeddings can be found in 
+mined patterns and different outcomes of sequences. DPM allows generating feature vectors based on mined patterns and plays an integrator role between Sequential 
+Pattern Mining and the downstream modeling tasks as shown in [Ghosh et. al. 2022](https://www.frontiersin.org/articles/10.3389/frai.2022.868085/full) for clickstream intent prediction and intruder detection. An example on how to run DPM and generate pattern embeddings can be found in 
 [Dichotomic Pattern Mining Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/dichotomic_pattern_mining.ipynb).
 
 ## Installation
