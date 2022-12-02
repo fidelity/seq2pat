@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 import collections
+import random
 from typing import Union, NoReturn, List
+from copy import deepcopy
+import math
 
 Num = Union[int, float]
 
@@ -247,6 +250,67 @@ def validate_max_span(max_span: Union[int, None]):
         check_true(max_span > 1, ValueError("Maximum span should be greater than 1."))
 
 
+def validate_min_frequency(num_rows, min_frequency):
+    """
+    Validate min_frequency
+
+    """
+    # Check min_frequency conditions
+    if isinstance(min_frequency, float):
+        check_true(0.0 < min_frequency,
+                   ValueError("Minimum frequency percentage should be greater than 0.0. "
+                              "Current minimum frequency is {}.".format(min_frequency)))
+        check_true(min_frequency <= 1.0, ValueError("Minimum frequency percentage should be less than 1.0. "
+                                                    "Current minimum frequency is {}.".format(min_frequency)))
+        check_true(min_frequency * num_rows >= 1.0, ValueError("Minimum frequency percentage should set the minimum "
+                                                               "row count to be no less than 1.0. "
+                                                               "Thus the percentage should be no less than "
+                                                               "1/(number of sequences)."))
+    elif isinstance(min_frequency, int):
+        check_true(0 < min_frequency, ValueError("Minimum frequency should be greater than 0.0. "
+                                                 "Current minimum frequency is {}.".format(min_frequency)))
+        check_true(min_frequency <= num_rows, ValueError("Minimum frequency cannot be more than number of sequences. "
+                                                         "Current minimum frequency is {}.".format(min_frequency)))
+    else:
+        raise TypeError("Minimum frequency should be integer (as a row count) or float (as a row percentage).")
+
+
+def validate_min_frequency_with_batch(num_rows, batch_size, min_frequency):
+    """
+    Validate min_frequency when Seq2Pat runs on batches
+
+    """
+    if not isinstance(min_frequency, float) and num_rows > batch_size:
+        raise TypeError("Minimum frequency should be float (as a row percentage) when Seq2Pat runs on batches.")
+
+    try:
+        validate_min_frequency(batch_size, min_frequency)
+    except ValueError:
+        raise ValueError("Minimum frequency {} is not validate for the sequences "
+                         "in the chunk size {}!".format(min_frequency, batch_size))
+
+    remain_chunk_size = num_rows % batch_size
+    if remain_chunk_size > 1:
+        try:
+            validate_min_frequency(remain_chunk_size, min_frequency)
+        except ValueError:
+            raise ValueError("Minimum frequency {} is not validate for the sequences "
+                             "in the chunk size {}!".format(min_frequency, remain_chunk_size))
+
+
+def update_min_frequency(num_rows, min_frequency, min_frequency_lb):
+    """
+    Update min_frequency when Seq2Pat runs on batches.
+
+    """
+    if isinstance(min_frequency, float):
+        if num_rows == 1:
+            min_frequency = math.ceil(min_frequency)
+        else:
+            min_frequency = max(min_frequency * min_frequency_lb, 1.0/num_rows)
+    return min_frequency
+
+
 def list_to_counter(patterns):
     """
     Transform patterns to counter
@@ -257,25 +321,52 @@ def list_to_counter(patterns):
     return collections.Counter(dict(zip(patterns_without_frequency, frequencies)))
 
 
-def counter_to_list(patterns_counter):
+def counter_to_list(patterns_counter, min_row_count):
     """
     Transform counter of patterns to list
     """
     results = []
     for key, value in patterns_counter.items():
+        if value < min_row_count:
+            continue
         results.append(list(key) + [value])
 
     return sort_pattern(results)
 
 
-def aggregate_patterns(batch_patterns):
+def aggregate_patterns(batch_patterns, min_row_count):
     counter = collections.Counter()
     for patterns in batch_patterns:
         counter.update(list_to_counter(patterns))
 
-    aggregated_patterns = counter_to_list(counter)
+    aggregated_patterns = counter_to_list(counter, min_row_count)
 
     return sort_pattern(aggregated_patterns)
+
+
+def shuffle_data(sequences, attr_to_cs, seed):
+    indices = list(range(len(sequences)))
+    random.seed(seed)
+    random.shuffle(indices)
+
+    sequences = [sequences[i] for i in indices]
+    for attr in attr_to_cs:
+        for cs in attr_to_cs[attr]:
+            old_constraint = attr_to_cs[attr][cs]
+            new_constraint = deepcopy(old_constraint)
+            shuffled_values = [old_constraint.attribute.values[i] for i in indices]
+            new_constraint.attribute.set_values(shuffled_values)
+            attr_to_cs[attr][cs] = new_constraint
+
+    return sequences, attr_to_cs
+
+
+
+
+
+
+
+
 
 
 

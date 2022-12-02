@@ -6,13 +6,16 @@ from typing import NamedTuple, List, Dict, NoReturn, Optional
 from threading import Thread
 from multiprocessing import Process, Queue
 from copy import deepcopy
+import math
+import random
 
 from sequential.backend import seq_to_pat as stp
 from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences, validate_max_span, \
-    aggregate_patterns
+    aggregate_patterns, validate_min_frequency, validate_min_frequency_with_batch, \
+    shuffle_data, update_min_frequency
 
 
 # IMPORTANT: Constant values should not be changed
@@ -127,6 +130,12 @@ class _Constants:
     # List where index correspond to the attribute ids and values to the minimum value for that attribute
     min_attrs = 'min_attrs'
 
+    # Seed
+    seed = 12
+
+    # Discount factor to relax the minimum threshold (as a percentage) of row count
+    min_frequency_df = 0.2
+
 
 class Attribute:
 
@@ -154,6 +163,12 @@ class Attribute:
         The values of the attribute
         """
         return self._values
+
+    def set_values(self, values):
+        """
+        Set values of attribute
+        """
+        self._values = values
 
     def average(self):
         """
@@ -289,7 +304,7 @@ class Seq2Pat:
         as the system has resources to support.
     """
 
-    def __init__(self, sequences: List[list], max_span: Optional[int] = 10, n_chunks=None):
+    def __init__(self, sequences: List[list], max_span: Optional[int] = 10, batch_size=None):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
@@ -325,7 +340,7 @@ class Seq2Pat:
             # Given max_span items, the maximum difference on the index is (max_span - 1)
             self.add_constraint(1 <= index_attr.span() <= (max_span - 1))
 
-        self.n_chunks = n_chunks
+        self.batch_size = batch_size
 
     @property
     def sequences(self) -> List[list]:
@@ -436,23 +451,11 @@ class Seq2Pat:
         # Check num_rows
         check_true(self._num_rows >= 1, ValueError("Sequences should not be empty."))
 
-        # Check min_frequency conditions
-        if isinstance(min_frequency, float):
-            check_true(0.0 < min_frequency,
-                       ValueError("Frequency percentage should be greater than 0.0", min_frequency))
-            check_true(min_frequency <= 1.0, ValueError("Frequency percentage should be less than 1.0", min_frequency))
-            check_true(min_frequency * self._num_rows >= 1.0, ValueError("Frequency percentage should set the minimum "
-                                                                         "row count to be no less than 1.0."
-                                                                         "Thus the percentage should be no less than "
-                                                                         "1/(number of sequences)."))
-        elif isinstance(min_frequency, int):
-            check_true(0 < min_frequency, ValueError("Frequency should be greater than 0.0", min_frequency))
-            check_true(min_frequency <= self._num_rows, ValueError("Frequency cannot be more than number of sequences ",
-                                                                   min_frequency))
-        else:
-            raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
+        if not self.batch_size:
 
-        if not self.n_chunks:
+            # Check min_frequency conditions
+            validate_min_frequency(self._num_rows, min_frequency)
+
             q = Queue()
             thread = Process(target=self._run_thread, args=(min_frequency, q))
             thread.start()
@@ -461,6 +464,9 @@ class Seq2Pat:
             thread.join()
 
         else:
+            # Check min_frequency conditions when Seq2Pat runs on each batch
+            validate_min_frequency_with_batch(self._num_rows, self.batch_size, min_frequency)
+
             patterns = self._get_patterns_batch(min_frequency)
 
         # # Cython implementor object with input parameters set
@@ -486,27 +492,36 @@ class Seq2Pat:
         """
         Get patterns from each batch of sequences and return the aggregated results
         """
-        sequences = self.sequences
-        attr_to_cs = self.attr_to_cts
+        # sequences = self.sequences
+        # attr_to_cs = self.attr_to_cts
+
+        sequences, attr_to_cs = shuffle_data(self.sequences, self.attr_to_cts, _Constants.seed)
 
         n_sequences = len(sequences)
-        chunk_size = n_sequences // self.n_chunks
+        num_chunks = n_sequences // self.batch_size
+        if n_sequences % self.batch_size > 0:
+            num_chunks += 1
 
         batch_patterns = []
-        for i in range(0, self.n_chunks + 1):
-            batch_sequences = sequences[i*chunk_size:(i+1)*chunk_size]
-            batch_seq2pat = Seq2Pat(batch_sequences)
+        for i in range(0, num_chunks):
+            batch_sequences = sequences[i*self.batch_size:(i+1)*self.batch_size]
+            batch_seq2pat = Seq2Pat(batch_sequences, max_span=None, batch_size=None)
             for attr in attr_to_cs:
                 for cs in attr_to_cs[attr]:
                     old_constraint = attr_to_cs[attr][cs]
                     new_constraint = deepcopy(old_constraint)
-                    new_constraint.attribute.values = old_constraint.attribute.values[i*chunk_size:(i+1)*chunk_size]
-                    batch_seq2pat.attr_to_cts[attr][cs] = new_constraint
+                    new_constraint.attribute.set_values(old_constraint.attribute.values[i * self.batch_size:
+                                                                                        (i+1)*self.batch_size])
+                    batch_seq2pat.add_constraint(new_constraint)
 
-            results = batch_seq2pat.get_patterns(min_frequency)
+            adjusted_min_frequency = update_min_frequency(len(batch_sequences), min_frequency,
+                                                          _Constants.min_frequency_df)
+            results = batch_seq2pat.get_patterns(adjusted_min_frequency)
+
             batch_patterns.append(results)
 
-        agg_patterns = aggregate_patterns(batch_patterns)
+        min_row_count = int(n_sequences * min_frequency) if isinstance(min_frequency, float) else min_frequency
+        agg_patterns = aggregate_patterns(batch_patterns, min_row_count)
 
         return agg_patterns
 
