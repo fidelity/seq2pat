@@ -45,12 +45,12 @@ def read_data(source: str, is_scientific: bool = False) -> List[list]:
     return [(list(map(str, row.split()))) for row in all_rows]
 
 
-def string_to_int(mapping: map, items: List[List[int]]) -> List[list]:
+def string_to_int(mapping: map, items: List[List[str]]) -> List[List[int]]:
     """
     Utility function to transform string input to int input to be used by sequential library
     :param mapping: map[str, int]
-    :param items: a list of ints or a list of ints
-    :return: a list of strings where each string is replaced by an integer 'id'
+    :param items: a list of strings
+    :return: a list of integers where each string is replaced by an integer 'id'
     """
     return [[mapping[i] for i in item] for item in items]
 
@@ -107,7 +107,7 @@ def get_max_value(items: List[List[int]]) -> int:
 
 def get_min_value(items: List[List[int]]) -> int:
     """
-    Finds and returns minimun value in items
+    Finds and returns minimum value in items
     :param items: a list of list of ints
     :return: max value in items
     """
@@ -237,7 +237,8 @@ def validate_sequences(sequences: List[list]):
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
     if not isinstance(sequences[0][0], str):
         min_int = get_min_value(sequences)
-        check_true(min_int > 0, ValueError("Integers that are representing items can not contain 0."))
+        check_true(min_int > 0, ValueError("Integers that are representing items cannot contain 0. "
+                                           "The integers must be positive integers."))
 
 
 def validate_max_span(max_span: Union[int, None]):

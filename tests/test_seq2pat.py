@@ -1389,7 +1389,7 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(max(list(map(len, result))), 14)
 
     def test_sequence_contain_zeros(self):
-        sequences = [[0, 0], [0, 0]]
+        sequences = [[1, 0], [0, 1]]
 
         with self.assertRaises(ValueError):
             seq2pat = Seq2Pat(sequences)
