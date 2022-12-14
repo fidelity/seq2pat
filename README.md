@@ -22,6 +22,10 @@ Seq2Pat is developed as a joint collaboration between Fidelity Investments
 and the Tepper School of Business at CMU. Documentation is available at [fidelity.github.io/seq2pat](https://fidelity.github.io/seq2pat).
 
 ## Quick Start
+
+We present two quick start examples in the following. Notice that the input sequences in each example are strings, 
+while Seq2Pat also allows input to be integers and the integers must be positive.
+
 ### Constraint-based Sequential Pattern Mining
 ```python
 # Example to show how to find frequent sequential patterns
@@ -117,11 +121,11 @@ If you use Seq2Pat in a publication, please cite it as:
   @article{seq2pat2022,
     title={Seq2Pat: Sequence-to-Pattern Generation for Constraint-based Sequential Pattern Mining},
     author={Wang Xin, Hosseininasab Amin, Colunga Pablo, Kadioglu Serdar, van Hoeve Willem-Jan},
-    url={https://github.com/fidelity/textwiser},
     journal={Proceedings of the AAAI Conference on Artificial Intelligence},
-    volume={TBD},
-    number={TBD},
-    pages={TBD},
+    url={https://ojs.aaai.org/index.php/AAAI/article/view/21542},
+    volume={36},
+    number={11},
+    pages={12665-12671},
     year={2022}
   }
 ```
@@ -132,10 +136,9 @@ To cite the Dichotomic Pattern Mining framework, please cite it as:
   @article{Frontiers2022,
     title={Dichotomic Pattern Mining Integrated with Constraint Reasoning for Digital Behaviour Analyses}, 
     author={Sohom Ghosh, Shefali Yadav, Xin Wang, Bibhash Chakrabarty, Serdar Kadioglu},
-    journal={Frontiers Journal on Knowledge Discovery from Unstructured Data in Finance},
-    volume={TBD},
-    number={TBD},
-    pages={TBD},
+    journal={Frontiers in Artificial Intelligence},
+    url={https://www.frontiersin.org/articles/10.3389/frai.2022.868085},
+    volume={5},
     year={2022}    
 }
 ```
@@ -145,9 +148,9 @@ To cite the Dichotomic Pattern Mining framework, please cite it as:
     title={Dichotomic Pattern Mining with Applications to Intent Prediction from Semi-Structured Clickstream Datasets}, 
     author={Xin Wang and Serdar Kadioglu},
     booktitle={The AAAI-22 Workshop on Knowledge Discovery from Unstructured Data in Financial Services},
-    year={2022},
-    eprint={2201.09178},
-    archivePrefix={arXiv}
+    publisher={arXiv},
+    url={https://arxiv.org/abs/2201.09178},
+    year={2022}
 }
 ```
 
