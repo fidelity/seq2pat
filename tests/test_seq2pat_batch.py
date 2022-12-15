@@ -5,9 +5,7 @@ import os
 import unittest
 
 from sequential.seq2pat import Seq2Pat, Attribute
-from sequential.utils import (read_data, get_max_column_size, get_max_value, compare_results, sort_pattern,
-                              list_to_counter, counter_to_list)
-from sequential.backend import seq_to_pat as stp
+from sequential.utils import read_data, sort_pattern, list_to_counter, counter_to_list
 
 
 class TestSeq2PatBatch(unittest.TestCase):
@@ -254,7 +252,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=2, min_frequency_df=0.8)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, min_frequency_df=0.8)
 
         test_patterns = seq2pat.get_patterns(.01)
         results_file = self.DATA_DIR + "no_constraints_results.txt"
@@ -272,7 +270,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=2, min_frequency_df=0.2)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, min_frequency_df=0.2)
 
         test_patterns = seq2pat.get_patterns(.01)
         results_file = self.DATA_DIR + "no_constraints_results.txt"

@@ -4,7 +4,6 @@ import collections
 import random
 from typing import Union, NoReturn, List
 from copy import deepcopy
-import math
 
 Num = Union[int, float]
 
