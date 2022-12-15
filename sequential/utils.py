@@ -236,8 +236,7 @@ def validate_sequences(sequences: List[list]):
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
     if not isinstance(sequences[0][0], str):
         min_int = get_min_value(sequences)
-        check_true(min_int > 0, ValueError("Integers that are representing items cannot contain 0. "
-                                           "The integers must be positive integers."))
+        check_true(min_int > 0, ValueError("Integers must be greater than 0."))
 
 
 def validate_max_span(max_span: Union[int, None]):

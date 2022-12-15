@@ -467,6 +467,8 @@ class Seq2Pat:
         if not self.batch_size:
 
             # Check min_frequency conditions
+            # Given a set of `num_rows` sequences, we need to validate min_frequency.
+            # In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.
             validate_min_frequency(self._num_rows, min_frequency)
 
             # Call Cython backend in a child process, write results to queue

@@ -535,6 +535,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">:</span>
 
             <span class="c1"># Check min_frequency conditions</span>
+            <span class="c1"># Given a set of `num_rows` sequences, we need to validate min_frequency.</span>
+            <span class="c1"># In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.</span>
             <span class="n">validate_min_frequency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span>
 
             <span class="c1"># Call Cython backend in a child process, write results to queue</span>
