@@ -23,8 +23,8 @@ and the Tepper School of Business at CMU. Documentation is available at [fidelit
 
 ## Quick Start
 
-We present two quick start examples in the following. Notice that the input sequences in each example are strings, 
-while Seq2Pat also allows input to be integers and the integers must be positive.
+We present two quick start examples as follows. Notice that the input sequences in each example have items 
+represented as strings, while Seq2Pat also allows input to be sequence of integers and the integers must be positive.
 
 ### Constraint-based Sequential Pattern Mining
 ```python

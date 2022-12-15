@@ -237,7 +237,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=2)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1)
 
         test_patterns = seq2pat.get_patterns(.01)
         results_file = self.DATA_DIR + "no_constraints_results.txt"

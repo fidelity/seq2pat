@@ -299,16 +299,13 @@ def validate_min_frequency_with_batch(num_rows, batch_size, min_frequency):
                              "in the chunk size {}!".format(min_frequency, remain_chunk_size))
 
 
-def update_min_frequency(num_rows, min_frequency, min_frequency_lb):
+def update_min_frequency(num_rows, min_frequency, min_frequency_df):
     """
     Update min_frequency when Seq2Pat runs on batches.
 
     """
     if isinstance(min_frequency, float):
-        if num_rows == 1:
-            min_frequency = math.ceil(min_frequency)
-        else:
-            min_frequency = max(min_frequency * min_frequency_lb, 1.0/num_rows)
+        min_frequency = max(min_frequency * min_frequency_df, 1.0/num_rows)
     return min_frequency
 
 

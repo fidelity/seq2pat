@@ -293,6 +293,23 @@ class Seq2Pat:
         sequences but no constraints are used to run the mining efficiently and practically.
         Power users can choose to drop this constraint by setting it to be None or increase the maximum span
         as the system has resources to support.
+    batch_size: Optional[int]
+        When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of
+        sequences for improving scalability. batch_size defines the maximum number of sequences in a batch.
+    n_jobs: int
+        n_jobs defines the number of processes (n_jobs=2 by default) that are spawned
+        when mining tasks are applied among batches in parallel. If -1 all CPUs are used.
+    seed: int
+        Random seed to make sequences uniformly distributed among batches.
+    min_frequency_df: float
+        Discount factor to reduce the min_frequency threshold when Seq2Pat is applied on a batch.
+        When min_frequency is a integer, mining task can only be run on the entire set.
+        When min_frequency is a float, mining can be run on batches, with new threshold being defined by
+        max(min_frequency * min_frequency_df, 1.0/num_rows), where num_rows is number of sequences of one batch.
+        Final results will be based on the aggregation of patterns from each batch, and final results are subject to
+        min_frequency threshold. Thus a lower min_frequency_df helps to capture the same results after aggregation as
+        mining on entire set of sequences. A larger min_frequency_df may yield different results than mining
+        on entire set. Min_frequency_df=0.2 by default.
     """
 
     def __init__(self, sequences: List[list], max_span: Optional[int] = 10, batch_size=None,
