@@ -1395,9 +1395,5 @@ class TestSeq2Pat(unittest.TestCase):
             seq2pat = Seq2Pat(sequences)
 
 
-
-
-
-
 if __name__ == '__main__':
     unittest.main()

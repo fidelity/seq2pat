@@ -361,6 +361,23 @@
 <span class="sd">        sequences but no constraints are used to run the mining efficiently and practically.</span>
 <span class="sd">        Power users can choose to drop this constraint by setting it to be None or increase the maximum span</span>
 <span class="sd">        as the system has resources to support.</span>
+<span class="sd">    batch_size: Optional[int]</span>
+<span class="sd">        When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of</span>
+<span class="sd">        sequences for improving scalability. batch_size defines the maximum number of sequences in a batch.</span>
+<span class="sd">    n_jobs: int</span>
+<span class="sd">        n_jobs defines the number of processes (n_jobs=2 by default) that are spawned</span>
+<span class="sd">        when mining tasks are applied among batches in parallel. If -1 all CPUs are used.</span>
+<span class="sd">    seed: int</span>
+<span class="sd">        Random seed to make sequences uniformly distributed among batches.</span>
+<span class="sd">    min_frequency_df: float</span>
+<span class="sd">        Discount factor to reduce the min_frequency threshold when Seq2Pat is applied on a batch.</span>
+<span class="sd">        When min_frequency is a integer, mining task can only be run on the entire set.</span>
+<span class="sd">        When min_frequency is a float, mining can be run on batches, with new threshold being defined by</span>
+<span class="sd">        max(min_frequency * min_frequency_df, 1.0/num_rows). Num_rows is number of sequences of one batch.</span>
+<span class="sd">        Final results will be based on the aggregation of patterns from each batch, and are subject to</span>
+<span class="sd">        min_frequency threshold. Thus a lower min_frequency_df helps to capture the same results as</span>
+<span class="sd">        mining on entire set. A larger min_frequency_df may yield different results than mining</span>
+<span class="sd">        on entire set. A small value of min_frequency_df is recommended. Min_frequency_df=0.2 by default.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">max_span</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -602,8 +619,6 @@
 <span class="sd">           If int, represents the minimum number of sequences (rows) a pattern should occur.</span>
 <span class="sd">           If float, should be (0.0, 1.0] and represents</span>
 <span class="sd">           the minimum percentage of sequences (rows) a pattern should occur.</span>
-<span class="sd">        min_frequency_df: float</span>
-<span class="sd">           Discount factor to relax the minimum threshold (as a percentage) of row count</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

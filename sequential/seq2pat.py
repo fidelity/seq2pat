@@ -305,11 +305,11 @@ class Seq2Pat:
         Discount factor to reduce the min_frequency threshold when Seq2Pat is applied on a batch.
         When min_frequency is a integer, mining task can only be run on the entire set.
         When min_frequency is a float, mining can be run on batches, with new threshold being defined by
-        max(min_frequency * min_frequency_df, 1.0/num_rows), where num_rows is number of sequences of one batch.
-        Final results will be based on the aggregation of patterns from each batch, and final results are subject to
-        min_frequency threshold. Thus a lower min_frequency_df helps to capture the same results after aggregation as
-        mining on entire set of sequences. A larger min_frequency_df may yield different results than mining
-        on entire set. Min_frequency_df=0.2 by default.
+        max(min_frequency * min_frequency_df, 1.0/num_rows). Num_rows is number of sequences of one batch.
+        Final results will be based on the aggregation of patterns from each batch, and are subject to
+        min_frequency threshold. Thus a lower min_frequency_df helps to capture the same results as
+        mining on entire set. A larger min_frequency_df may yield different results than mining
+        on entire set. A small value of min_frequency_df is recommended. Min_frequency_df=0.2 by default.
     """
 
     def __init__(self, sequences: List[list], max_span: Optional[int] = 10, batch_size=None,
@@ -551,8 +551,6 @@ class Seq2Pat:
            If int, represents the minimum number of sequences (rows) a pattern should occur.
            If float, should be (0.0, 1.0] and represents
            the minimum percentage of sequences (rows) a pattern should occur.
-        min_frequency_df: float
-           Discount factor to relax the minimum threshold (as a percentage) of row count
 
         Returns
         -------
