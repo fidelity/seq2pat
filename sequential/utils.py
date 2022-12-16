@@ -355,14 +355,3 @@ def shuffle_data(sequences, attr_to_cs, seed):
             attr_to_cs[attr][cs] = new_constraint
 
     return sequences, attr_to_cs
-
-
-
-
-
-
-
-
-
-
-

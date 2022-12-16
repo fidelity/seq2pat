@@ -1302,7 +1302,7 @@ class TestSeq2Pat(unittest.TestCase):
         sequences = [[11, 12, 13], [11, 12, 13, 14]]
 
         # Sequential pattern finder
-        seq2pat = Seq2Pat(sequences, batch_size=2)
+        seq2pat = Seq2Pat(sequences)
 
         unconstrained_result_1 = seq2pat.get_patterns(0.9)
 
