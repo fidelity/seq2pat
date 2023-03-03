@@ -297,7 +297,7 @@ class Seq2Pat:
         When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of
         sequences for improving scalability. Each batch contains `batch_size` sequences as a random sample of
         entire set. A mining task will run on each batch with a reduced minimum row count (min_frequency) threshold.
-        Please refer to description of min_frequency_df parameter for how min_frequency is reduced.
+        Please refer to description of discount_factor parameter for how min_frequency is reduced.
         Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of
         the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.
     n_jobs: int
@@ -305,20 +305,20 @@ class Seq2Pat:
         when mining tasks are applied among batches in parallel. If -1 all CPUs are used.
     seed: int
         Random seed to make sequences uniformly distributed among batches.
-    min_frequency_df: float
-        Discount factor to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied on a batch.
-        When min_frequency is a integer, mining task can only be run on the entire set.
+    discount_factor: float
+        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
+        on a batch. When min_frequency is a integer, mining task can only be run on the entire set.
         When min_frequency is a float, mining can be run on batches, with new threshold being defined by
-        max(min_frequency * min_frequency_df, 1.0/num_rows). num_rows is the number of sequences of one batch.
+        max(min_frequency * discount_factor, 1.0/num_rows). num_rows is the number of sequences of one batch.
         Final results will be based on the aggregation of patterns from each batch by calculating the sum of
         the occurrences. Theoretically there is a chance that the batching results will be different from non-batching
-        results. But a small min_frequency_df parameter will make the chance to be minimal and thus we have the same
-        results as running on entire set in practice. A small value of min_frequency_df is thus recommended.
-        Min_frequency_df=0.2 by default.
+        results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same
+        results as running on entire set in practices. A small value of discount_factor is thus recommended.
+        discount_factor=0.2 by default.
     """
 
     def __init__(self, sequences: List[list], max_span: Optional[int] = 10, batch_size=None,
-                 n_jobs=2, seed=123456, min_frequency_df=0.2):
+                 n_jobs=2, seed=123456, discount_factor=0.2):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
@@ -356,7 +356,7 @@ class Seq2Pat:
 
         self.batch_size = batch_size
         self.n_jobs = n_jobs
-        self.min_frequency_df = min_frequency_df
+        self.discount_factor = discount_factor
         self.seed = seed
 
     @property
@@ -582,9 +582,9 @@ class Seq2Pat:
                                                                                     (chunk_ind + 1) * self.batch_size])
                 batch_seq2pat.add_constraint(new_constraint)
 
-        # Reduce min_frequency to be min_frequency * min_frequency_df, 0 < min_frequency_df < 1
+        # Reduce min_frequency to be min_frequency * discount_factor, 0 < discount_factor < 1
         adjusted_min_frequency = update_min_frequency(len(batch_sequences), min_frequency,
-                                                      self.min_frequency_df)
+                                                      self.discount_factor)
 
         return batch_seq2pat.get_patterns(adjusted_min_frequency)
 

@@ -244,7 +244,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertListEqual(sorted_results, test_patterns)
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
-    def test_seq2pat_batch_min_frequency_df_large(self):
+    def test_seq2pat_batch_discount_factor_large(self):
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.01 -out
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -252,7 +252,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, min_frequency_df=0.8)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, discount_factor=0.8)
 
         test_patterns = seq2pat.get_patterns(.01)
         results_file = self.DATA_DIR + "no_constraints_results.txt"
@@ -262,7 +262,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertFalse(sorted_results[61] == test_patterns[61])
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
-    def test_seq2pat_batch_min_frequency_df_small(self):
+    def test_seq2pat_batch_discount_factor_small(self):
         # API and Cython object test. Replicates command line:
         # ./MPP -file input.txt -thr 0.01 -out
         # input on Main.cpp and verifies output with data captured from original implementation
@@ -270,7 +270,7 @@ class TestSeq2PatBatch(unittest.TestCase):
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
-        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, min_frequency_df=0.2)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, discount_factor=0.2)
 
         test_patterns = seq2pat.get_patterns(.01)
         results_file = self.DATA_DIR + "no_constraints_results.txt"
