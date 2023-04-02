@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 import collections
-import random
 from typing import Union, NoReturn, List
-from copy import deepcopy
 
 Num = Union[int, float]
 
@@ -274,10 +272,21 @@ def validate_min_frequency(num_rows, min_frequency):
         raise TypeError("Minimum frequency should be integer (as a row count) or float (as a row percentage).")
 
 
-def validate_min_frequency_with_batch(num_rows, batch_size, min_frequency):
+def validate_min_frequency_with_batch(num_rows: int, batch_size: int, min_frequency: Num) -> NoReturn:
     """
-    Validate min_frequency when Seq2Pat runs on batches
+    Validate min_frequency when Seq2Pat runs on batches.
+    A valid min_frequency should be:
+        - A float between 0 and 1, that also yields a valid minimum row count on a batch
+        - or an integer only when num_rows <= batch_size, since one batch contains all the rows.
 
+    Parameters
+    ----------
+    num_rows: int
+        The total number of sequences.
+    batch_size: int
+        The number of sequences in one batch.
+    min_frequency: Num
+        It should be float for mining batches. The minimum percentage of sequences (rows) a pattern should occur.
     """
     if not isinstance(min_frequency, float) and num_rows > batch_size:
         raise TypeError("Minimum frequency should be float (as a row percentage) when Seq2Pat runs on batches.")
@@ -285,21 +294,34 @@ def validate_min_frequency_with_batch(num_rows, batch_size, min_frequency):
     try:
         validate_min_frequency(batch_size, min_frequency)
     except ValueError:
-        raise ValueError("Minimum frequency {} is not validate for the sequences "
-                         "in the chunk size {}!".format(min_frequency, batch_size))
+        raise ValueError("Minimum frequency {} is not validate "
+                         "for one of the chunks with {} sequences!".format(min_frequency, batch_size))
 
     remain_chunk_size = num_rows % batch_size
     if remain_chunk_size > 1:
         try:
             validate_min_frequency(remain_chunk_size, min_frequency)
         except ValueError:
-            raise ValueError("Minimum frequency {} is not validate for the sequences "
-                             "in the chunk size {}!".format(min_frequency, remain_chunk_size))
+            raise ValueError("Minimum frequency {} is not validate "
+                             "for one of the chunks with {} sequences!".format(min_frequency, remain_chunk_size))
 
 
-def update_min_frequency(num_rows, min_frequency, discount_factor):
+def update_min_frequency(num_rows: int, min_frequency: Num, discount_factor: float) -> Num:
     """
     Update min_frequency when Seq2Pat runs on batches.
+
+    Parameters
+    ----------
+    num_rows: int
+        The total number of sequences.
+    min_frequency: Num
+        It should be float for mining batches. The minimum percentage of sequences (rows) a pattern should occur.
+    discount_factor: float
+        The discount factor is used to reduce the minimum row count (min_frequency)
+
+    Returns
+    -------
+    The reduced min_frequency parameter
 
     """
     if isinstance(min_frequency, float):
@@ -307,9 +329,18 @@ def update_min_frequency(num_rows, min_frequency, discount_factor):
     return min_frequency
 
 
-def list_to_counter(patterns):
+def list_to_counter(patterns: List[List]) -> collections.Counter:
     """
-    Transform patterns to counter
+    Transform patterns to counter.
+
+    Parameters
+    ----------
+    patterns: List[List]
+        The mined patterns.
+
+    Returns
+    -------
+    Return a counter of patterns, using pattern as the key.
     """
     patterns_without_frequency = list(map(lambda x: tuple(x[:-1]), patterns))
     frequencies = list(map(lambda x: x[-1], patterns))
@@ -317,9 +348,20 @@ def list_to_counter(patterns):
     return collections.Counter(dict(zip(patterns_without_frequency, frequencies)))
 
 
-def counter_to_list(patterns_counter, min_row_count):
+def counter_to_list(patterns_counter: collections.Counter, min_row_count: int) -> List[List]:
     """
-    Transform counter of patterns to list
+    Transform counter of patterns to list. Drop the patterns with frequency less than min_row_count.
+
+    Parameters
+    ----------
+    patterns_counter: collections.Counter
+        The counter of patterns, using pattern as the key.
+    min_row_count: int
+        The minimum frequency required for mining the original entire set.
+
+    Returns
+    -------
+    Return a list of patterns, with all patterns satisfying a minimum frequency threshold.
     """
     results = []
     for key, value in patterns_counter.items():
@@ -327,10 +369,25 @@ def counter_to_list(patterns_counter, min_row_count):
             continue
         results.append(list(key) + [value])
 
-    return sort_pattern(results)
+    return results
 
 
-def aggregate_patterns(batch_patterns, min_row_count):
+def aggregate_patterns(batch_patterns: List[List[List]], min_row_count: int) -> List[List]:
+    """
+    Aggregate patterns mined from different batches by counts. Use the summation of counts as final frequency.
+
+    Parameters
+    ----------
+    batch_patterns: List[List[List]]
+        The patterns mined from batches.
+    min_row_count: int
+        The minimum frequency required for mining the original entire set.
+
+    Returns
+    -------
+    Return a list of patterns in the descending order by frequency, with all patterns satisfying minimum frequency
+    required for mining the original entire set.
+    """
     counter = collections.Counter()
     for patterns in batch_patterns:
         counter.update(list_to_counter(patterns))
@@ -338,20 +395,3 @@ def aggregate_patterns(batch_patterns, min_row_count):
     aggregated_patterns = counter_to_list(counter, min_row_count)
 
     return sort_pattern(aggregated_patterns)
-
-
-def shuffle_data(sequences, attr_to_cs, seed):
-    indices = list(range(len(sequences)))
-    random.seed(seed)
-    random.shuffle(indices)
-
-    sequences = [sequences[i] for i in indices]
-    for attr in attr_to_cs:
-        for cs in attr_to_cs[attr]:
-            old_constraint = attr_to_cs[attr][cs]
-            new_constraint = deepcopy(old_constraint)
-            shuffled_values = [old_constraint.attribute.values[i] for i in indices]
-            new_constraint.attribute.set_values(shuffled_values)
-            attr_to_cs[attr][cs] = new_constraint
-
-    return sequences, attr_to_cs

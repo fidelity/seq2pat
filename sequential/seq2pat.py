@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 import gc
-from typing import NamedTuple, List, Dict, NoReturn, Optional
+import random
+from typing import NamedTuple, List, Dict, NoReturn, Optional, Tuple
 from multiprocessing import Process, Queue
 from copy import deepcopy
 from joblib import Parallel, delayed
@@ -11,8 +12,7 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences, validate_max_span, \
-    aggregate_patterns, validate_min_frequency, validate_min_frequency_with_batch, \
-    shuffle_data, update_min_frequency
+    aggregate_patterns, validate_min_frequency, validate_min_frequency_with_batch, update_min_frequency
 
 
 # IMPORTANT: Constant values should not be changed
@@ -155,7 +155,7 @@ class Attribute:
         """
         return self._values
 
-    def set_values(self, values):
+    def _set_values(self, values):
         """
         Set values of attribute
         """
@@ -507,7 +507,8 @@ class Seq2Pat:
 
     def _get_patterns_batch(self, min_frequency) -> List[list]:
         """
-        Get patterns from each batch with a relaxed min_frequency threshold, then aggregate patters among batches.
+        Get patterns from each batch with a relaxed min_frequency threshold, then aggregate pattern frequencies
+        by using the summation of frequencies returned by mining individual batches.
 
         Attributes
         ----------
@@ -523,7 +524,7 @@ class Seq2Pat:
         """
 
         # Shuffle sequences uniformly to make each batch have similar pattern occurrences
-        sequences, attr_to_cs = shuffle_data(self.sequences, self.attr_to_cts, self.seed)
+        sequences, attr_to_cs = self._shuffle_data()
 
         # Get number of chunks
         n_sequences = len(sequences)
@@ -541,6 +542,33 @@ class Seq2Pat:
         agg_patterns = aggregate_patterns(batch_patterns, min_row_count)
 
         return agg_patterns
+
+    def _shuffle_data(self) -> Tuple[List[List], Dict[Attribute, Dict[str, _Constraint]]]:
+        """
+        Shuffle sequences and attributes before running seq2pat on batches.
+
+        Returns
+        -------
+        shuffled_sequences: List[List]
+            The shuffled sequences.
+        shuffled_attr_to_cs: Dict[Attribute, Dict[str, _Constraint]]
+            The shuffled constraints.
+        """
+        indices = list(range(len(self.sequences)))
+        random.seed(self.seed)
+        random.shuffle(indices)
+
+        shuffled_sequences = [self.sequences[i] for i in indices]
+        shuffled_attr_to_cts = deepcopy(self.attr_to_cts)
+        for attr in shuffled_attr_to_cts:
+            for cs in shuffled_attr_to_cts[attr]:
+                old_constraint = shuffled_attr_to_cts[attr][cs]
+                new_constraint = deepcopy(old_constraint)
+                shuffled_values = [old_constraint.attribute.values[i] for i in indices]
+                new_constraint.attribute._set_values(shuffled_values)
+                shuffled_attr_to_cts[attr][cs] = new_constraint
+
+        return shuffled_sequences, shuffled_attr_to_cts
 
     def _mining_batch(self, chunk_ind, sequences, attr_to_cs, min_frequency):
         """
@@ -578,7 +606,7 @@ class Seq2Pat:
             for cs in attr_to_cs[attr]:
                 old_constraint = attr_to_cs[attr][cs]
                 new_constraint = deepcopy(old_constraint)
-                new_constraint.attribute.set_values(old_constraint.attribute.values[chunk_ind * self.batch_size:
+                new_constraint.attribute._set_values(old_constraint.attribute.values[chunk_ind * self.batch_size:
                                                                                     (chunk_ind + 1) * self.batch_size])
                 batch_seq2pat.add_constraint(new_constraint)
 

@@ -94,10 +94,10 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertEqual(patterns, batch_patterns)
 
     def test_input_no_upper_constraint_batch(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -att input_att1.txt -lg 30 -ls 900 -att input_att2.txt -la 30 -lm 40 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but no upper constraints imposed
+        # Test running seq2pat in batches under constraints
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 900 -ls 3600 -att input_att2.txt
+        # -la 70 -lm 60 -out -write BMS_patt.txt, to get results from original implementation
+        # Results from original implementation and seq2pat should be the same
 
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
@@ -125,12 +125,11 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertListEqual(sorted_control, test_patterns)
 
     def test_input_no_lower_constraint_batch(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -ug 900 - us 3600 -att input_att2.txt -ua 70 -um 60 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but no lower constraints imposed
+        # Test running seq2pat in batches under constraints
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -ug 900 - us 3600 -att input_att2.txt
+        # -ua 70 -um 60 -out -write BMS_patt.txt, to get results from original implementation
+        # Results from original implementation and seq2pat should be the same
 
-        # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences, max_span=None, batch_size=30000)
@@ -178,12 +177,103 @@ class TestSeq2PatBatch(unittest.TestCase):
 
         self.assertListEqual([[11, 12, 2], [11, 12, 13, 2], [11, 13, 2], [12, 13, 2]], unconstrained_result_3)
 
-    def test_input_diff_constraint(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 20 -ug 1000 -ls 800 - us 3700 -att input_att2.txt -la 20 -ua 80 -lm 30 -um 70 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but all lower constraints lowered by 10 all upper constraints raised 10.
-        # Significantly different results to default.
+    def test_seq2pat_batch_default_constraints(self):
+        # Command line:
+        #   > ./MPP.exe
+        #       -file input.txt
+        #       -thr 0.001
+        #       -att input_att1.txt -lg 30 -ug 900 -ls 900 - us 3600
+        #       -att input_att2.txt -la 30 -ua 70 -lm 40 -um 60
+        #       -out -write BMS_patt.txt
+        # This is default usage example in original implementation
+        # Results from original implementation and seq2pat should be the same
+
+        # Seq2Pat
+        patterns_file = self.DATA_DIR + "input.txt"
+        sequences = read_data(patterns_file)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=30000)
+
+        # Load Attributes
+        attribute_file = self.DATA_DIR + "input_att1.txt"
+        attr1_data = read_data(attribute_file)
+        att1 = Attribute(attr1_data)
+
+        attribute_file = self.DATA_DIR + "input_att2.txt"
+        attr2_data = read_data(attribute_file)
+        att2 = Attribute(attr2_data)
+
+        cts1 = seq2pat.add_constraint(30 <= att1.gap() <= 900)
+        cts2 = seq2pat.add_constraint(900 <= att1.span())
+        cts3 = seq2pat.add_constraint(30 <= att2.average() <= 70)
+        cts4 = seq2pat.add_constraint(40 <= att2.median() <= 60)
+        test_pf = seq2pat._get_cython_imp(-1)
+
+        self.assertListEqual([30], test_pf.lgap)
+        self.assertListEqual([900], test_pf.ugap)
+        self.assertListEqual([30], test_pf.lavr)
+        self.assertListEqual([70], test_pf.uavr)
+        self.assertListEqual([900], test_pf.lspn)
+        self.assertListEqual([], test_pf.uspn)
+        self.assertListEqual([40], test_pf.lmed)
+
+        self.assertListEqual([0], test_pf.ugapi)
+        self.assertListEqual([0], test_pf.lgapi)
+        self.assertListEqual([], test_pf.uspni)
+        self.assertListEqual([0], test_pf.lspni)
+        self.assertListEqual([1], test_pf.uavri)
+        self.assertListEqual([1], test_pf.lavri)
+        self.assertListEqual([1], test_pf.umedi)
+        self.assertListEqual([1], test_pf.lmedi)
+
+        self.assertListEqual([2, 0], test_pf.num_minmax)
+        self.assertListEqual([0, 2], test_pf.num_avr)
+        self.assertListEqual([0, 2], test_pf.num_med)
+        self.assertListEqual([0], test_pf.tot_gap)
+        self.assertListEqual([0], test_pf.tot_spn)
+        self.assertListEqual([1], test_pf.tot_avr)
+
+        self.assertEqual(161, test_pf.M)
+        self.assertEqual(52619, test_pf.N)
+        self.assertEqual(3340, test_pf.L)
+
+        self.assertListEqual([284871, 100], test_pf.max_attrs)
+        self.assertListEqual([0, 1], test_pf.min_attrs)
+
+        test_patterns = seq2pat.get_patterns(.001)
+
+        # Consistency sanity check
+        dup_patterns = seq2pat.get_patterns(.001)
+        self.assertListEqual(test_patterns, dup_patterns)
+
+        results_file = self.DATA_DIR + "default_results.txt"
+
+        control_patterns = read_data(results_file)
+        sorted_control = sort_pattern(control_patterns)
+        self.assertListEqual(sorted_control, test_patterns)
+
+        # Remove constraint and test
+        cts5 = seq2pat.remove_constraint(40 <= att2.median() <= 60)
+        ct6 = seq2pat.remove_constraint(30 <= att2.average() <= 70)
+        test_pf = seq2pat._get_cython_imp(-1)
+
+        self.assertListEqual([], test_pf.umedi)
+        self.assertListEqual([], test_pf.lmedi)
+        self.assertListEqual([], test_pf.uavr)
+        self.assertListEqual([], test_pf.uavri)
+        self.assertListEqual([0], test_pf.num_med)
+
+        one_constraint_result = seq2pat.get_patterns(.001)
+        results_file = self.DATA_DIR + "one_constraint_results.txt"
+        control_patterns = read_data(results_file)
+        sorted_controls = sort_pattern(control_patterns)
+        self.assertListEqual(sorted_controls, one_constraint_result)
+
+    def test_seq2pat_batch_diff_constraint(self):
+        # Test running seq2pat in batches under constraints
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 20 -ug 1000 -ls 800 - us 3700
+        # -att input_att2.txt -la 20 -ua 80 -lm 30 -um 70 -out -write BMS_patt.txt, to get results from original implementation
+        # These constraints are different from default usage example in original implementation
+        # Results from original implementation and seq2pat should be the same
 
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
@@ -210,12 +300,11 @@ class TestSeq2PatBatch(unittest.TestCase):
         sorted_control = sort_pattern(control_patterns)
         self.assertListEqual(sorted_control, test_patterns)
 
-    def test_input_no_constraint_batch(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -out
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Unconstrained call. Significantly different and larger results.
-        # Seq2Pat
+    def test_seq2pat_batch_default_no_constraints(self):
+        # Test running seq2pat in batches, by default, n_jobs=2, discount_factor=0.2
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same.
+
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000)
@@ -227,12 +316,11 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertListEqual(sorted_results, test_patterns)
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
-    def test_input_no_constraint_n_jobs(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -out
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Unconstrained call. Significantly different and larger results.
-        # Seq2Pat
+    def test_seq2pat_batch_n_jobs_all_cpus(self):
+        # Test running seq2pat in batches with n_jobs=-1 (all cpus are used)
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same.
+
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1)
@@ -244,12 +332,27 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertListEqual(sorted_results, test_patterns)
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
+    def test_seq2pat_batch_n_jobs_all_cpus_but_one(self):
+        # Test running seq2pat in batches with n_jobs=-2 (all cpus but one are used)
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same.
+
+        patterns_file = self.DATA_DIR + "input.txt"
+        sequences = read_data(patterns_file)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-2)
+
+        test_patterns = seq2pat.get_patterns(.01)
+        results_file = self.DATA_DIR + "no_constraints_results.txt"
+        control_patterns = read_data(results_file)
+        sorted_results = sort_pattern(control_patterns)
+        self.assertListEqual(sorted_results, test_patterns)
+        self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
+
     def test_seq2pat_batch_discount_factor_large(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -out
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Unconstrained call. Significantly different and larger results.
-        # Seq2Pat
+        # Test running seq2pat in batches with a large discount factor
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same.
+
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, discount_factor=0.8)
@@ -263,11 +366,10 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_seq2pat_batch_discount_factor_small(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -out
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Unconstrained call. Significantly different and larger results.
-        # Seq2Pat
+        # Test running seq2pat in batches with a small discount factor
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same.
+
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences, max_span=None, batch_size=10000, n_jobs=-1, discount_factor=0.2)
