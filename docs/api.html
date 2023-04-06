@@ -118,7 +118,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="sequential.seq2pat.Seq2Pat">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sequential.seq2pat.</span></span><span class="sig-name descname"><span class="pre">Seq2Pat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">123456</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_frequency_df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sequential.seq2pat.</span></span><span class="sig-name descname"><span class="pre">Seq2Pat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">123456</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discount_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sequential/seq2pat.html#Seq2Pat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sequential.seq2pat.Seq2Pat" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p><strong>Seq2Pat: Sequence-to-Pattern Generation Library</strong></p>
 <dl class="simple">
@@ -132,21 +132,26 @@ Power users can choose to drop this constraint by setting it to be None or incre
 as the system has resources to support.</p>
 </dd>
 <dt>batch_size: Optional[int]</dt><dd><p>When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of
-sequences for improving scalability. batch_size defines the maximum number of sequences in a batch.</p>
+sequences for improving scalability. Each batch contains <cite>batch_size</cite> sequences as a random sample of
+entire set. A mining task will run on each batch with a reduced minimum row count (min_frequency) threshold.
+Please refer to description of discount_factor parameter for how min_frequency is reduced.
+Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of
+the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.</p>
 </dd>
 <dt>n_jobs: int</dt><dd><p>n_jobs defines the number of processes (n_jobs=2 by default) that are spawned
 when mining tasks are applied among batches in parallel. If -1 all CPUs are used.</p>
 </dd>
 <dt>seed: int</dt><dd><p>Random seed to make sequences uniformly distributed among batches.</p>
 </dd>
-<dt>min_frequency_df: float</dt><dd><p>Discount factor to reduce the min_frequency threshold when Seq2Pat is applied on a batch.
-When min_frequency is a integer, mining task can only be run on the entire set.
+<dt>discount_factor: float</dt><dd><p>A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
+on a batch. When min_frequency is a integer, mining task can only be run on the entire set.
 When min_frequency is a float, mining can be run on batches, with new threshold being defined by
-max(min_frequency * min_frequency_df, 1.0/num_rows). Num_rows is number of sequences of one batch.
-Final results will be based on the aggregation of patterns from each batch, and are subject to
-min_frequency threshold. Thus a lower min_frequency_df helps to capture the same results as
-mining on entire set. A larger min_frequency_df may yield different results than mining
-on entire set. A small value of min_frequency_df is recommended. Min_frequency_df=0.2 by default.</p>
+max(min_frequency * discount_factor, 1.0/num_rows). num_rows is the number of sequences of one batch.
+Final results will be based on the aggregation of patterns from each batch by calculating the sum of
+the occurrences. Theoretically there is a chance that the batching results will be different from non-batching
+results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same
+results as running on entire set in practices. A small value of discount_factor is thus recommended.
+discount_factor=0.2 by default.</p>
 </dd>
 </dl>
 <dl class="py method">

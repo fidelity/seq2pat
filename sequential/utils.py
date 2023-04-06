@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 import collections
-from typing import Union, NoReturn, List
+from typing import Union, NoReturn, List, Optional
 
 Num = Union[int, float]
 
@@ -234,7 +234,7 @@ def validate_sequences(sequences: List[list]):
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
     if not isinstance(sequences[0][0], str):
         min_int = get_min_value(sequences)
-        check_true(min_int > 0, ValueError("Integers must be greater than 0."))
+        check_true(min_int > 0, ValueError("Integers in the sequence must be greater than 0."))
 
 
 def validate_max_span(max_span: Union[int, None]):
@@ -276,7 +276,7 @@ def validate_min_frequency_with_batch(num_rows: int, batch_size: int, min_freque
     """
     Validate min_frequency when Seq2Pat runs on batches.
     A valid min_frequency should be:
-        - A float between 0 and 1, that also yields a valid minimum row count on a batch
+        - A float greater than 0 and <= 1.0, and it should also yield a valid minimum row count on a batch.
         - or an integer only when num_rows <= batch_size, since one batch contains all the rows.
 
     Parameters
@@ -304,6 +304,35 @@ def validate_min_frequency_with_batch(num_rows: int, batch_size: int, min_freque
         except ValueError:
             raise ValueError("Minimum frequency {} is not validate "
                              "for one of the chunks with {} sequences!".format(min_frequency, remain_chunk_size))
+
+
+def validate_batch_args(batch_size: Optional, n_jobs: int, seed: int, discount_factor: float) -> NoReturn:
+    """
+    Validate arguments for running seq2pat on batches.
+
+    Parameters
+    ----------
+    batch_size: Optional
+        The number of sequences in one batch. When it is None, seq2pat will run on entire set.
+    n_jobs: int
+        n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
+        among batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
+    seed: int
+        The random seed.
+    discount_factor: float
+        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
+        on a batch. A valid discount factor should be greater than 0 and <= 1.0.
+    """
+    if batch_size:
+        check_true(isinstance(batch_size, int), TypeError("The batch_size must be an integer."))
+        check_true(batch_size > 0, ValueError('The batch_size must be greater than zero.'))
+    check_true(isinstance(n_jobs, int), TypeError("The n_jobs must be an integer."))
+    check_true(n_jobs != 0, ValueError('The n_jobs cannot be zero.'))
+    check_true(isinstance(seed, int), TypeError("The seed must be an integer."))
+    check_true(isinstance(discount_factor, float), ValueError('The discount_factor must be a float.'))
+    check_true(discount_factor > 0, ValueError('The discount_factor must be greater than zero.'))
+    check_true(discount_factor <= 1.0, ValueError('The discount_factor must be less or equal to 1.0.'))
+
 
 
 def update_min_frequency(num_rows: int, min_frequency: Num, discount_factor: float) -> Num:

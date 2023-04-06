@@ -12,7 +12,8 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences, validate_max_span, \
-    aggregate_patterns, validate_min_frequency, validate_min_frequency_with_batch, update_min_frequency
+    aggregate_patterns, validate_min_frequency, validate_min_frequency_with_batch, \
+    validate_batch_args, update_min_frequency
 
 
 # IMPORTANT: Constant values should not be changed
@@ -301,8 +302,8 @@ class Seq2Pat:
         Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of
         the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.
     n_jobs: int
-        n_jobs defines the number of processes (n_jobs=2 by default) that are spawned
-        when mining tasks are applied among batches in parallel. If -1 all CPUs are used.
+        n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
+        among batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
     seed: int
         Random seed to make sequences uniformly distributed among batches.
     discount_factor: float
@@ -322,6 +323,7 @@ class Seq2Pat:
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
+        validate_batch_args(batch_size, n_jobs, seed, discount_factor)
 
         # Input sequences
         self._sequences: List[list] = sequences

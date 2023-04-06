@@ -363,25 +363,30 @@
 <span class="sd">        as the system has resources to support.</span>
 <span class="sd">    batch_size: Optional[int]</span>
 <span class="sd">        When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of</span>
-<span class="sd">        sequences for improving scalability. batch_size defines the maximum number of sequences in a batch.</span>
+<span class="sd">        sequences for improving scalability. Each batch contains `batch_size` sequences as a random sample of</span>
+<span class="sd">        entire set. A mining task will run on each batch with a reduced minimum row count (min_frequency) threshold.</span>
+<span class="sd">        Please refer to description of discount_factor parameter for how min_frequency is reduced.</span>
+<span class="sd">        Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of</span>
+<span class="sd">        the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.</span>
 <span class="sd">    n_jobs: int</span>
 <span class="sd">        n_jobs defines the number of processes (n_jobs=2 by default) that are spawned</span>
 <span class="sd">        when mining tasks are applied among batches in parallel. If -1 all CPUs are used.</span>
 <span class="sd">    seed: int</span>
 <span class="sd">        Random seed to make sequences uniformly distributed among batches.</span>
-<span class="sd">    min_frequency_df: float</span>
-<span class="sd">        Discount factor to reduce the min_frequency threshold when Seq2Pat is applied on a batch.</span>
-<span class="sd">        When min_frequency is a integer, mining task can only be run on the entire set.</span>
+<span class="sd">    discount_factor: float</span>
+<span class="sd">        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied</span>
+<span class="sd">        on a batch. When min_frequency is a integer, mining task can only be run on the entire set.</span>
 <span class="sd">        When min_frequency is a float, mining can be run on batches, with new threshold being defined by</span>
-<span class="sd">        max(min_frequency * min_frequency_df, 1.0/num_rows). Num_rows is number of sequences of one batch.</span>
-<span class="sd">        Final results will be based on the aggregation of patterns from each batch, and are subject to</span>
-<span class="sd">        min_frequency threshold. Thus a lower min_frequency_df helps to capture the same results as</span>
-<span class="sd">        mining on entire set. A larger min_frequency_df may yield different results than mining</span>
-<span class="sd">        on entire set. A small value of min_frequency_df is recommended. Min_frequency_df=0.2 by default.</span>
+<span class="sd">        max(min_frequency * discount_factor, 1.0/num_rows). num_rows is the number of sequences of one batch.</span>
+<span class="sd">        Final results will be based on the aggregation of patterns from each batch by calculating the sum of</span>
+<span class="sd">        the occurrences. Theoretically there is a chance that the batching results will be different from non-batching</span>
+<span class="sd">        results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same</span>
+<span class="sd">        results as running on entire set in practices. A small value of discount_factor is thus recommended.</span>
+<span class="sd">        discount_factor=0.2 by default.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">max_span</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123456</span><span class="p">,</span> <span class="n">min_frequency_df</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123456</span><span class="p">,</span> <span class="n">discount_factor</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
         <span class="c1"># Validate input</span>
         <span class="n">validate_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
         <span class="n">validate_max_span</span><span class="p">(</span><span class="n">max_span</span><span class="p">)</span>
@@ -419,7 +424,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_frequency_df</span> <span class="o">=</span> <span class="n">min_frequency_df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discount_factor</span> <span class="o">=</span> <span class="n">discount_factor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
 
     <span class="nd">@property</span>
@@ -645,9 +650,9 @@
                                                                                     <span class="p">(</span><span class="n">chunk_ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">])</span>
                 <span class="n">batch_seq2pat</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="n">new_constraint</span><span class="p">)</span>
 
-        <span class="c1"># Reduce min_frequency to be min_frequency * min_frequency_df, 0 &lt; min_frequency_df &lt; 1</span>
+        <span class="c1"># Reduce min_frequency to be min_frequency * discount_factor, 0 &lt; discount_factor &lt; 1</span>
         <span class="n">adjusted_min_frequency</span> <span class="o">=</span> <span class="n">update_min_frequency</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_sequences</span><span class="p">),</span> <span class="n">min_frequency</span><span class="p">,</span>
-                                                      <span class="bp">self</span><span class="o">.</span><span class="n">min_frequency_df</span><span class="p">)</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">discount_factor</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">batch_seq2pat</span><span class="o">.</span><span class="n">get_patterns</span><span class="p">(</span><span class="n">adjusted_min_frequency</span><span class="p">)</span>
 
