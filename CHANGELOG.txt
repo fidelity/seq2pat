@@ -8,7 +8,6 @@ Dec, 15, 2022 1.4.0
 
 Major:
 - Enable running Seq2Pat on batches of sequences in parallel
-- Enable the aggregation of patterns mined from batches as final result
 - Require that input integer sequences only contain positive integers
 
 -------------------------------------------------------------------------------
