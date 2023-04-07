@@ -303,7 +303,7 @@ class Seq2Pat:
         the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.
     n_jobs: int
         n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
-        among batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
+        on batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
     seed: int
         Random seed to make sequences uniformly distributed among batches.
     discount_factor: float
