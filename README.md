@@ -99,7 +99,8 @@ The library offers various constraint types, including a number of non-monotone 
 ## Usage Examples
 
 Examples on how to use the available constraints can be found 
-in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
+in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/sequential_pattern_mining.ipynb).
+You can also find out how to scale up the mining capability, by running Seq2Pat on batches of sequences in parallel in [Batch Processing Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/batch_processing.ipynb). 
 
 Supported by Seq2Pat, we proposed **Dichotomic Pattern Mining** ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) to analyze the correlations between 
 mined patterns and different outcomes of sequences. DPM allows generating feature vectors based on mined patterns and plays an integrator role between Sequential 
