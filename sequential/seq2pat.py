@@ -128,6 +128,14 @@ class _Constants:
     # List where index correspond to the attribute ids and values to the minimum value for that attribute
     min_attrs = 'min_attrs'
 
+    # The threshold to dynamically apply batch processing to the data in large size
+    dynamic_batch_threshold = 500000
+
+    # The default batch size to be applied when it is not set, while the input sequences contains
+    # more than dynamic_batch_threshold sequences. This will apply batch processing automatically to facilitate
+    # mining task.
+    default_batch_size = 10000
+
 
 class Attribute:
 
@@ -300,35 +308,53 @@ class Seq2Pat:
         Power users can choose to drop this constraint by setting it to be None or increase the maximum span
         as the system has resources to support.
     batch_size: Optional[int]
-        When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of
-        sequences for improving scalability. Each batch contains `batch_size` sequences as a **random** sample of
-        entire set. A mining task will run on each batch with a reduced minimum row count (min_frequency) threshold.
-        Please refer to description of discount_factor parameter for how min_frequency is reduced.
-        Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of
-        the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.
+        The batch_size parameter is set to be None by default, then a mining task runs on the entire data set using a
+        single thread. When batch_size is set, Seq2Pat runs on batches of sequences instead for improving scalability.
+        Each batch contains `batch_size` sequences as a **random** sample of entire set. A mining task will run on each
+        batch with a reduced minimum row count (min_frequency) threshold. Please refer to description of discount_factor
+        parameter for how min_frequency is reduced. Resulted patterns will be aggregated from the mining results of
+        each batch by calculating the sum of the occurrences. Finally the original minimum row count threshold is
+        applied to the patterns after aggregation.
+    discount_factor: float
+        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
+        on a batch. When min_frequency is an integer, mining task can only be run on the entire set.
+        When min_frequency is a float, mining can be run on batches, with new threshold being defined by
+        max(min_frequency * discount_factor, 1.0/batch_size). Final results will be based on the aggregation of
+        patterns from each batch by calculating the sum of the occurrences. Theoretically there is a chance that the
+        batching results will be different from non-batching results. But a small discount_factor parameter will make
+        the chance to be minimal and thus we have the same results as running on entire set in practices.
+        A small value of discount_factor is thus recommended. discount_factor=0.2 by default.
     n_jobs: int
         n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
         on batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
     seed: int
         Random seed to make sequences uniformly distributed among batches.
-    discount_factor: float
-        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
-        on a batch. When min_frequency is a integer, mining task can only be run on the entire set.
-        When min_frequency is a float, mining can be run on batches, with new threshold being defined by
-        max(min_frequency * discount_factor, 1.0/num_rows). num_rows is the number of sequences of one batch.
-        Final results will be based on the aggregation of patterns from each batch by calculating the sum of
-        the occurrences. Theoretically there is a chance that the batching results will be different from non-batching
-        results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same
-        results as running on entire set in practices. A small value of discount_factor is thus recommended.
-        discount_factor=0.2 by default.
+
+    For power users who have interests to learn more about the designed batch processing behavior, an Experimental
+    Results Summary in the following would be useful.
+        - We have experimental analysis for batch_size vs. discount_factor vs. runtime tested on a data set with
+          100k sequences.
+        - The results show that when batch_size increases , e.g. from 10000 to 100000, we observe an increase in runtime,
+          while the mined patterns are all the same as mining on the entire set using single thread.
+          When batch_size=10000, we get the most runtime benefit compared to running on entire set.
+        - On the same 100k sequences, we set batch_size=10000 and change discount_factor from 0.1 to 1.0. We observe
+          that the runtime decreases as discount_factor increases. Only when discount_factor=1.0, the batching mode will
+          miss some patterns compared to running on entire set. We would recommend discount_factor=0.2 by default for
+          the robustness in results, at the expenses of runtime.
+        - In an even larger test on ~1M sequences, we set batch_size=10000, discount_factor=0.8, n_jobs=8.
+          Batch mode saves 60% of the runtime compared to running on entire set, while the resulted patterns from the
+          two processes are the same.
+        - When data size is small, e.g., a few thousand sequences, there is no benefit to run batch mode.
+          Thus, we would recommend using the batch mode only when data has at least hundreds of thousands of sequences
+          for gaining the runtime benefit.
     """
 
-    def __init__(self, sequences: List[list], max_span: Optional[int] = 10, batch_size=None,
-                 n_jobs=2, seed=123456, discount_factor=0.2):
+    def __init__(self, sequences: List[list], max_span: Optional[int] = 10,
+                 batch_size=None, discount_factor=0.2, n_jobs=2, seed=123456):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
-        validate_batch_args(batch_size, n_jobs, seed, discount_factor)
+        validate_batch_args(batch_size, discount_factor, n_jobs, seed)
 
         # Input sequences
         self._sequences: List[list] = sequences
@@ -362,8 +388,8 @@ class Seq2Pat:
             self.add_constraint(1 <= index_attr.span() <= (max_span - 1))
 
         self.batch_size = batch_size
-        self.n_jobs = n_jobs
         self.discount_factor = discount_factor
+        self.n_jobs = n_jobs
         self.seed = seed
 
     @property

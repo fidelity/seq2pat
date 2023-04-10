@@ -306,7 +306,7 @@ def validate_min_frequency_with_batch(num_rows: int, batch_size: int, min_freque
                              "for one of the chunks with {} sequences!".format(min_frequency, remain_chunk_size))
 
 
-def validate_batch_args(batch_size: Optional, n_jobs: int, seed: int, discount_factor: float) -> NoReturn:
+def validate_batch_args(batch_size: Optional, discount_factor: float, n_jobs: int, seed: int) -> NoReturn:
     """
     Validate arguments for running seq2pat on batches.
 

@@ -316,6 +316,22 @@ class TestSeq2PatBatch(unittest.TestCase):
         self.assertListEqual(sorted_results, test_patterns)
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
+    def test_seq2pat_batch_default_no_constraints_large_batch(self):
+        # Test running seq2pat in batches, by default, n_jobs=2, discount_factor=0.2
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same.
+
+        patterns_file = self.DATA_DIR + "input.txt"
+        sequences = read_data(patterns_file)
+        seq2pat = Seq2Pat(sequences, max_span=None, batch_size=100000)
+
+        test_patterns = seq2pat.get_patterns(.01)
+        results_file = self.DATA_DIR + "no_constraints_results.txt"
+        control_patterns = read_data(results_file)
+        sorted_results = sort_pattern(control_patterns)
+        self.assertListEqual(sorted_results, test_patterns)
+        self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
+
     def test_seq2pat_batch_n_jobs_all_cpus(self):
         # Test running seq2pat in batches with n_jobs=-1 (all cpus are used)
         # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
