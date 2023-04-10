@@ -159,6 +159,11 @@ class Attribute:
     def _set_values(self, values):
         """
         Set values of attribute
+
+        This function is used when Seq2Pat runs on batches of sequences. In each batch, the attributes and constraints
+        need to be reset to be consistent to the sequences. Since the upper and lower bound are set on the entire set,
+        it would be easier to copy the existing constraints but only reset the attribute values in a batch. It would be
+        prevented to set values directly, thus we add the function to reset the attribute values.
         """
         self._values = values
 
@@ -296,7 +301,7 @@ class Seq2Pat:
         as the system has resources to support.
     batch_size: Optional[int]
         When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of
-        sequences for improving scalability. Each batch contains `batch_size` sequences as a random sample of
+        sequences for improving scalability. Each batch contains `batch_size` sequences as a **random** sample of
         entire set. A mining task will run on each batch with a reduced minimum row count (min_frequency) threshold.
         Please refer to description of discount_factor parameter for how min_frequency is reduced.
         Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of
@@ -510,7 +515,7 @@ class Seq2Pat:
     def _get_patterns_batch(self, min_frequency) -> List[list]:
         """
         Get patterns from each batch with a relaxed min_frequency threshold, then aggregate pattern frequencies
-        by using the summation of frequencies returned by mining individual batches.
+        by using the summation of frequencies from batches.
 
         Attributes
         ----------
