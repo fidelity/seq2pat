@@ -71,9 +71,9 @@ aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg,
 # see also intersection, unique_pos, and unique_neq
 dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
-# Most interestingly, we can generate features from DRPM patterns (pat2feat) 
-# to create machine learning models in downstream tasks, e.g., intent prediction
-# To do that, we can the input sequences into one-hot feature vectors 
+# Most interestingly, we can generate features from DPM patterns via pat2feat
+# These features can be used in ML for downstream tasks, e.g., intent prediction
+# To do that, we turn the input sequences into one-hot feature vectors
 # Binary features denote existence of found patterns in each sequence
 pat2feat = Pat2Feat()
 sequences = sequences_pos + sequences_neg
