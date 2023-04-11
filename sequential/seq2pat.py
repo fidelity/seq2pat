@@ -311,7 +311,8 @@ class Seq2Pat:
     batch_size: Optional[int]
         The batch_size parameter is set to be None by default, then a mining task runs on the entire data set using a
         single thread. When batch_size is set, Seq2Pat runs on batches of sequences instead for improving scalability.
-        Each batch contains `batch_size` sequences as a **random** sample of entire set. A mining task will run on each
+        Each batch contains `batch_size` sequences as a **random** sample of entire set. This is achieved by shuffling
+        the entire set uniformly before we sequentially split the sequences into batches. A mining task will run on each
         batch with a reduced minimum row count (min_frequency) threshold. Please refer to description of discount_factor
         parameter for how min_frequency is reduced. Resulted patterns will be aggregated from the mining results of
         each batch by calculating the sum of the occurrences. Finally the original minimum row count threshold is
