@@ -12,8 +12,7 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
     validate_attribute_values, validate_sequences, validate_max_span, \
-    aggregate_patterns, validate_min_frequency, validate_min_frequency_with_batch, \
-    validate_batch_args, update_min_frequency
+    aggregate_patterns, validate_min_frequency, validate_batch_args, update_min_frequency
 
 
 # IMPORTANT: Constant values should not be changed
@@ -128,13 +127,15 @@ class _Constants:
     # List where index correspond to the attribute ids and values to the minimum value for that attribute
     min_attrs = 'min_attrs'
 
-    # The threshold to dynamically apply batch processing to the data in large size
+    # The data size threshold to dynamically decide if batch processing is needed to ease mining task
     dynamic_batch_threshold = 500000
 
-    # The default batch size to be applied when it is not set, while the input sequences contains
-    # more than dynamic_batch_threshold sequences. This will apply batch processing automatically to facilitate
-    # mining task.
+    # If batch_size is not set while the dataset has more than dynamic_batch_threshold sequences,
+    # batch_size is set to be default_batch_size, to apply batch processing
     default_batch_size = 10000
+
+    # Default seed to define a random state
+    default_seed = 123456
 
 
 class Attribute:
@@ -314,16 +315,19 @@ class Seq2Pat:
         batch with a reduced minimum row count (min_frequency) threshold. Please refer to description of discount_factor
         parameter for how min_frequency is reduced. Resulted patterns will be aggregated from the mining results of
         each batch by calculating the sum of the occurrences. Finally the original minimum row count threshold is
-        applied to the patterns after aggregation.
+        applied to the patterns after aggregation. When batch_size is None but the dataset has more than
+        _Constants.dynamic_batch_threshold sequences, batch_size is dynamically set to be _Constants.default_seed to
+        ease the mining task on the large dataset by default. Power users can define specific batch_size,
+        discount_factor and n_jobs for gaining more runtime benefit.
     discount_factor: float
         A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
-        on a batch. When min_frequency is an integer, mining task can only be run on the entire set.
-        When min_frequency is a float, mining can be run on batches, with new threshold being defined by
-        max(min_frequency * discount_factor, 1.0/batch_size). Final results will be based on the aggregation of
-        patterns from each batch by calculating the sum of the occurrences. Theoretically there is a chance that the
-        batching results will be different from non-batching results. But a small discount_factor parameter will make
-        the chance to be minimal and thus we have the same results as running on entire set in practices.
-        A small value of discount_factor is thus recommended. discount_factor=0.2 by default.
+        on a batch. The new threshold for a batch is defined to be max(min_frequency * discount_factor, 1.0/batch_size),
+        where an integer min_frequency will be converted to a ratio first by min_frequency/number_total_sequences.
+        Final results will be based on the aggregation of patterns from each batch by calculating the sum of the
+        occurrences. Theoretically there is a chance that the batching results will be different from non-batching
+        results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same
+        results as running on entire set in practices. A small value of discount_factor is thus recommended.
+        discount_factor=0.2 by default.
     n_jobs: int
         n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
         on batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
@@ -350,7 +354,7 @@ class Seq2Pat:
     """
 
     def __init__(self, sequences: List[list], max_span: Optional[int] = 10,
-                 batch_size=None, discount_factor=0.2, n_jobs=2, seed=123456):
+                 batch_size=None, discount_factor=0.2, n_jobs=2, seed=_Constants.default_seed):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
@@ -387,7 +391,14 @@ class Seq2Pat:
             # Given max_span items, the maximum difference on the index is (max_span - 1)
             self.add_constraint(1 <= index_attr.span() <= (max_span - 1))
 
-        self.batch_size = batch_size
+        # Dynamically set batch_size to ease the mining task on a large dataset by default
+        # If batch_size is None and num_rows > dynamic_batch_threshold, set batch_size to apply batch processing
+        # For dataset having num_rows <= dynamic_batch_threshold, mining task runs on entire set if batch_size=None
+        # Power users can define specific batch_size, discount_factor and n_jobs for gaining more runtime benefit
+        if not batch_size and self._num_rows > _Constants.dynamic_batch_threshold:
+            self.batch_size = _Constants.default_batch_size
+        else:
+            self.batch_size = batch_size
         self.discount_factor = discount_factor
         self.n_jobs = n_jobs
         self.seed = seed
@@ -502,12 +513,12 @@ class Seq2Pat:
         # Check num_rows
         check_true(self._num_rows >= 1, ValueError("Sequences should not be empty."))
 
-        if not self.batch_size:
+        # Check min_frequency conditions
+        # Given a set of `num_rows` sequences, we need to validate min_frequency.
+        # In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.
+        validate_min_frequency(self._num_rows, min_frequency)
 
-            # Check min_frequency conditions
-            # Given a set of `num_rows` sequences, we need to validate min_frequency.
-            # In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.
-            validate_min_frequency(self._num_rows, min_frequency)
+        if not self.batch_size:
 
             # Call Cython backend in a child process, write results to queue
             q = Queue()
@@ -520,8 +531,9 @@ class Seq2Pat:
             thread.join()
 
         else:
-            # Check min_frequency conditions when Seq2Pat runs on each batch
-            validate_min_frequency_with_batch(self._num_rows, self.batch_size, min_frequency)
+            # When min_frequency is an integer, convert to float before it is applied to batches
+            if isinstance(min_frequency, int):
+                min_frequency = float(min_frequency) / len(self.sequences)
 
             patterns = self._get_patterns_batch(min_frequency)
 
@@ -538,17 +550,16 @@ class Seq2Pat:
         # Return frequent sequences
         return patterns_sorted
 
-    def _get_patterns_batch(self, min_frequency) -> List[list]:
+    def _get_patterns_batch(self, min_frequency: float) -> List[list]:
         """
         Get patterns from each batch with a relaxed min_frequency threshold, then aggregate pattern frequencies
         by using the summation of frequencies from batches.
 
         Attributes
         ----------
-        min_frequency: Num
-           If int, represents the minimum number of sequences (rows) a pattern should occur.
-           If float, should be (0.0, 1.0] and represents
-           the minimum percentage of sequences (rows) a pattern should occur.
+        min_frequency: float
+           Min_frequency should be a float in (0.0, 1.0] for batch processing.
+           It represents the minimum percentage of sequences (rows) a pattern should occur.
 
         Returns
         -------
@@ -571,7 +582,7 @@ class Seq2Pat:
             for i in range(0, num_chunks))
 
         # Aggregate patterns from each chunk over the counts and apply min_frequency threshold
-        min_row_count = int(n_sequences * min_frequency) if isinstance(min_frequency, float) else min_frequency
+        min_row_count = int(n_sequences * min_frequency)
         agg_patterns = aggregate_patterns(batch_patterns, min_row_count)
 
         return agg_patterns
@@ -603,7 +614,8 @@ class Seq2Pat:
 
         return shuffled_sequences, shuffled_attr_to_cts
 
-    def _mining_batch(self, chunk_ind, sequences, attr_to_cs, min_frequency):
+    def _mining_batch(self, chunk_ind: int, sequences: List[List], attr_to_cs: Dict[Attribute, Dict[str, _Constraint]],
+                      min_frequency: float) -> List[List]:
         """
         Implementor of pattern mining on each batch
 
@@ -614,11 +626,10 @@ class Seq2Pat:
         sequences: List[list]
            A list of sequences each with a list of events.
            The event values can be all strings or all integers.
-        attr_to_cs: Dict[Attribute, Dict[str, Constraint]]
-        min_frequency: Num
-           If int, represents the minimum number of sequences (rows) a pattern should occur.
-           If float, should be (0.0, 1.0] and represents
-           the minimum percentage of sequences (rows) a pattern should occur.
+        attr_to_cs: Dict[Attribute, Dict[str, _Constraint]]
+        min_frequency: float
+           Min_frequency should be a float in (0.0, 1.0] for batch processing
+           It represents the minimum percentage of sequences (rows) a pattern should occur.
 
         Returns
         -------

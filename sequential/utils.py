@@ -272,40 +272,6 @@ def validate_min_frequency(num_rows, min_frequency):
         raise TypeError("Minimum frequency should be integer (as a row count) or float (as a row percentage).")
 
 
-def validate_min_frequency_with_batch(num_rows: int, batch_size: int, min_frequency: Num) -> NoReturn:
-    """
-    Validate min_frequency when Seq2Pat runs on batches.
-    A valid min_frequency should be:
-        - A float greater than 0 and <= 1.0, and it should also yield a valid minimum row count on a batch.
-        - or an integer only when num_rows <= batch_size, since one batch contains all the rows.
-
-    Parameters
-    ----------
-    num_rows: int
-        The total number of sequences.
-    batch_size: int
-        The number of sequences in one batch.
-    min_frequency: Num
-        It should be float for mining batches. The minimum percentage of sequences (rows) a pattern should occur.
-    """
-    if not isinstance(min_frequency, float) and num_rows > batch_size:
-        raise TypeError("Minimum frequency should be float (as a row percentage) when Seq2Pat runs on batches.")
-
-    try:
-        validate_min_frequency(batch_size, min_frequency)
-    except ValueError:
-        raise ValueError("Minimum frequency {} is not validate "
-                         "for one of the chunks with {} sequences!".format(min_frequency, batch_size))
-
-    remain_chunk_size = num_rows % batch_size
-    if remain_chunk_size > 1:
-        try:
-            validate_min_frequency(remain_chunk_size, min_frequency)
-        except ValueError:
-            raise ValueError("Minimum frequency {} is not validate "
-                             "for one of the chunks with {} sequences!".format(min_frequency, remain_chunk_size))
-
-
 def validate_batch_args(batch_size: Optional, discount_factor: float, n_jobs: int, seed: int) -> NoReturn:
     """
     Validate arguments for running seq2pat on batches.
@@ -334,8 +300,7 @@ def validate_batch_args(batch_size: Optional, discount_factor: float, n_jobs: in
     check_true(discount_factor <= 1.0, ValueError('The discount_factor must be less or equal to 1.0.'))
 
 
-
-def update_min_frequency(num_rows: int, min_frequency: Num, discount_factor: float) -> Num:
+def update_min_frequency(num_rows: int, min_frequency: float, discount_factor: float) -> float:
     """
     Update min_frequency when Seq2Pat runs on batches.
 
@@ -343,7 +308,7 @@ def update_min_frequency(num_rows: int, min_frequency: Num, discount_factor: flo
     ----------
     num_rows: int
         The total number of sequences.
-    min_frequency: Num
+    min_frequency: float
         It should be float for mining batches. The minimum percentage of sequences (rows) a pattern should occur.
     discount_factor: float
         The discount factor is used to reduce the minimum row count (min_frequency)
@@ -353,9 +318,8 @@ def update_min_frequency(num_rows: int, min_frequency: Num, discount_factor: flo
     The reduced min_frequency parameter
 
     """
-    if isinstance(min_frequency, float):
-        min_frequency = max(min_frequency * discount_factor, 1.0/num_rows)
-    return min_frequency
+
+    return max(min_frequency * discount_factor, 1.0/num_rows)
 
 
 def list_to_counter(patterns: List[List]) -> collections.Counter:
