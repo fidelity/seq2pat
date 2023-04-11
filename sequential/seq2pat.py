@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 import gc
-import random
+import numpy as np
 from typing import NamedTuple, List, Dict, NoReturn, Optional, Tuple
 from multiprocessing import Process, Queue
 from copy import deepcopy
@@ -404,6 +404,9 @@ class Seq2Pat:
         self.n_jobs = n_jobs
         self.seed = seed
 
+        # Set an internal rng object
+        self._rng = np.random.default_rng(self.seed)
+
     @property
     def sequences(self) -> List[list]:
         """Sequence
@@ -600,8 +603,7 @@ class Seq2Pat:
             The shuffled constraints.
         """
         indices = list(range(len(self.sequences)))
-        random.seed(self.seed)
-        random.shuffle(indices)
+        self._rng.shuffle(indices)
 
         shuffled_sequences = [self.sequences[i] for i in indices]
         shuffled_attr_to_cts = deepcopy(self.attr_to_cts)

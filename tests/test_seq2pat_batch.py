@@ -391,8 +391,8 @@ class TestSeq2PatBatch(unittest.TestCase):
         results_file = self.DATA_DIR + "no_constraints_results.txt"
         control_patterns = read_data(results_file)
         sorted_results = sort_pattern(control_patterns)
-        self.assertListEqual(sorted_results[:60], test_patterns[:60])
-        self.assertFalse(sorted_results[61] == test_patterns[61])
+        self.assertListEqual(sorted_results[:14], test_patterns[:14])
+        self.assertFalse(sorted_results[14] == test_patterns[14])
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_seq2pat_batch_discount_factor_small(self):
