@@ -70,7 +70,8 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1"># SPDX-License-Identifier: GPL-2.0</span>
 <span class="kn">import</span> <span class="nn">gc</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Queue</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
@@ -80,8 +81,7 @@
     <span class="n">get_min_value</span><span class="p">,</span> <span class="n">get_max_value</span><span class="p">,</span> <span class="n">sort_pattern</span><span class="p">,</span> <span class="n">item_map</span><span class="p">,</span> \
     <span class="n">string_to_int</span><span class="p">,</span> <span class="n">int_to_string</span><span class="p">,</span> <span class="n">check_sequence_feature_same_length</span><span class="p">,</span> \
     <span class="n">validate_attribute_values</span><span class="p">,</span> <span class="n">validate_sequences</span><span class="p">,</span> <span class="n">validate_max_span</span><span class="p">,</span> \
-    <span class="n">aggregate_patterns</span><span class="p">,</span> <span class="n">validate_min_frequency</span><span class="p">,</span> <span class="n">validate_min_frequency_with_batch</span><span class="p">,</span> \
-    <span class="n">shuffle_data</span><span class="p">,</span> <span class="n">update_min_frequency</span>
+    <span class="n">aggregate_patterns</span><span class="p">,</span> <span class="n">validate_min_frequency</span><span class="p">,</span> <span class="n">validate_batch_args</span><span class="p">,</span> <span class="n">update_min_frequency</span>
 
 
 <span class="c1"># IMPORTANT: Constant values should not be changed</span>
@@ -196,12 +196,21 @@
     <span class="c1"># List where index correspond to the attribute ids and values to the minimum value for that attribute</span>
     <span class="n">min_attrs</span> <span class="o">=</span> <span class="s1">&#39;min_attrs&#39;</span>
 
+    <span class="c1"># The data size threshold to dynamically decide if batch processing is needed to ease mining task</span>
+    <span class="n">dynamic_batch_threshold</span> <span class="o">=</span> <span class="mi">500000</span>
+
+    <span class="c1"># If batch_size is not set while the dataset has more than dynamic_batch_threshold sequences,</span>
+    <span class="c1"># batch_size is set to be default_batch_size, to apply batch processing</span>
+    <span class="n">default_batch_size</span> <span class="o">=</span> <span class="mi">10000</span>
+
+    <span class="c1"># Default seed to define a random state</span>
+    <span class="n">default_seed</span> <span class="o">=</span> <span class="mi">123456</span>
+
 
 <div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute">[docs]</a><span class="k">class</span> <span class="nc">Attribute</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Attribute with given values.</span>
+        <span class="sd">&quot;&quot;&quot;Attribute with given values.</span>
 
 <span class="sd">        Attributes</span>
 <span class="sd">        ----------</span>
@@ -217,46 +226,45 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Values</span>
+        <span class="sd">&quot;&quot;&quot;Values</span>
 
 <span class="sd">        The values of the attribute</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
 
-<div class="viewcode-block" id="Attribute.set_values"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.set_values">[docs]</a>    <span class="k">def</span> <span class="nf">set_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set values of attribute</span>
+    <span class="k">def</span> <span class="nf">_set_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set values of attribute</span>
+
+<span class="sd">        This function is used when Seq2Pat runs on batches of sequences. In each batch, the attributes and constraints</span>
+<span class="sd">        need to be reset to be consistent to the sequences. Since the upper and lower bound are set on the entire set,</span>
+<span class="sd">        it would be easier to copy the existing constraints but only reset the attribute values in a batch. It would be</span>
+<span class="sd">        prevented to set values directly, thus we add the function to reset the attribute values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
 
 <div class="viewcode-block" id="Attribute.average"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.average">[docs]</a>    <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The Average Constraint</span>
+        <span class="sd">&quot;&quot;&quot;The Average Constraint</span>
 
 <span class="sd">        Restricts the average value of a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Average</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.gap"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.gap">[docs]</a>    <span class="k">def</span> <span class="nf">gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The Gap Constraint</span>
+        <span class="sd">&quot;&quot;&quot;The Gap Constraint</span>
 
 <span class="sd">        Restricts the difference between every two consecutive event values in a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Gap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.median"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.median">[docs]</a>    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The Median Constraint</span>
+        <span class="sd">&quot;&quot;&quot;The Median Constraint</span>
 
 <span class="sd">        Restricts the median value of a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Median</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Attribute.span"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Attribute.span">[docs]</a>    <span class="k">def</span> <span class="nf">span</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The Span Constraint</span>
+        <span class="sd">&quot;&quot;&quot;The Span Constraint</span>
 
 <span class="sd">        Restricts the difference between the maximum and the minimum value in a pattern.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -348,12 +356,11 @@
 
 
 <div class="viewcode-block" id="Seq2Pat"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat">[docs]</a><span class="k">class</span> <span class="nc">Seq2Pat</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    **Seq2Pat: Sequence-to-Pattern Generation Library**</span>
+    <span class="sd">&quot;&quot;&quot;**Seq2Pat: Sequence-to-Pattern Generation Library**</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    sequences : List[list]</span>
+<span class="sd">    sequences: List[list]</span>
 <span class="sd">        A list of sequences each with a list of events.</span>
 <span class="sd">        The event values can be all strings or all integers.</span>
 <span class="sd">    max_span: Optional[int]</span>
@@ -363,34 +370,65 @@
 <span class="sd">        Power users can choose to drop this constraint by setting it to be None or increase the maximum span</span>
 <span class="sd">        as the system has resources to support.</span>
 <span class="sd">    batch_size: Optional[int]</span>
-<span class="sd">        When batch_size is set, program runs Seq2Pat on batches of sequences instead of on the entire set of</span>
-<span class="sd">        sequences for improving scalability. Each batch contains `batch_size` sequences as a random sample of</span>
-<span class="sd">        entire set. A mining task will run on each batch with a reduced minimum row count (min_frequency) threshold.</span>
-<span class="sd">        Please refer to description of discount_factor parameter for how min_frequency is reduced.</span>
-<span class="sd">        Resulted patterns will be aggregated from the mining results of each batch by calculating the sum of</span>
-<span class="sd">        the occurrences. Finally the original minimum row count threshold is applied to the patterns after aggregation.</span>
-<span class="sd">    n_jobs: int</span>
-<span class="sd">        n_jobs defines the number of processes (n_jobs=2 by default) that are spawned</span>
-<span class="sd">        when mining tasks are applied among batches in parallel. If -1 all CPUs are used.</span>
-<span class="sd">    seed: int</span>
-<span class="sd">        Random seed to make sequences uniformly distributed among batches.</span>
+<span class="sd">        The batch_size parameter is set to be None by default, then a mining task runs on the entire data set using a</span>
+<span class="sd">        single thread. When batch_size is set, Seq2Pat runs on batches of sequences instead for improving scalability.</span>
+<span class="sd">        Each batch contains `batch_size` sequences as a **random** sample of entire set. This is achieved by shuffling</span>
+<span class="sd">        the entire set uniformly before we sequentially split the sequences into batches. A mining task will run on each</span>
+<span class="sd">        batch with a reduced minimum row count (min_frequency) threshold. Please refer to description of discount_factor</span>
+<span class="sd">        parameter for how min_frequency is reduced. Resulted patterns will be aggregated from the mining results of</span>
+<span class="sd">        each batch by calculating the sum of the occurrences. Finally the original minimum row count threshold is</span>
+<span class="sd">        applied to the patterns after aggregation. When batch_size is None but the dataset has more than</span>
+<span class="sd">        _Constants.dynamic_batch_threshold sequences, batch_size is dynamically set to be _Constants.default_seed to</span>
+<span class="sd">        ease the mining task on the large dataset by default. Power users can define specific batch_size,</span>
+<span class="sd">        discount_factor and n_jobs for gaining more runtime benefit.</span>
 <span class="sd">    discount_factor: float</span>
 <span class="sd">        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied</span>
-<span class="sd">        on a batch. When min_frequency is a integer, mining task can only be run on the entire set.</span>
-<span class="sd">        When min_frequency is a float, mining can be run on batches, with new threshold being defined by</span>
-<span class="sd">        max(min_frequency * discount_factor, 1.0/num_rows). num_rows is the number of sequences of one batch.</span>
-<span class="sd">        Final results will be based on the aggregation of patterns from each batch by calculating the sum of</span>
-<span class="sd">        the occurrences. Theoretically there is a chance that the batching results will be different from non-batching</span>
+<span class="sd">        on a batch. The new threshold for a batch is defined to be max(min_frequency * discount_factor, 1.0/batch_size),</span>
+<span class="sd">        where an integer min_frequency will be converted to a ratio first by min_frequency/number_total_sequences.</span>
+<span class="sd">        Final results will be based on the aggregation of patterns from each batch by calculating the sum of the</span>
+<span class="sd">        occurrences. Theoretically there is a chance that the batching results will be different from non-batching</span>
 <span class="sd">        results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same</span>
 <span class="sd">        results as running on entire set in practices. A small value of discount_factor is thus recommended.</span>
 <span class="sd">        discount_factor=0.2 by default.</span>
+<span class="sd">    n_jobs: int</span>
+<span class="sd">        n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied</span>
+<span class="sd">        on batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.</span>
+<span class="sd">    seed: int</span>
+<span class="sd">        Random seed to make sequences uniformly distributed among batches.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">        For power users who have interests to learn more about the designed batch processing behavior, an Experimental\</span>
+<span class="sd">        Results Summary in the following would be useful.</span>
+
+<span class="sd">        - We have experimental analysis for batch_size vs. discount_factor vs. runtime tested on a data set with \</span>
+<span class="sd">        100k sequences.</span>
+
+<span class="sd">        - The results show that when batch_size increases, e.g. from 10000 to 100000, we observe an increase in runtime,\</span>
+<span class="sd">        while the mined patterns are all the same as mining on the entire set using single thread.</span>
+
+<span class="sd">        - When batch_size=10000, we get the most runtime benefit compared to running on entire set.</span>
+
+<span class="sd">        - On the same 100k sequences, we set batch_size=10000 and change discount_factor from 0.1 to 1.0. We observe\</span>
+<span class="sd">        that the runtime decreases as discount_factor increases. Only when discount_factor=1.0, the batching mode will\</span>
+<span class="sd">        miss some patterns compared to running on entire set. We would recommend discount_factor=0.2 by default for\</span>
+<span class="sd">        the robustness in results, at the expenses of runtime.</span>
+
+<span class="sd">        - In an even larger test on ~1M sequences, we set batch_size=10000, discount_factor=0.8, n_jobs=8.\</span>
+<span class="sd">        Batch mode saves 60% of the runtime compared to running on entire set, while the resulted patterns from the\</span>
+<span class="sd">        two processes are the same.</span>
+
+<span class="sd">        - When data size is small, e.g., a few thousand sequences, there is no benefit to run batch mode.\</span>
+<span class="sd">        Thus, we would recommend using the batch mode only when data has at least hundreds of thousands of sequences\</span>
+<span class="sd">        for gaining the runtime benefit.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">max_span</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123456</span><span class="p">,</span> <span class="n">discount_factor</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">max_span</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">discount_factor</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">_Constants</span><span class="o">.</span><span class="n">default_seed</span><span class="p">):</span>
         <span class="c1"># Validate input</span>
         <span class="n">validate_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
         <span class="n">validate_max_span</span><span class="p">(</span><span class="n">max_span</span><span class="p">)</span>
+        <span class="n">validate_batch_args</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">discount_factor</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
 
         <span class="c1"># Input sequences</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequences</span>
@@ -423,10 +461,20 @@
             <span class="c1"># Given max_span items, the maximum difference on the index is (max_span - 1)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">index_attr</span><span class="o">.</span><span class="n">span</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">max_span</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="c1"># Dynamically set batch_size to ease the mining task on a large dataset by default</span>
+        <span class="c1"># If batch_size is None and num_rows &gt; dynamic_batch_threshold, set batch_size to apply batch processing</span>
+        <span class="c1"># For dataset having num_rows &lt;= dynamic_batch_threshold, mining task runs on entire set if batch_size=None</span>
+        <span class="c1"># Power users can define specific batch_size, discount_factor and n_jobs for gaining more runtime benefit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">batch_size</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span> <span class="o">&gt;</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">dynamic_batch_threshold</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">_Constants</span><span class="o">.</span><span class="n">default_batch_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">discount_factor</span> <span class="o">=</span> <span class="n">discount_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+
+        <span class="c1"># Set an internal rng object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sequences</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
@@ -436,10 +484,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequences</span>
 
 <div class="viewcode-block" id="Seq2Pat.add_constraint"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.add_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">add_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_BaseConstraint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_BaseConstraint</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adds the given constraint to the constraint store.</span>
+        <span class="sd">&quot;&quot;&quot;Adds the given constraint to the constraint store.</span>
 
-<span class="sd">        Attributes</span>
+<span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        constraint: _BaseConstraint</span>
 <span class="sd">            A constraint on an attribute object</span>
@@ -478,19 +525,18 @@
         <span class="k">return</span> <span class="n">constraint</span></div>
 
 <div class="viewcode-block" id="Seq2Pat.remove_constraint"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.remove_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">remove_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_BaseConstraint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">       Removes the given constraint from the constraint store.</span>
+        <span class="sd">&quot;&quot;&quot;Removes the given constraint from the constraint store.</span>
 
-<span class="sd">       Attributes</span>
-<span class="sd">       ----------</span>
-<span class="sd">       constraint: _BaseConstraint</span>
-<span class="sd">           A constraint on an attribute object</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        constraint: _BaseConstraint</span>
+<span class="sd">            A constraint on an attribute object</span>
 
-<span class="sd">       Raises</span>
-<span class="sd">       ------</span>
-<span class="sd">       KeyError: If the given constraint does not exist in the constraint store.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError: If the given constraint does not exist in the constraint store.</span>
 
-<span class="sd">       &quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Attribute and constraint id</span>
         <span class="n">attribute_id</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">attribute</span>
@@ -516,11 +562,9 @@
         <span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cython_imp</span><span class="o">.</span><span class="n">mine</span><span class="p">())</span>
 
 <div class="viewcode-block" id="Seq2Pat.get_patterns"><a class="viewcode-back" href="../../api.html#sequential.seq2pat.Seq2Pat.get_patterns">[docs]</a>    <span class="k">def</span> <span class="nf">get_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">:</span> <span class="n">Num</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Performs the mining operation enforcing the constraints and</span>
-<span class="sd">        Returns the most frequent patterns.</span>
+        <span class="sd">&quot;&quot;&quot;Performs the mining operation enforcing the constraints and returns the most frequent patterns.</span>
 
-<span class="sd">        Attributes</span>
+<span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        min_frequency: Num</span>
 <span class="sd">           If int, represents the minimum number of sequences (rows) a pattern should occur.</span>
@@ -529,21 +573,21 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        List[list] where each inner list represents a frequent pattern in the form</span>
-<span class="sd">        [event_1, event_2, event_3, ... event_n, frequency].</span>
-<span class="sd">        The last element is the frequency of the pattern.</span>
+<span class="sd">        Each inner list represents a frequent pattern in the form\</span>
+<span class="sd">        [event_1, event_2, event_3, ... event_n, frequency].\</span>
+<span class="sd">        The last element is the frequency of the pattern.\</span>
 <span class="sd">        Sequences are sored by decreasing frequency, i.e., most frequent pattern first.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Check num_rows</span>
         <span class="n">check_true</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequences should not be empty.&quot;</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">:</span>
+        <span class="c1"># Check min_frequency conditions</span>
+        <span class="c1"># Given a set of `num_rows` sequences, we need to validate min_frequency.</span>
+        <span class="c1"># In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.</span>
+        <span class="n">validate_min_frequency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span>
 
-            <span class="c1"># Check min_frequency conditions</span>
-            <span class="c1"># Given a set of `num_rows` sequences, we need to validate min_frequency.</span>
-            <span class="c1"># In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.</span>
-            <span class="n">validate_min_frequency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">:</span>
 
             <span class="c1"># Call Cython backend in a child process, write results to queue</span>
             <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
@@ -556,8 +600,9 @@
             <span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Check min_frequency conditions when Seq2Pat runs on each batch</span>
-            <span class="n">validate_min_frequency_with_batch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span>
+            <span class="c1"># When min_frequency is an integer, convert to float before it is applied to batches</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">min_frequency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
 
             <span class="n">patterns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_patterns_batch</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">)</span>
 
@@ -574,16 +619,15 @@
         <span class="c1"># Return frequent sequences</span>
         <span class="k">return</span> <span class="n">patterns_sorted</span></div>
 
-    <span class="k">def</span> <span class="nf">_get_patterns_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get patterns from each batch with a relaxed min_frequency threshold, then aggregate patters among batches.</span>
+    <span class="k">def</span> <span class="nf">_get_patterns_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get patterns from each batch with a relaxed min_frequency threshold, then aggregate pattern frequencies</span>
+<span class="sd">        by using the summation of frequencies from batches.</span>
 
 <span class="sd">        Attributes</span>
 <span class="sd">        ----------</span>
-<span class="sd">        min_frequency: Num</span>
-<span class="sd">           If int, represents the minimum number of sequences (rows) a pattern should occur.</span>
-<span class="sd">           If float, should be (0.0, 1.0] and represents</span>
-<span class="sd">           the minimum percentage of sequences (rows) a pattern should occur.</span>
+<span class="sd">        min_frequency: float</span>
+<span class="sd">           Min_frequency should be a float in (0.0, 1.0] for batch processing.</span>
+<span class="sd">           It represents the minimum percentage of sequences (rows) a pattern should occur.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -592,7 +636,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Shuffle sequences uniformly to make each batch have similar pattern occurrences</span>
-        <span class="n">sequences</span><span class="p">,</span> <span class="n">attr_to_cs</span> <span class="o">=</span> <span class="n">shuffle_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">sequences</span><span class="p">,</span> <span class="n">attr_to_cs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shuffle_data</span><span class="p">()</span>
 
         <span class="c1"># Get number of chunks</span>
         <span class="n">n_sequences</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
@@ -606,14 +650,39 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_chunks</span><span class="p">))</span>
 
         <span class="c1"># Aggregate patterns from each chunk over the counts and apply min_frequency threshold</span>
-        <span class="n">min_row_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_sequences</span> <span class="o">*</span> <span class="n">min_frequency</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_frequency</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">min_frequency</span>
+        <span class="n">min_row_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_sequences</span> <span class="o">*</span> <span class="n">min_frequency</span><span class="p">)</span>
         <span class="n">agg_patterns</span> <span class="o">=</span> <span class="n">aggregate_patterns</span><span class="p">(</span><span class="n">batch_patterns</span><span class="p">,</span> <span class="n">min_row_count</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">agg_patterns</span>
 
-    <span class="k">def</span> <span class="nf">_mining_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk_ind</span><span class="p">,</span> <span class="n">sequences</span><span class="p">,</span> <span class="n">attr_to_cs</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Implementor of pattern mining on each batch</span>
+    <span class="k">def</span> <span class="nf">_shuffle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Attribute</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Constraint</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Shuffle sequences and attributes before running seq2pat on batches.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        shuffled_sequences: List[List]</span>
+<span class="sd">            The shuffled sequences.</span>
+<span class="sd">        shuffled_attr_to_cs: Dict[Attribute, Dict[str, _Constraint]]</span>
+<span class="sd">            The shuffled constraints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+        <span class="n">shuffled_sequences</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+        <span class="n">shuffled_attr_to_cts</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">shuffled_attr_to_cts</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">shuffled_attr_to_cts</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                <span class="n">old_constraint</span> <span class="o">=</span> <span class="n">shuffled_attr_to_cts</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">cs</span><span class="p">]</span>
+                <span class="n">new_constraint</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">old_constraint</span><span class="p">)</span>
+                <span class="n">shuffled_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">old_constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+                <span class="n">new_constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">_set_values</span><span class="p">(</span><span class="n">shuffled_values</span><span class="p">)</span>
+                <span class="n">shuffled_attr_to_cts</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">cs</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_constraint</span>
+
+        <span class="k">return</span> <span class="n">shuffled_sequences</span><span class="p">,</span> <span class="n">shuffled_attr_to_cts</span>
+
+    <span class="k">def</span> <span class="nf">_mining_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">],</span> <span class="n">attr_to_cs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Attribute</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Constraint</span><span class="p">]],</span>
+                      <span class="n">min_frequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Implementor of pattern mining on each batch</span>
 
 <span class="sd">        Attributes</span>
 <span class="sd">        ----------</span>
@@ -622,13 +691,12 @@
 <span class="sd">        sequences: List[list]</span>
 <span class="sd">           A list of sequences each with a list of events.</span>
 <span class="sd">           The event values can be all strings or all integers.</span>
-<span class="sd">        attr_to_cs: Dict[Attribute, Dict[str, Constraint]]</span>
-<span class="sd">        min_frequency: Num</span>
-<span class="sd">           If int, represents the minimum number of sequences (rows) a pattern should occur.</span>
-<span class="sd">           If float, should be (0.0, 1.0] and represents</span>
-<span class="sd">           the minimum percentage of sequences (rows) a pattern should occur.</span>
+<span class="sd">        attr_to_cs: Dict[Attribute, Dict[str, _Constraint]]</span>
+<span class="sd">        min_frequency: float</span>
+<span class="sd">           Min_frequency should be a float in (0.0, 1.0] for batch processing</span>
+<span class="sd">           It represents the minimum percentage of sequences (rows) a pattern should occur.</span>
 
-<span class="sd">        Returns</span>
+<span class="sd">        Returns:</span>
 <span class="sd">        -------</span>
 <span class="sd">        List[list] where each inner list represents a frequent pattern in the form</span>
 <span class="sd">        [event_1, event_2, event_3, ... event_n, frequency].</span>
@@ -647,7 +715,7 @@
             <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="n">attr_to_cs</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
                 <span class="n">old_constraint</span> <span class="o">=</span> <span class="n">attr_to_cs</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">cs</span><span class="p">]</span>
                 <span class="n">new_constraint</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">old_constraint</span><span class="p">)</span>
-                <span class="n">new_constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">set_values</span><span class="p">(</span><span class="n">old_constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">chunk_ind</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">:</span>
+                <span class="n">new_constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">_set_values</span><span class="p">(</span><span class="n">old_constraint</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">chunk_ind</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">:</span>
                                                                                     <span class="p">(</span><span class="n">chunk_ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">])</span>
                 <span class="n">batch_seq2pat</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="n">new_constraint</span><span class="p">)</span>
 
@@ -658,8 +726,7 @@
         <span class="k">return</span> <span class="n">batch_seq2pat</span><span class="o">.</span><span class="n">get_patterns</span><span class="p">(</span><span class="n">adjusted_min_frequency</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_cython_imp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_frequency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">stp</span><span class="o">.</span><span class="n">PySeq2pat</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Creates and populates a Cython PySeq2Pat object based on the user inputs</span>
+        <span class="sd">&quot;&quot;&quot;Creates and populates a Cython PySeq2Pat object based on the user inputs</span>
 <span class="sd">        by translating sequential attribute into their appropriate PySeq2Pat</span>
 <span class="sd">        representation and setting them.</span>
 <span class="sd">        :param min_frequency: the minimum number of sequences(rows) to observe the pattern</span>
@@ -723,8 +790,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_update_average_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Average</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Updates average constraint inputs for C++ backend</span>
+        <span class="sd">&quot;&quot;&quot;Updates average constraint inputs for C++ backend</span>
 <span class="sd">        :param constraint: average constraint obj</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -744,8 +810,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_update_gap_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Gap</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Update gap constraint inputs for C++ backend</span>
+        <span class="sd">&quot;&quot;&quot;Update gap constraint inputs for C++ backend</span>
 <span class="sd">        :param constraint: gap constraint obj</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># attribute id for attribute that a constraint will be enforced on</span>
@@ -762,8 +827,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_update_median_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Median</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Updates median constraint inputs for C++ backend</span>
+        <span class="sd">&quot;&quot;&quot;Updates median constraint inputs for C++ backend</span>
 <span class="sd">        :param constraint: median constraint obj</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># attribute id for attribute that a constraint will be enforced on</span>
@@ -781,8 +845,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_update_span_params</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">_Constraint</span><span class="o">.</span><span class="n">Span</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Updates span constraint inputs for C++ backend</span>
+        <span class="sd">&quot;&quot;&quot;Updates span constraint inputs for C++ backend</span>
 <span class="sd">        :param constraint: span constraint obj</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="sd">&quot;&quot;&quot;attribute id for attribute that a constraint will be enforced on, we want att_id to start from zero but are </span>
@@ -800,8 +863,7 @@
             <span class="n">params</span><span class="p">[</span><span class="n">_Constants</span><span class="o">.</span><span class="n">uspni</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">att_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :return: human-readable string representation of the class</span>
+        <span class="sd">&quot;&quot;&quot;return human-readable string representation of the class</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Seq2Pat&quot;</span>
         <span class="k">for</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">constraints</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_to_cts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
