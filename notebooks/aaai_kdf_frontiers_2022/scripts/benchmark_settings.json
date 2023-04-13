@@ -1,0 +1,50 @@
+{
+"data": "../data/sample_data_features.csv",
+"feature_space": "../data/feature_names.csv",
+"test_size": 0.2,
+"seed" : 123456,
+"valid_size" : 0.1,
+"params" : {
+            "lightgbm": {
+                "objective": "binary",
+                "num_iterations": 100,
+                "n_jobs": 4,
+                "metric": "auc",
+                "verbosity": 0,
+                "verbose_eval": 200,
+                "early_stopping_rounds": 400
+            },
+            "shallow_nn": {
+                "num_classes": 2,
+                "batch_size": 1000,
+                "max_epochs": 200,
+                "early_stop_start": 50,
+                "verbose": 0,
+                "layer_nodes": [64]
+            },
+            "vanilla_lstm": {
+                "num_classes": 2,
+                "batch_size": 500,
+                "max_epochs": 200,
+                "early_stop_start": 50,
+                "verbose": 0,
+                "embedding_dim": 10,
+                "num_lstm_units": 64,
+                "layer_nodes": [512],
+                "input_len": 20
+            },
+            "lstm_seq_feature": {
+                "num_classes": 2,
+                "batch_size": 1000,
+                "max_epochs": 200,
+                "early_stop_start": 50,
+                "verbose": 0,
+                "embedding_dim": 10,
+                "num_lstm_units": 128,
+                "layer_nodes": [256],
+                "input_len": 20
+            }
+    },
+"num_bootstrap" : 10,
+"results_file" : "../results/bootstrap_results.csv"
+}
