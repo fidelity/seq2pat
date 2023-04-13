@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installation &mdash; Seq2Pat  documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -75,7 +76,7 @@
            <div itemprop="articleBody">
              
   <section id="installation">
-<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <div class="admonition-installation-options admonition">
 <p class="admonition-title">Installation Options</p>
 <p>The package can be installed with two options:</p>
@@ -85,16 +86,16 @@
 </ol>
 </div>
 <section id="requirements">
-<span id="id2"></span><h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline"></a></h2>
+<span id="id2"></span><h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <ul class="simple">
-<li><p>The library requires <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.6+</span></code>, the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> package,  and a <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler (gcc, clang or another). See <a class="reference external" href="https://github.com/fidelity/seq2pat/blob/master/requirements.txt">requirements.txt</a>  for dependencies.</p></li>
+<li><p>The library requires <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.7+</span></code>, the <code class="docutils literal notranslate"><span class="pre">Cython</span></code> package,  and a <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler (gcc, clang or another). See <a class="reference external" href="https://github.com/fidelity/seq2pat/blob/master/requirements.txt">requirements.txt</a>  for dependencies.</p></li>
 <li><p>Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span></code>.</p></li>
 <li><p>On Windows, you can install <a class="reference external" href="https://visualstudio.microsoft.com/downloads/">MS Visual Studio Build Tools</a> for the <code class="docutils literal notranslate"><span class="pre">C++</span></code> compiler.</p></li>
 <li><p>On Mac, you can install <a class="reference external" href="https://developer.apple.com/">Command Line Tools</a> for the <code class="docutils literal notranslate"><span class="pre">Clang</span></code> compiler.</p></li>
 </ul>
 </section>
 <section id="build-from-the-source-code">
-<h2>Build from the source code<a class="headerlink" href="#build-from-the-source-code" title="Permalink to this headline"></a></h2>
+<h2>Build from the source code<a class="headerlink" href="#build-from-the-source-code" title="Permalink to this heading"></a></h2>
 <p>You can install the library on your platform from a wheel package created by the source code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">seq2pat</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="n">setuptools</span> <span class="n">wheel</span> <span class="c1"># if wheel is not installed</span>
@@ -109,7 +110,7 @@
 </div>
 </section>
 <section id="test-your-setup">
-<h2>Test Your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this headline"></a></h2>
+<h2>Test Your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this heading"></a></h2>
 <p>Successful compilation creates <code class="docutils literal notranslate"><span class="pre">Cython</span></code> artifacts in the directory <code class="docutils literal notranslate"><span class="pre">build</span></code>.</p>
 <p>To confirm that the installation was successful, run the tests included in the project.</p>
 <p>If you install from PyPI, please also run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></code> (or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>) under seq2pat folder to make sure the cython extension also complied for use in the current directory.</p>
@@ -125,7 +126,7 @@
 <p>For examples of how to use the library, refer to <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Usage Examples</span></a>.</p>
 </section>
 <section id="upgrading-the-library">
-<h2>Upgrading the Library<a class="headerlink" href="#upgrading-the-library" title="Permalink to this headline"></a></h2>
+<h2>Upgrading the Library<a class="headerlink" href="#upgrading-the-library" title="Permalink to this heading"></a></h2>
 <p>To upgrade to the latest version of the library, run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">seq2pat</span></code> or <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span> <span class="pre">origin</span> <span class="pre">master</span></code> in the repo folder,
 and then run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">--no-cache-dir</span> <span class="pre">dist/seq2pat-X.X.X-py3-none-any.whl</span></code>.</p>
 </section>

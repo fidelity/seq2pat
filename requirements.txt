@@ -2,3 +2,4 @@ cython>=0.29.13
 ortools
 numpy
 pandas
+joblib
