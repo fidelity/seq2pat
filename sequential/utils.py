@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
 import collections
+import numpy as np
 from typing import Union, NoReturn, List, Optional
 
 Num = Union[int, float]
