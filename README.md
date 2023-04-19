@@ -22,6 +22,10 @@ Seq2Pat is developed as a joint collaboration between Fidelity Investments
 and the Tepper School of Business at CMU. Documentation is available at [fidelity.github.io/seq2pat](https://fidelity.github.io/seq2pat).
 
 ## Quick Start
+
+We present examples for constraint-based sequential pattern mining and dichotomic pattern mining. 
+Sequences can be represented as strings or positive integers.
+
 ### Constraint-based Sequential Pattern Mining
 ```python
 # Example to show how to find frequent sequential patterns
@@ -71,9 +75,9 @@ aggregation_to_patterns = dichotomic_pattern_mining(seq2pat_pos, seq2pat_neg,
 # see also intersection, unique_pos, and unique_neq
 dpm_patterns = aggregation_to_patterns[DichotomicAggregation.union]
 
-# Most interestingly, we can generate features from DRPM patterns (pat2feat) 
-# to create machine learning models in downstream tasks, e.g., intent prediction
-# To do that, we can the input sequences into one-hot feature vectors 
+# Most interestingly, we can generate features from DPM patterns via pat2feat
+# These features can be used in ML for downstream tasks, e.g., intent prediction
+# To do that, we turn the input sequences into one-hot feature vectors
 # Binary features denote existence of found patterns in each sequence
 pat2feat = Pat2Feat()
 sequences = sequences_pos + sequences_neg
@@ -95,7 +99,8 @@ The library offers various constraint types, including a number of non-monotone 
 ## Usage Examples
 
 Examples on how to use the available constraints can be found 
-in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/usage_example.ipynb).
+in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/sequential_pattern_mining.ipynb).
+You can also find out how to scale up the mining capability, by running Seq2Pat on batches of sequences in parallel in [Batch Processing Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/batch_processing.ipynb). 
 
 Supported by Seq2Pat, we proposed **Dichotomic Pattern Mining** ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) to analyze the correlations between 
 mined patterns and different outcomes of sequences. DPM allows generating feature vectors based on mined patterns and plays an integrator role between Sequential 
@@ -109,7 +114,7 @@ our [documentation](https://fidelity.github.io/seq2pat/installation.html).
 
 ### Requirements
 
-The library requires ```Python 3.6+```, the ```Cython``` package, and a ```C++``` compiler.
+The library requires ```Python 3.7+```, the ```Cython``` package, and a ```C++``` compiler.
 See [requirements.txt](requirements.txt) for dependencies.
 
 ## Support
@@ -124,11 +129,11 @@ If you use Seq2Pat in a publication, please cite it as:
   @article{seq2pat2022,
     title={Seq2Pat: Sequence-to-Pattern Generation for Constraint-based Sequential Pattern Mining},
     author={Wang Xin, Hosseininasab Amin, Colunga Pablo, Kadioglu Serdar, van Hoeve Willem-Jan},
-    url={https://github.com/fidelity/textwiser},
     journal={Proceedings of the AAAI Conference on Artificial Intelligence},
-    volume={TBD},
-    number={TBD},
-    pages={TBD},
+    url={https://ojs.aaai.org/index.php/AAAI/article/view/21542},
+    volume={36},
+    number={11},
+    pages={12665-12671},
     year={2022}
   }
 ```
@@ -139,10 +144,9 @@ To cite the Dichotomic Pattern Mining framework, please cite it as:
   @article{Frontiers2022,
     title={Dichotomic Pattern Mining Integrated with Constraint Reasoning for Digital Behaviour Analyses}, 
     author={Sohom Ghosh, Shefali Yadav, Xin Wang, Bibhash Chakrabarty, Serdar Kadioglu},
-    journal={Frontiers Journal on Knowledge Discovery from Unstructured Data in Finance},
-    volume={TBD},
-    number={TBD},
-    pages={TBD},
+    journal={Frontiers in Artificial Intelligence},
+    url={https://www.frontiersin.org/articles/10.3389/frai.2022.868085},
+    volume={5},
     year={2022}    
 }
 ```
@@ -152,9 +156,9 @@ To cite the Dichotomic Pattern Mining framework, please cite it as:
     title={Dichotomic Pattern Mining with Applications to Intent Prediction from Semi-Structured Clickstream Datasets}, 
     author={Xin Wang and Serdar Kadioglu},
     booktitle={The AAAI-22 Workshop on Knowledge Discovery from Unstructured Data in Financial Services},
-    year={2022},
-    eprint={2201.09178},
-    archivePrefix={arXiv}
+    publisher={arXiv},
+    url={https://arxiv.org/abs/2201.09178},
+    year={2022}
 }
 ```
 

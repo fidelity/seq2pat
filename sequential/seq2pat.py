@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
-
 import gc
-from typing import NamedTuple, List, Dict, NoReturn, Optional
+import numpy as np
+from typing import NamedTuple, List, Dict, NoReturn, Optional, Tuple
+from multiprocessing import Process, Queue
+from copy import deepcopy
+from joblib import Parallel, delayed
 
 from sequential.backend import seq_to_pat as stp
 from sequential.utils import Num, check_true, get_max_column_size, \
     get_min_value, get_max_value, sort_pattern, item_map, \
     string_to_int, int_to_string, check_sequence_feature_same_length, \
-    validate_attribute_values, validate_sequences, validate_max_span
+    validate_attribute_values, validate_sequences, validate_max_span, \
+    aggregate_patterns, validate_min_frequency, validate_batch_args, update_min_frequency
 
 
 # IMPORTANT: Constant values should not be changed
@@ -123,12 +127,21 @@ class _Constants:
     # List where index correspond to the attribute ids and values to the minimum value for that attribute
     min_attrs = 'min_attrs'
 
+    # The data size threshold to dynamically decide if batch processing is needed to ease mining task
+    dynamic_batch_threshold = 500000
+
+    # If batch_size is not set while the dataset has more than dynamic_batch_threshold sequences,
+    # batch_size is set to be default_batch_size, to apply batch processing
+    default_batch_size = 10000
+
+    # Default seed to define a random state
+    default_seed = 123456
+
 
 class Attribute:
 
     def __init__(self, values: List[list]):
-        """
-        Attribute with given values.
+        """Attribute with given values.
 
         Attributes
         ----------
@@ -144,40 +157,45 @@ class Attribute:
 
     @property
     def values(self):
-        """
-        Values
+        """Values
 
         The values of the attribute
         """
         return self._values
 
-    def average(self):
+    def _set_values(self, values):
+        """Set values of attribute
+
+        This function is used when Seq2Pat runs on batches of sequences. In each batch, the attributes and constraints
+        need to be reset to be consistent to the sequences. Since the upper and lower bound are set on the entire set,
+        it would be easier to copy the existing constraints but only reset the attribute values in a batch. It would be
+        prevented to set values directly, thus we add the function to reset the attribute values.
         """
-        The Average Constraint
+        self._values = values
+
+    def average(self):
+        """The Average Constraint
 
         Restricts the average value of a pattern.
         """
         return _Constraint.Average(self)
 
     def gap(self):
-        """
-        The Gap Constraint
+        """The Gap Constraint
 
         Restricts the difference between every two consecutive event values in a pattern.
         """
         return _Constraint.Gap(self)
 
     def median(self):
-        """
-        The Median Constraint
+        """The Median Constraint
 
         Restricts the median value of a pattern.
         """
         return _Constraint.Median(self)
 
     def span(self):
-        """
-        The Span Constraint
+        """The Span Constraint
 
         Restricts the difference between the maximum and the minimum value in a pattern.
         """
@@ -269,12 +287,11 @@ class _Constraint(NamedTuple):
 
 
 class Seq2Pat:
-    """
-    **Seq2Pat: Sequence-to-Pattern Generation Library**
+    """**Seq2Pat: Sequence-to-Pattern Generation Library**
 
     Attributes
     ----------
-    sequences : List[list]
+    sequences: List[list]
         A list of sequences each with a list of events.
         The event values can be all strings or all integers.
     max_span: Optional[int]
@@ -283,12 +300,66 @@ class Seq2Pat:
         sequences but no constraints are used to run the mining efficiently and practically.
         Power users can choose to drop this constraint by setting it to be None or increase the maximum span
         as the system has resources to support.
+    batch_size: Optional[int]
+        The batch_size parameter is set to be None by default, then a mining task runs on the entire data set using a
+        single thread. When batch_size is set, Seq2Pat runs on batches of sequences instead for improving scalability.
+        Each batch contains `batch_size` sequences as a **random** sample of entire set. This is achieved by shuffling
+        the entire set uniformly before we sequentially split the sequences into batches. A mining task will run on each
+        batch with a reduced minimum row count (min_frequency) threshold. Please refer to description of discount_factor
+        parameter for how min_frequency is reduced. Resulted patterns will be aggregated from the mining results of
+        each batch by calculating the sum of the occurrences. Finally the original minimum row count threshold is
+        applied to the patterns after aggregation. When batch_size is None but the dataset has more than
+        _Constants.dynamic_batch_threshold sequences, batch_size is dynamically set to be _Constants.default_seed to
+        ease the mining task on the large dataset by default. Power users can define specific batch_size,
+        discount_factor and n_jobs for gaining more runtime benefit.
+    discount_factor: float
+        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
+        on a batch. The new threshold for a batch is defined to be max(min_frequency * discount_factor, 1.0/batch_size),
+        where an integer min_frequency will be converted to a ratio first by min_frequency/number_total_sequences.
+        Final results will be based on the aggregation of patterns from each batch by calculating the sum of the
+        occurrences. Theoretically there is a chance that the batching results will be different from non-batching
+        results. But a small discount_factor parameter will make the chance to be minimal and thus we have the same
+        results as running on entire set in practices. A small value of discount_factor is thus recommended.
+        discount_factor=0.2 by default.
+    n_jobs: int
+        n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
+        on batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
+    seed: int
+        Random seed to make sequences uniformly distributed among batches.
+
+    Note
+    ----
+        For power users who have interests to learn more about the designed batch processing behavior, an Experimental\
+        Results Summary in the following would be useful.
+
+        - We have experimental analysis for batch_size vs. discount_factor vs. runtime tested on a data set with \
+        100k sequences.
+
+        - The results show that when batch_size increases, e.g. from 10000 to 100000, we observe an increase in runtime,\
+        while the mined patterns are all the same as mining on the entire set using single thread.
+
+        - When batch_size=10000, we get the most runtime benefit compared to running on entire set.
+
+        - On the same 100k sequences, we set batch_size=10000 and change discount_factor from 0.1 to 1.0. We observe\
+        that the runtime decreases as discount_factor increases. Only when discount_factor=1.0, the batching mode will\
+        miss some patterns compared to running on entire set. We would recommend discount_factor=0.2 by default for\
+        the robustness in results, at the expenses of runtime.
+
+        - In an even larger test on ~1M sequences, we set batch_size=10000, discount_factor=0.8, n_jobs=8.\
+        Batch mode saves 60% of the runtime compared to running on entire set, while the resulted patterns from the\
+        two processes are the same.
+
+        - When data size is small, e.g., a few thousand sequences, there is no benefit to run batch mode.\
+        Thus, we would recommend using the batch mode only when data has at least hundreds of thousands of sequences\
+        for gaining the runtime benefit.
     """
 
-    def __init__(self, sequences: List[list], max_span: Optional[int] = 10):
+    def __init__(self, sequences: List[list], max_span: Optional[int] = 10,
+                 batch_size=None, discount_factor=0.2, n_jobs=2, seed=_Constants.default_seed):
         # Validate input
         validate_sequences(sequences)
         validate_max_span(max_span)
+        validate_batch_args(batch_size, discount_factor, n_jobs, seed)
 
         # Input sequences
         self._sequences: List[list] = sequences
@@ -321,18 +392,32 @@ class Seq2Pat:
             # Given max_span items, the maximum difference on the index is (max_span - 1)
             self.add_constraint(1 <= index_attr.span() <= (max_span - 1))
 
+        # Dynamically set batch_size to ease the mining task on a large dataset by default
+        # If batch_size is None and num_rows > dynamic_batch_threshold, set batch_size to apply batch processing
+        # For dataset having num_rows <= dynamic_batch_threshold, mining task runs on entire set if batch_size=None
+        # Power users can define specific batch_size, discount_factor and n_jobs for gaining more runtime benefit
+        if not batch_size and self._num_rows > _Constants.dynamic_batch_threshold:
+            self.batch_size = _Constants.default_batch_size
+        else:
+            self.batch_size = batch_size
+        self.discount_factor = discount_factor
+        self.n_jobs = n_jobs
+        self.seed = seed
+
+        # Set an internal rng object
+        self._rng = np.random.default_rng(self.seed)
+
     @property
-    def sequences(self) -> List[list]:
+    def sequences(self) -> List[List]:
         """Sequence
         The sequences of Seq2Pat.
         """
         return self._sequences
 
     def add_constraint(self, constraint: _BaseConstraint) -> _BaseConstraint:
-        """
-        Adds the given constraint to the constraint store.
+        """Adds the given constraint to the constraint store.
 
-        Attributes
+        Parameters
         ----------
         constraint: _BaseConstraint
             A constraint on an attribute object
@@ -371,19 +456,18 @@ class Seq2Pat:
         return constraint
 
     def remove_constraint(self, constraint: _BaseConstraint) -> NoReturn:
+        """Removes the given constraint from the constraint store.
+
+        Parameters
+        ----------
+        constraint: _BaseConstraint
+            A constraint on an attribute object
+
+        Raises
+        ------
+        KeyError: If the given constraint does not exist in the constraint store.
+
         """
-       Removes the given constraint from the constraint store.
-
-       Attributes
-       ----------
-       constraint: _BaseConstraint
-           A constraint on an attribute object
-
-       Raises
-       ------
-       KeyError: If the given constraint does not exist in the constraint store.
-
-       """
 
         # Attribute and constraint id
         attribute_id = constraint.attribute
@@ -400,12 +484,18 @@ class Seq2Pat:
         except KeyError:
             raise KeyError("No " + constraint_id + " constraint to remove on this attribute.")
 
-    def get_patterns(self, min_frequency: Num) -> List[list]:
-        """
-        Performs the mining operation enforcing the constraints and
-        Returns the most frequent patterns.
+    def _run_thread(self, min_frequency, q):
 
-        Attributes
+        # Cython implementor object with input parameters set
+        self._cython_imp = self._get_cython_imp(min_frequency)
+
+        # Frequent mining
+        q.put(self._cython_imp.mine())
+
+    def get_patterns(self, min_frequency: Num) -> List[list]:
+        """Performs the mining operation enforcing the constraints and returns the most frequent patterns.
+
+        Parameters
         ----------
         min_frequency: Num
            If int, represents the minimum number of sequences (rows) a pattern should occur.
@@ -414,9 +504,9 @@ class Seq2Pat:
 
         Returns
         -------
-        List[list] where each inner list represents a frequent pattern in the form
-        [event_1, event_2, event_3, ... event_n, frequency].
-        The last element is the frequency of the pattern.
+        Each inner list represents a frequent pattern in the form\
+        [event_1, event_2, event_3, ... event_n, frequency].\
+        The last element is the frequency of the pattern.\
         Sequences are sored by decreasing frequency, i.e., most frequent pattern first.
         """
 
@@ -424,26 +514,28 @@ class Seq2Pat:
         check_true(self._num_rows >= 1, ValueError("Sequences should not be empty."))
 
         # Check min_frequency conditions
-        if isinstance(min_frequency, float):
-            check_true(0.0 < min_frequency,
-                       ValueError("Frequency percentage should be greater than 0.0", min_frequency))
-            check_true(min_frequency <= 1.0, ValueError("Frequency percentage should be less than 1.0", min_frequency))
-            check_true(min_frequency * self._num_rows >= 1.0, ValueError("Frequency percentage should set the minimum "
-                                                                         "row count to be no less than 1.0."
-                                                                         "Thus the percentage should be no less than "
-                                                                         "1/(number of sequences)."))
-        elif isinstance(min_frequency, int):
-            check_true(0 < min_frequency, ValueError("Frequency should be greater than 0.0", min_frequency))
-            check_true(min_frequency <= self._num_rows, ValueError("Frequency cannot be more than number of sequences ",
-                                                                   min_frequency))
+        # Given a set of `num_rows` sequences, we need to validate min_frequency.
+        # In edge cases when min_frequency is not set properly, e.g. 0 or less than 1/num_rows, program will fail.
+        validate_min_frequency(self._num_rows, min_frequency)
+
+        if not self.batch_size:
+
+            # Call Cython backend in a child process, write results to queue
+            q = Queue()
+            thread = Process(target=self._run_thread, args=(min_frequency, q))
+            thread.start()
+
+            # Get results from queue
+            patterns = q.get()
+            # Wait for process to finish and join the main process
+            thread.join()
+
         else:
-            raise TypeError("Frequency should be integer (as a row count) or float (as a row percentage)")
+            # When min_frequency is an integer, convert to float before it is applied to batches
+            if isinstance(min_frequency, int):
+                min_frequency = float(min_frequency) / len(self.sequences)
 
-        # Cython implementor object with input parameters set
-        self._cython_imp = self._get_cython_imp(min_frequency)
-
-        # Frequent mining
-        patterns = self._cython_imp.mine()
+            patterns = self._get_patterns_batch(min_frequency)
 
         # Map back to strings, if original is strings
         if self._is_string:
@@ -458,9 +550,114 @@ class Seq2Pat:
         # Return frequent sequences
         return patterns_sorted
 
-    def _get_cython_imp(self, min_frequency) -> stp.PySeq2pat:
+    def _get_patterns_batch(self, min_frequency: float) -> List[list]:
+        """Get patterns from each batch with a relaxed min_frequency threshold, then aggregate pattern frequencies
+        by using the summation of frequencies from batches.
+
+        Attributes
+        ----------
+        min_frequency: float
+           Min_frequency should be a float in (0.0, 1.0] for batch processing.
+           It represents the minimum percentage of sequences (rows) a pattern should occur.
+
+        Returns
+        -------
+        List[list] where each inner list represents a frequent pattern in the form
+        [event_1, event_2, event_3, ... event_n, frequency].
         """
-        Creates and populates a Cython PySeq2Pat object based on the user inputs
+
+        # Shuffle sequences uniformly to make each batch have similar pattern occurrences
+        sequences, attr_to_cs = self._shuffle_data()
+
+        # Get number of chunks
+        n_sequences = len(sequences)
+        num_chunks = n_sequences // self.batch_size
+        if n_sequences % self.batch_size > 0:
+            num_chunks += 1
+
+        # Run Seq2Pat in parallel on each chunk, with a lower min_frequency threshold to get a larger set of patterns
+        batch_patterns = Parallel(n_jobs=self.n_jobs, require='sharedmem')(
+            delayed(self._mining_batch)(i, sequences, attr_to_cs, min_frequency)
+            for i in range(0, num_chunks))
+
+        # Aggregate patterns from each chunk over the counts and apply min_frequency threshold
+        min_row_count = int(n_sequences * min_frequency)
+        agg_patterns = aggregate_patterns(batch_patterns, min_row_count)
+
+        return agg_patterns
+
+    def _shuffle_data(self) -> Tuple[List[List], Dict[Attribute, Dict[str, _Constraint]]]:
+        """Shuffle sequences and attributes before running seq2pat on batches.
+
+        Returns
+        -------
+        shuffled_sequences: List[List]
+            The shuffled sequences.
+        shuffled_attr_to_cs: Dict[Attribute, Dict[str, _Constraint]]
+            The shuffled constraints.
+        """
+        indices = list(range(len(self.sequences)))
+        self._rng.shuffle(indices)
+
+        shuffled_sequences = [self.sequences[i] for i in indices]
+        shuffled_attr_to_cts = deepcopy(self.attr_to_cts)
+        for attr in shuffled_attr_to_cts:
+            for cs in shuffled_attr_to_cts[attr]:
+                old_constraint = shuffled_attr_to_cts[attr][cs]
+                new_constraint = deepcopy(old_constraint)
+                shuffled_values = [old_constraint.attribute.values[i] for i in indices]
+                new_constraint.attribute._set_values(shuffled_values)
+                shuffled_attr_to_cts[attr][cs] = new_constraint
+
+        return shuffled_sequences, shuffled_attr_to_cts
+
+    def _mining_batch(self, chunk_ind: int, sequences: List[List], attr_to_cs: Dict[Attribute, Dict[str, _Constraint]],
+                      min_frequency: float) -> List[List]:
+        """Implementor of pattern mining on each batch
+
+        Attributes
+        ----------
+        chunk_ind: int
+           chunk index
+        sequences: List[list]
+           A list of sequences each with a list of events.
+           The event values can be all strings or all integers.
+        attr_to_cs: Dict[Attribute, Dict[str, _Constraint]]
+        min_frequency: float
+           Min_frequency should be a float in (0.0, 1.0] for batch processing
+           It represents the minimum percentage of sequences (rows) a pattern should occur.
+
+        Returns:
+        -------
+        List[list] where each inner list represents a frequent pattern in the form
+        [event_1, event_2, event_3, ... event_n, frequency].
+        The last element is the frequency of the pattern.
+        Sequences are sored by decreasing frequency, i.e., most frequent pattern first.
+        """
+
+        # Get one batch of sequences
+        batch_sequences = sequences[chunk_ind * self.batch_size:(chunk_ind + 1) * self.batch_size]
+
+        # Create seq2pat instance for one batch
+        batch_seq2pat = Seq2Pat(batch_sequences, max_span=None, batch_size=None)
+
+        # Create constraints for one batch
+        for attr in attr_to_cs:
+            for cs in attr_to_cs[attr]:
+                old_constraint = attr_to_cs[attr][cs]
+                new_constraint = deepcopy(old_constraint)
+                new_constraint.attribute._set_values(old_constraint.attribute.values[chunk_ind * self.batch_size:
+                                                                                    (chunk_ind + 1) * self.batch_size])
+                batch_seq2pat.add_constraint(new_constraint)
+
+        # Reduce min_frequency to be min_frequency * discount_factor, 0 < discount_factor < 1
+        adjusted_min_frequency = update_min_frequency(len(batch_sequences), min_frequency,
+                                                      self.discount_factor)
+
+        return batch_seq2pat.get_patterns(adjusted_min_frequency)
+
+    def _get_cython_imp(self, min_frequency) -> stp.PySeq2pat:
+        """Creates and populates a Cython PySeq2Pat object based on the user inputs
         by translating sequential attribute into their appropriate PySeq2Pat
         representation and setting them.
         :param min_frequency: the minimum number of sequences(rows) to observe the pattern
@@ -524,8 +721,7 @@ class Seq2Pat:
 
     @staticmethod
     def _update_average_params(params: dict, constraint: _Constraint.Average) -> NoReturn:
-        """
-        Updates average constraint inputs for C++ backend
+        """Updates average constraint inputs for C++ backend
         :param constraint: average constraint obj
         """
 
@@ -545,8 +741,7 @@ class Seq2Pat:
 
     @staticmethod
     def _update_gap_params(params: dict, constraint: _Constraint.Gap) -> NoReturn:
-        """
-        Update gap constraint inputs for C++ backend
+        """Update gap constraint inputs for C++ backend
         :param constraint: gap constraint obj
         """
         # attribute id for attribute that a constraint will be enforced on
@@ -563,8 +758,7 @@ class Seq2Pat:
 
     @staticmethod
     def _update_median_params(params: dict, constraint: _Constraint.Median) -> NoReturn:
-        """
-        Updates median constraint inputs for C++ backend
+        """Updates median constraint inputs for C++ backend
         :param constraint: median constraint obj
         """
         # attribute id for attribute that a constraint will be enforced on
@@ -582,8 +776,7 @@ class Seq2Pat:
 
     @staticmethod
     def _update_span_params(params: dict, constraint: _Constraint.Span) -> NoReturn:
-        """
-        Updates span constraint inputs for C++ backend
+        """Updates span constraint inputs for C++ backend
         :param constraint: span constraint obj
         """
         """attribute id for attribute that a constraint will be enforced on, we want att_id to start from zero but are 
@@ -601,8 +794,7 @@ class Seq2Pat:
             params[_Constants.uspni].append(att_id)
 
     def __str__(self) -> str:
-        """
-        :return: human-readable string representation of the class
+        """return human-readable string representation of the class
         """
         str = "\n\nSeq2Pat"
         for attribute, constraints in self.attr_to_cts.items():

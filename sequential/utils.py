@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
-
-from typing import Union, NoReturn, List
+import collections
+import numpy as np
+from typing import Union, NoReturn, List, Optional
 
 Num = Union[int, float]
 
@@ -42,12 +43,12 @@ def read_data(source: str, is_scientific: bool = False) -> List[list]:
     return [(list(map(str, row.split()))) for row in all_rows]
 
 
-def string_to_int(mapping: map, items: List[List[int]]) -> List[list]:
+def string_to_int(mapping: map, items: List[List[str]]) -> List[List[int]]:
     """
     Utility function to transform string input to int input to be used by sequential library
     :param mapping: map[str, int]
-    :param items: a list of ints or a list of ints
-    :return: a list of strings where each string is replaced by an integer 'id'
+    :param items: a list of strings
+    :return: a list of integers where each string is replaced by an integer 'id'
     """
     return [[mapping[i] for i in item] for item in items]
 
@@ -104,7 +105,7 @@ def get_max_value(items: List[List[int]]) -> int:
 
 def get_min_value(items: List[List[int]]) -> int:
     """
-    Finds and returns minimun value in items
+    Finds and returns minimum value in items
     :param items: a list of list of ints
     :return: max value in items
     """
@@ -232,6 +233,9 @@ def validate_sequences(sequences: List[list]):
     check_true(len(not_list) == 0, ValueError("Sequences need to be a list of lists.", not_list))
     is_empty_list = any([len(sequences[i]) == 0 for i in range(len(sequences))])
     check_false(is_empty_list, ValueError("Sequences cannot contain any empty list."))
+    if not isinstance(sequences[0][0], str):
+        min_int = get_min_value(sequences)
+        check_true(min_int > 0, ValueError("Integers in the sequence must be greater than 0."))
 
 
 def validate_max_span(max_span: Union[int, None]):
@@ -243,3 +247,145 @@ def validate_max_span(max_span: Union[int, None]):
         check_true(isinstance(max_span, int), ValueError("Maximum span should be an integer."))
         check_true(max_span > 1, ValueError("Maximum span should be greater than 1."))
 
+
+def validate_min_frequency(num_rows, min_frequency):
+    """
+    Validate min_frequency
+
+    """
+    # Check min_frequency conditions
+    if isinstance(min_frequency, float):
+        check_true(0.0 < min_frequency,
+                   ValueError("Minimum frequency percentage should be greater than 0.0. "
+                              "Current minimum frequency is {}.".format(min_frequency)))
+        check_true(min_frequency <= 1.0, ValueError("Minimum frequency percentage should be less than 1.0. "
+                                                    "Current minimum frequency is {}.".format(min_frequency)))
+        check_true(min_frequency * num_rows >= 1.0, ValueError("Minimum frequency percentage should set the minimum "
+                                                               "row count to be no less than 1.0. "
+                                                               "Thus the percentage should be no less than "
+                                                               "1/(number of sequences)."))
+    elif isinstance(min_frequency, int):
+        check_true(0 < min_frequency, ValueError("Minimum frequency should be greater than 0.0. "
+                                                 "Current minimum frequency is {}.".format(min_frequency)))
+        check_true(min_frequency <= num_rows, ValueError("Minimum frequency cannot be more than number of sequences. "
+                                                         "Current minimum frequency is {}.".format(min_frequency)))
+    else:
+        raise TypeError("Minimum frequency should be integer (as a row count) or float (as a row percentage).")
+
+
+def validate_batch_args(batch_size: Optional, discount_factor: float, n_jobs: int, seed: int) -> NoReturn:
+    """
+    Validate arguments for running seq2pat on batches.
+
+    Parameters
+    ----------
+    batch_size: Optional
+        The number of sequences in one batch. When it is None, seq2pat will run on entire set.
+    n_jobs: int
+        n_jobs defines the number of processes (n_jobs=2 by default) that are used when mining tasks are applied
+        on batches in parallel. If -1 all CPUs are used. If -2, all CPUs but one are used.
+    seed: int
+        The random seed.
+    discount_factor: float
+        A discount factor is used to reduce the minimum row count (min_frequency) threshold when Seq2Pat is applied
+        on a batch. A valid discount factor should be greater than 0 and <= 1.0.
+    """
+    if batch_size:
+        check_true(isinstance(batch_size, int), TypeError("The batch_size must be an integer."))
+        check_true(batch_size > 0, ValueError('The batch_size must be greater than zero.'))
+    check_true(isinstance(n_jobs, int), TypeError("The n_jobs must be an integer."))
+    check_true(n_jobs != 0, ValueError('The n_jobs cannot be zero.'))
+    check_true(isinstance(seed, int), TypeError("The seed must be an integer."))
+    check_true(isinstance(discount_factor, float), ValueError('The discount_factor must be a float.'))
+    check_true(discount_factor > 0, ValueError('The discount_factor must be greater than zero.'))
+    check_true(discount_factor <= 1.0, ValueError('The discount_factor must be less or equal to 1.0.'))
+
+
+def update_min_frequency(num_rows: int, min_frequency: float, discount_factor: float) -> float:
+    """
+    Update min_frequency when Seq2Pat runs on batches.
+
+    Parameters
+    ----------
+    num_rows: int
+        The total number of sequences.
+    min_frequency: float
+        It should be float for mining batches. The minimum percentage of sequences (rows) a pattern should occur.
+    discount_factor: float
+        The discount factor is used to reduce the minimum row count (min_frequency)
+
+    Returns
+    -------
+    The reduced min_frequency parameter
+
+    """
+
+    return max(min_frequency * discount_factor, 1.0/num_rows)
+
+
+def list_to_counter(patterns: List[List]) -> collections.Counter:
+    """
+    Transform patterns to counter.
+
+    Parameters
+    ----------
+    patterns: List[List]
+        The mined patterns.
+
+    Returns
+    -------
+    Return a counter of patterns, using pattern as the key.
+    """
+    patterns_without_frequency = list(map(lambda x: tuple(x[:-1]), patterns))
+    frequencies = list(map(lambda x: x[-1], patterns))
+
+    return collections.Counter(dict(zip(patterns_without_frequency, frequencies)))
+
+
+def counter_to_list(patterns_counter: collections.Counter, min_row_count: int) -> List[List]:
+    """
+    Transform counter of patterns to list. Drop the patterns with frequency less than min_row_count.
+
+    Parameters
+    ----------
+    patterns_counter: collections.Counter
+        The counter of patterns, using pattern as the key.
+    min_row_count: int
+        The minimum frequency required for mining the original entire set.
+
+    Returns
+    -------
+    Return a list of patterns, with all patterns satisfying a minimum frequency threshold.
+    """
+    results = []
+    for key, value in patterns_counter.items():
+        if value < min_row_count:
+            continue
+        results.append(list(key) + [value])
+
+    return results
+
+
+def aggregate_patterns(batch_patterns: List[List[List]], min_row_count: int) -> List[List]:
+    """
+    Aggregate patterns mined from different batches by counts. Use the summation of counts as final frequency.
+
+    Parameters
+    ----------
+    batch_patterns: List[List[List]]
+        The patterns mined from batches.
+    min_row_count: int
+        The minimum frequency required for mining the original entire set.
+
+    Returns
+    -------
+    Return a list of patterns in the descending order by frequency, with all patterns satisfying minimum frequency
+    required for mining the original entire set.
+    """
+    counter = collections.Counter()
+    for patterns in batch_patterns:
+        counter.update(list_to_counter(patterns))
+
+    aggregated_patterns = counter_to_list(counter, min_row_count)
+
+    return sort_pattern(aggregated_patterns)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-2.0
-
+import collections
 import os
 import unittest
 
@@ -679,15 +679,15 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(python_seq2pat.theta, 89)
 
     def test_seq2patfinder_default(self):
-        # API and Cython object test.
-        # Replicates command line:
+        # Command:
         #   > ./MPP.exe
         #       -file input.txt
         #       -thr 0.001
         #       -att input_att1.txt -lg 30 -ug 900 -ls 900 - us 3600
         #       -att input_att2.txt -la 30 -ua 70 -lm 40 -um 60
         #       -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
+        # This is default usage example in original implementation
+        # Results from original implementation and seq2pat should be the same
 
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
@@ -769,11 +769,11 @@ class TestSeq2Pat(unittest.TestCase):
         sorted_controls = sort_pattern(control_patterns)
         self.assertListEqual(sorted_controls, one_constraint_result)
 
-    def test_input_one_constraint(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 30 -ug 900 -ls 900 - us 3600 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but with constraints on a single attribute- input_att1.txt
+    def test_input_one_attribute_constraint(self):
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 30 -ug 900 -ls 900 -out -write BMS_patt.txt,
+        # to get results from original implementation with constraints on only one attribute
+        # Results from original implementation and seq2pat should be the same
+
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
@@ -795,11 +795,9 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_input_no_constraint(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -out
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Unconstrained call. Significantly different and larger results.
-        # Seq2Pat
+        # Command: ./MPP -file input.txt -thr 0.01 -out, to get results from original implementation with no constraints
+        # Results from original implementation and seq2pat should be the same
+
         patterns_file = self.DATA_DIR + "input.txt"
         sequences = read_data(patterns_file)
         seq2pat = Seq2Pat(sequences, max_span=None)
@@ -812,11 +810,10 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertFalse(test_patterns == read_data(self.DATA_DIR + "default_results.txt"))
 
     def test_input_diff_constraint(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 20 -ug 1000 -ls 800 - us 3700 -att input_att2.txt -la 20 -ua 80 -lm 30 -um 70 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but all lower constraints lowered by 10 all upper constraints raised 10.
-        # Significantly different results to default.
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 20 -ug 1000 -ls 800 - us 3700
+        # -att input_att2.txt -la 20 -ua 80 -lm 30 -um 70 -out -write BMS_patt.txt, to get results from original implementation
+        # These constraints are different from default usage example in original implementation
+        # Results from original implementation and seq2pat should be the same
 
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
@@ -844,10 +841,9 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(sorted_control, test_patterns)
 
     def test_input_no_lower_constraint(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.001 -att input_att1.txt -ug 900 - us 3600 -att input_att2.txt -ua 70 -um 60 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but no lower constraints imposed
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -ug 900 - us 3600 -att input_att2.txt
+        # -ua 70 -um 60 -out -write BMS_patt.txt, to get results from original implementation
+        # Results from original implementation and seq2pat should be the same
 
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
@@ -875,10 +871,9 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertListEqual(sorted_control, test_patterns)
 
     def test_input_no_upper_constraint(self):
-        # API and Cython object test. Replicates command line:
-        # ./MPP -file input.txt -thr 0.01 -att input_att1.txt -lg 30 -ls 900 -att input_att2.txt -la 30 -lm 40 -out -write BMS_patt.txt
-        # input on Main.cpp and verifies output with data captured from original implementation
-        # Similar to default but no upper constraints imposed
+        # Command: ./MPP -file input.txt -thr 0.001 -att input_att1.txt -lg 900 -ls 3600 -att input_att2.txt
+        # -la 70 -lm 60 -out -write BMS_patt.txt, to get results from original implementation
+        # Results from original implementation and seq2pat should be the same
 
         # Seq2Pat
         patterns_file = self.DATA_DIR + "input.txt"
@@ -1386,6 +1381,12 @@ class TestSeq2Pat(unittest.TestCase):
         self.assertEqual(len(result), 36843)
         # maximum length in result is 13 items plus the frequency
         self.assertEqual(max(list(map(len, result))), 14)
+
+    def test_sequence_contain_zeros(self):
+        sequences = [[1, 0], [0, 1]]
+
+        with self.assertRaises(ValueError):
+            seq2pat = Seq2Pat(sequences)
 
 
 if __name__ == '__main__':
