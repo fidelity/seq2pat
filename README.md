@@ -114,7 +114,7 @@ our [documentation](https://fidelity.github.io/seq2pat/installation.html).
 
 ### Requirements
 
-The library requires ```Python 3.7+```, the ```Cython``` package, and a ```C++``` compiler.
+The library requires ```Python 3.8+```, the ```Cython``` package, and a ```C++``` compiler.
 See [requirements.txt](requirements.txt) for dependencies.
 
 ## Support

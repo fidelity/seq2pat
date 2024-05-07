@@ -15,7 +15,7 @@ Installation
 Requirements
 ------------
 
-* The library requires ``Python 3.7+``, the ``Cython`` package,  and a ``C++`` compiler (gcc, clang or another). See `requirements.txt`_  for dependencies.
+* The library requires ``Python 3.8+``, the ``Cython`` package,  and a ``C++`` compiler (gcc, clang or another). See `requirements.txt`_  for dependencies.
 
 * Make sure that the C++ compiler used in your Python installation is the same or compatible with the C++ compiler that you use to build the Cython artifacts. You can see the underlying C++ compiler of your Python installation using ``python -i``.
 
