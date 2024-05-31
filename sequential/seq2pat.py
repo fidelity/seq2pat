@@ -14,6 +14,13 @@ from sequential.utils import Num, check_true, get_max_column_size, \
     validate_attribute_values, validate_sequences, validate_max_span, \
     aggregate_patterns, validate_min_frequency, validate_batch_args, update_min_frequency
 
+from sequential._version import __author__, __copyright__, __email__, __version__
+
+__author__ = __author__
+__copyright__ = __copyright__
+__email__ = __email__
+__version__ = __version__
+
 
 # IMPORTANT: Constant values should not be changed
 # These represent parameters in C++ backend that need to be set by matching exact names
@@ -309,7 +316,7 @@ class Seq2Pat:
         parameter for how min_frequency is reduced. Resulted patterns will be aggregated from the mining results of
         each batch by calculating the sum of the occurrences. Finally the original minimum row count threshold is
         applied to the patterns after aggregation. When batch_size is None but the dataset has more than
-        _Constants.dynamic_batch_threshold sequences, batch_size is dynamically set to be _Constants.default_seed to
+        _Constants.dynamic_batch_threshold sequences, batch_size is dynamically set to be _Constants.default_batch_size to
         ease the mining task on the large dataset by default. Power users can define specific batch_size,
         discount_factor and n_jobs for gaining more runtime benefit.
     discount_factor: float

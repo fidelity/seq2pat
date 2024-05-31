@@ -7,8 +7,8 @@ May, 15, 2024 2.0.0
 -------------------------------------------------------------------------------
 
 Major:
-- Update CI test environment to python 3.8, 3.9, 3.10, 3.11 and drop 3.7
-- Update installation requirement to 3.8+
+- Update CI test environment to Python 3.8, 3.9, 3.10, 3.11 and drop support for Python 3.7
+- Update installation requirement to Python 3.8+
 
 -------------------------------------------------------------------------------
 Apr, 12, 2023 1.4.0
