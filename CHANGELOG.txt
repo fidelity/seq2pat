@@ -10,6 +10,9 @@ Major:
 - Update CI test environment to Python 3.8, 3.9, 3.10, 3.11 and drop support for Python 3.7
 - Update installation requirement to Python 3.8+
 
+Minor:
+- New section in README to explain max_span and batch_size parameters for mining large sequence databases.
+
 -------------------------------------------------------------------------------
 Apr, 12, 2023 1.4.0
 -------------------------------------------------------------------------------
