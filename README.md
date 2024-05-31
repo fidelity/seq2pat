@@ -49,6 +49,23 @@ seq2pat.add_constraint(3 <= price.average() <= 4)
 patterns = seq2pat.get_patterns(min_frequency=2)
 ```
 
+### Mining Large Sequence Databases 
+Seq2Pat provides two parameters to mine large-sequence databases efficiently. The Seq2Pat constructor enables `max_span`, the maximum span parameter that controls the columns, i.e., attributes, and `batch_size`, the batch size parameter that controls the rows, i.e., the sequences.   
+
+* **Maximum Span:** The span of the pattern can be controlled using the [max_span](https://github.com/fidelity/seq2pat/blob/master/sequential/seq2pat.py#L297) parameter. By default, the span is restricted to ten to avoid performance issues in out-of-the-box performance for general users. Setting `max_span = None` removes this restriction.
+
+* **Batch Size:** The number of sequences in each batch used for pattern mining is controlled by [batch_size](https://github.com/fidelity/seq2pat/blob/master/sequential/seq2pat.py#L303). By default, the batch size is not restricted, meaning the entire data will be used, up to `dynamic_batch_threshold`. If the input dataset size is greater than the [dynamic batch size threshold](https://github.com/fidelity/seq2pat/blob/master/sequential/seq2pat.py#L131), then batching is activated automatically using the [default batch size](https://github.com/fidelity/seq2pat/blob/master/sequential/seq2pat.py#L135). The final set of patterns is the aggregation of patterns over all batches. The `min_frequency` is still enforced whereby a [discount_factor](https://github.com/fidelity/seq2pat/blob/master/sequential/seq2pat.py#L315) is applied to each batch. It is possible that results of mining in batches differ from mining the entire set. The chance of this occurrence is minimized when using a small discount factor. By default, the discount factor is set to 0.2. For further speed-up, batch mining can be parallelized using [n_jobs](https://github.com/fidelity/seq2pat/blob/master/sequential/seq2pat.py#L324) parameter. By default, the number of jobs is set to two.   
+
+```python
+# Seq2Pat parameters to consider when dealing with large sequence databases
+seq2pat = Seq2Pat(sequences=[[], ..large sequence database.., []],
+                  max_span=10,
+                  batch_size=10000,
+                  discount_factor=0.2,
+                  n_jobs=2)
+```
+
+
 ### Dichotomic Pattern Mining
 ```python
 # Example to show how to run Dichotomic Pattern Mining 
@@ -102,19 +119,19 @@ Examples on how to use the available constraints can be found
 in the [Usage Example Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/sequential_pattern_mining.ipynb).
 You can also find out how to scale up the mining capability, by running Seq2Pat on batches of sequences in parallel in [Batch Processing Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/batch_processing.ipynb). 
 
-Supported by Seq2Pat, we proposed **Dichotomic Pattern Mining** ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) to analyze the correlations between 
+Supported by Seq2Pat, we proposed **Dichotomic Pattern Mining (DPM)** ([X. Wang and S. Kadioglu, 2022](https://arxiv.org/abs/2201.09178)) to analyze the correlations between 
 mined patterns and different outcomes of sequences. DPM allows generating feature vectors based on mined patterns and plays an integrator role between Sequential 
 Pattern Mining and the downstream modeling tasks as shown in [Ghosh et. al., Frontiers'22](https://www.frontiersin.org/articles/10.3389/frai.2022.868085/full) for clickstream intent prediction and intruder detection. An example on how to run DPM and generate pattern embeddings can be found in 
 [Dichotomic Pattern Mining Notebook](https://github.com/fidelity/seq2pat/blob/master/notebooks/dichotomic_pattern_mining.ipynb).
 
 ## Installation
 
-Seq2Pat can be installed from PyPI using ``pip install seq2pat``. It can also be installed from source by following the instructions in
+Seq2Pat can be installed from PyPI using ```pip install seq2pat```. It can also be installed from source by following the instructions in
 our [documentation](https://fidelity.github.io/seq2pat/installation.html).
 
 ### Requirements
 
-The library requires ```Python 3.7+```, the ```Cython``` package, and a ```C++``` compiler.
+The library requires **Python 3.8+**, the ```Cython``` package, and a ```C++``` compiler.
 See [requirements.txt](requirements.txt) for dependencies.
 
 ## Support
