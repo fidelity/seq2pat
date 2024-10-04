@@ -196,6 +196,6 @@ To cite the Dichotomic Pattern Mining framework, please cite it as:
 
 ## License
 
-Seq2Pat is licensed under the [GNU GPL License 2.0](LICENSE).
+Seq2Pat is licensed under the [Apache 2.0 license](LICENSE.md).
 
 <br>
