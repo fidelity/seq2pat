@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: Apache-2.0
 
 import setuptools
 import platform
@@ -57,7 +57,7 @@ setuptools.setup(
     setup_requires=required,
     packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent",
     ],

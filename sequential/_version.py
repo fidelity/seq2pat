@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright FMR LLC <opensource@fidelity.com>
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: Apache-2.0
 
 __author__ = "FMR LLC"
 __copyright__ = "Copyright (C), FMR LLC"

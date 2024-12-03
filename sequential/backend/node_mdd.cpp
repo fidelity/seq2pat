@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: Apache-2.0
 
 //Node function populates node with required information for constraint satisfaction. Types of information and their generation are explained in AAAI paper and not discussed here.
 
